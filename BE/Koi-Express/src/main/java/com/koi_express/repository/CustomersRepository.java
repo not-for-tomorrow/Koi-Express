@@ -14,4 +14,12 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
 
     Optional<Customers> findByEmailAndAuthProvider(String email, AuthProvider authProvider);
 
+    Optional<Customers> findByPhoneNumber(String phoneNumber);  // Optional method for phone number lookup
+
+    boolean existsByEmail(String email);  // For validation purposes
+
+    boolean existsByPhoneNumber(String phoneNumber);
+
+    boolean existsByEmailAndAuthProvider(String email, AuthProvider authProvider);
+
 }
