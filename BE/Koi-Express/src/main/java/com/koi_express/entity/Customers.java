@@ -3,6 +3,7 @@ package com.koi_express.entity;
 import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -34,6 +35,7 @@ public class Customers {
     String passwordHash;
 
     @Column(nullable = true, unique = true)
+    @Pattern(regexp = "^\\d{10}$", message = "Phone number must consist of exactly 10 digits")
     String phoneNumber;
 
     @Enumerated(EnumType.STRING)
@@ -48,5 +50,4 @@ public class Customers {
     @Column(updatable = false)
     LocalDateTime createdAt = LocalDateTime.now();
 
-    LocalDateTime updatedAt = LocalDateTime.now();
 }
