@@ -4,6 +4,7 @@ import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -35,7 +36,7 @@ public class Customers {
     String passwordHash;
 
     @Column(nullable = true, unique = true)
-    @Pattern(regexp = "^\\d{10}$", message = "Phone number must consist of exactly 10 digits")
+    @Size(min = 10, max = 10, message = "Phone number must consist of exactly 10 digits")
     String phoneNumber;
 
     @Enumerated(EnumType.STRING)

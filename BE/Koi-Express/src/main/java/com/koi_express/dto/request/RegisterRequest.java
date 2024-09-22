@@ -17,7 +17,6 @@ public class RegisterRequest {
     String phoneNumber;
 
     @NotEmpty(message = "Password cannot be empty")
-    @Size(min = 8, message = "Password must be at least 8 characters")
     String password;
 
     String email;

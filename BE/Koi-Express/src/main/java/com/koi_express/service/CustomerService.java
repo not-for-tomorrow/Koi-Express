@@ -66,4 +66,13 @@ public class CustomerService {
     public List<Customers> getAllCustomers() {
         return customersRepository.findAll();
     }
+
+    public boolean delteteCustomer(Long id) {
+        if (customersRepository.existsById(id)) {
+            customersRepository.deleteById(id);
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
