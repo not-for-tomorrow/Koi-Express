@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class CustomerService {
@@ -60,5 +61,9 @@ public class CustomerService {
         }
 
         return "Login successful!";
+    }
+
+    public List<Customers> getAllCustomers() {
+        return customersRepository.findAll();
     }
 }
