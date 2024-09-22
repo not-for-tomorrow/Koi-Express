@@ -21,31 +21,32 @@ public class Customers {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long customerId;
-
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    private String fullName;
-
-    private String address;
-
-    @Column(nullable = true)
-    private String passwordHash;
+    Long customerId;
 
     @Column(nullable = true, unique = true)
-    private String phoneNumber;
+    String email;
+
+    String fullName;
+
+    String address;
+
+    @Column(nullable = true)
+    String passwordHash;
+
+    @Column(nullable = true, unique = true)
+    String phoneNumber;
 
     @Enumerated(EnumType.STRING)
-    private AuthProvider authProvider;
+    AuthProvider authProvider;
 
-    private String providerId;
+    String providerId;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    @Column(nullable = false)
+    Role role = Role.CUSTOMER;
 
     @Column(updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    LocalDateTime createdAt = LocalDateTime.now();
 
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    LocalDateTime updatedAt = LocalDateTime.now();
 }
