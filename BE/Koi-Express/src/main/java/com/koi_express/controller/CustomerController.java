@@ -1,5 +1,6 @@
 package com.koi_express.controller;
 
+import com.koi_express.dto.request.UpdateRequest;
 import com.koi_express.entity.Customers;
 import com.koi_express.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,17 @@ public class CustomerController {
             return ResponseEntity.ok("Customer deleted successfully.");
         } else {
             return ResponseEntity.status(404).body("Customer not found");
+        }
+    }
+
+    @GetMapping("{customerId}")
+//    @PreAuthorize("hasRole('MANAGER') or hasRole('CUSTOMER')")
+    public ResponseEntity<Customers> getCustomerById(@PathVariable Long customerId) {
+        Customers customers = customerService.getCustomerById(customerId);
+        if( customers != null ) {
+            return ResponseEntity.ok(customers);
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 }
