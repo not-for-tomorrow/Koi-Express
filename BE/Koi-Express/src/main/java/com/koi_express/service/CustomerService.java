@@ -2,11 +2,14 @@ package com.koi_express.service;
 
 import com.koi_express.dto.request.LoginRequest;
 import com.koi_express.dto.request.RegisterRequest;
+import com.koi_express.dto.request.UpdateRequest;
+import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.Customers;
 import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
 import com.koi_express.repository.CustomersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,16 +22,16 @@ public class CustomerService {
     private final CustomersRepository customersRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // Constructor-based injection for better testability
+    @Autowired
     public CustomerService(CustomersRepository customersRepository, PasswordEncoder passwordEncoder) {
         this.customersRepository = customersRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public String registerCustomer(RegisterRequest registerRequest) {
-        if (customersRepository.existsByPhoneNumber(registerRequest.getPhoneNumber())) {
-            return "Error: Phone number is already in use!";
-        }
+    public ApiResponse<Customers> registerCustomer(RegisterRequest registerRequest) {
+
+        if (customersRepository.existsByPhoneNumber(registerRequest.getPhoneNumber()))
+            throw new RuntimeException("PhoneNumber already registered");
 
         String email = registerRequest.getEmail() != null ? registerRequest.getEmail() : registerRequest.getPhoneNumber() + "@noemail.com";
 
@@ -44,23 +47,18 @@ public class CustomerService {
                 .build();
 
         customersRepository.save(customer);
-        return "User registered successfully!";
+        return new ApiResponse<>(HttpStatus.OK.value(), "User registration successfully", customer);
     }
 
-    public String authenticateCustomer(LoginRequest loginRequest) {
+    public ApiResponse<String> authenticateCustomer(LoginRequest loginRequest) {
         Customers customer = customersRepository.findByPhoneNumber(loginRequest.getPhoneNumber())
-                .orElse(null);
+                .orElseThrow(() -> new RuntimeException("Invalid phone number"));
 
-        if (customer == null) {
-            return "Error: Invalid phone number!";
+        if(!passwordEncoder.matches(loginRequest.getPassword(), customer.getPasswordHash())) {
+            throw new RuntimeException("Invalid password");
         }
 
-        // Compare the stored password hash with the entered password
-        if (!passwordEncoder.matches(loginRequest.getPassword(), customer.getPasswordHash())) {
-            return "Error: Invalid password!";
-        }
-
-        return "Login successful!";
+        return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", null);
     }
 
     public List<Customers> getAllCustomers() {
@@ -68,11 +66,16 @@ public class CustomerService {
     }
 
     public boolean delteteCustomer(Long id) {
-        if (customersRepository.existsById(id)) {
-            customersRepository.deleteById(id);
-            return true;
-        } else {
-            return false;
+        if(!customersRepository.existsById(id)) {
+            throw new RuntimeException("Customer not found");
         }
+
+        customersRepository.deleteById(id);
+        return true;
+    }
+
+    public Customers getCustomerById(Long customerId){
+        return customersRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Couldn't find customer'"));
     }
 }
