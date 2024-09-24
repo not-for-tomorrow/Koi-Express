@@ -13,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 public class RegisterRequest {
 
     @NotEmpty(message = "Phone number cannot be empty")
-    @Size(min = 10, max = 10, message = "Phone number must be 10 digits")
+    @Size(min = 10, max = 10, message = "Phone number must consist of exactly 10 digits")
     String phoneNumber;
 
     @NotEmpty(message = "Password cannot be empty")

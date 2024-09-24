@@ -2,7 +2,8 @@ package com.koi_express.exception;
 
 
 public enum ErrorCode {
-    USER_EXISTED(1001, "User existed")
+    USER_EXISTED(1001, "PhoneNumber already registered"),
+    PHONE_NUMBER_INVALID(1002,"Phone number must consist of exactly 10 digits")
     ;
 
     ErrorCode(int code, String message) {

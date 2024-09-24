@@ -36,7 +36,6 @@ public class Customers {
     String passwordHash;
 
     @Column(nullable = true, unique = true)
-    @Size(min = 10, max = 10, message = "Phone number must consist of exactly 10 digits")
     String phoneNumber;
 
     @Enumerated(EnumType.STRING)

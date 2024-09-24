@@ -7,6 +7,8 @@ import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.Customers;
 import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
+import com.koi_express.exception.AppException;
+import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.CustomersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CustomerService {
@@ -31,7 +34,7 @@ public class CustomerService {
     public ApiResponse<Customers> registerCustomer(RegisterRequest registerRequest) {
 
         if (customersRepository.existsByPhoneNumber(registerRequest.getPhoneNumber()))
-            throw new RuntimeException("PhoneNumber already registered");
+            throw new AppException(ErrorCode.USER_EXISTED);
 
         String email = registerRequest.getEmail() != null ? registerRequest.getEmail() : registerRequest.getPhoneNumber() + "@noemail.com";
 
@@ -77,5 +80,10 @@ public class CustomerService {
     public Customers getCustomerById(Long customerId){
         return customersRepository.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Couldn't find customer'"));
+    }
+
+    public Customers findByEmail(String email) {
+        Optional<Customers> customerOptional = customersRepository.findByEmail(email);
+        return customerOptional.orElse(null);
     }
 }

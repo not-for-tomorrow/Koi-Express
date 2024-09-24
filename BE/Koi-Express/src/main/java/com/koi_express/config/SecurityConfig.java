@@ -39,7 +39,7 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo ->
                                 userInfo.userService(customOAuth2UserService) // Sử dụng CustomOAuth2UserService
                         )
-                        .defaultSuccessUrl("http://localhost:3000", true)
+                        .defaultSuccessUrl("/api/auth/userinfo", true)
                         .failureUrl("/login?error=true")
                 )
                 .logout(logout -> logout
@@ -53,7 +53,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-
-
 }
