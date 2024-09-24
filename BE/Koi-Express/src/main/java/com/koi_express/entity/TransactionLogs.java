@@ -3,8 +3,10 @@ package com.koi_express.entity;
 import com.koi_express.enums.PaymentMethod;
 import com.koi_express.enums.TransactionStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -14,11 +16,17 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"order_id", "customer_id"})}
+)
 public class TransactionLogs {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long transactionId;
+
+    @Column(unique = true, nullable = false)
+    String transactionCode;
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
@@ -28,6 +36,7 @@ public class TransactionLogs {
     @JoinColumn(name = "customer_id", nullable = false)
     Customers customer;
 
+    @Positive(message = "Transaction amount must be positive")
     double amount;
 
     @Enumerated(EnumType.STRING)
@@ -36,6 +45,7 @@ public class TransactionLogs {
     @Enumerated(EnumType.STRING)
     TransactionStatus status;
 
+    @CreationTimestamp
     @Column(updatable = false)
     LocalDateTime createdAt = LocalDateTime.now();
 }

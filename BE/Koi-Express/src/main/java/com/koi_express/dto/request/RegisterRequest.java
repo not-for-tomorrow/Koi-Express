@@ -1,6 +1,7 @@
 package com.koi_express.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -13,10 +14,11 @@ import lombok.experimental.FieldDefaults;
 public class RegisterRequest {
 
     @NotEmpty(message = "Phone number cannot be empty")
-    @Size(min = 10, max = 10, message = "Phone number must be 10 digits")
+    @Size(min = 10, max = 10, message = "Phone number must consist of exactly 10 digits")
+    @Pattern(regexp = "\\d{10}", message = "Phone number must contain exactly 10 digits and only digits")
     String phoneNumber;
 
-    @NotEmpty(message = "Password cannot be empty")
+    @NotEmpty(message = "Password is required")
     String password;
 
     String email;

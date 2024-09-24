@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -35,8 +36,9 @@ public class Customers {
     @Column(nullable = true)
     String passwordHash;
 
+    @Pattern(regexp = "\\d{10}", message = "Phone number must contain exactly 10 digits")
+    @Size(min = 10, max = 10, message = "Phone number must be exactly 10 digits")
     @Column(nullable = true, unique = true)
-    @Size(min = 10, max = 10, message = "Phone number must consist of exactly 10 digits")
     String phoneNumber;
 
     @Enumerated(EnumType.STRING)
@@ -49,6 +51,7 @@ public class Customers {
     Role role = Role.CUSTOMER;
 
     @Column(updatable = false)
+    @CreationTimestamp
     LocalDateTime createdAt = LocalDateTime.now();
 
 }

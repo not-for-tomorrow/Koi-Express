@@ -1,6 +1,9 @@
 package com.koi_express.dto.request;
 
 import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,6 +14,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LoginRequest {
 
+    @NotEmpty(message = "Phone number is required")
+    @Size(min = 10, max = 10, message = "Phone number must be exactly 10 digits")
+    @Pattern(regexp = "\\d{10}", message = "Phone number must contain only digits")
     String phoneNumber;
+
+    @NotEmpty(message = "Password is required")
     String password;
 }
