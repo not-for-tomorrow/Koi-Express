@@ -34,14 +34,20 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // Get common attributes
         String email = oAuth2User.getAttribute("email");
+        if (email == null || email.isEmpty()) {
+            throw new OAuth2AuthenticationException("Email not found from OAuth2 provider");
+        }
+
         String fullName = oAuth2User.getAttribute("name");
+        if (fullName == null) {
+            fullName = "Unknown Name";  // Hoặc xử lý theo cách khác nếu thiếu tên
+        }
 
         // Define the provider ID field based on the provider
         String providerId = registrationId.equalsIgnoreCase("google") ?
                 oAuth2User.getAttribute("sub") :
                 oAuth2User.getAttribute("id");
 
-        log.info("Facebook login: email={}, name={}, providerId={}", email, fullName, providerId);
 
 
         // Determine the auth provider dynamically (Google or Facebook)

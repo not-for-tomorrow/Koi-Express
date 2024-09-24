@@ -2,8 +2,11 @@ package com.koi_express.entity;
 
 import com.koi_express.enums.ShipmentStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -20,7 +23,7 @@ public class Shipments {
     Long shipmentId;
 
     @OneToOne
-    @JoinColumn(name = "order_id", nullable = false)
+    @JoinColumn(name = "order_id", nullable = false, unique = true)
     Orders order;
 
     @ManyToOne
@@ -31,7 +34,10 @@ public class Shipments {
     LocalDateTime estimatedDeliveryDate;
     LocalDateTime actualDeliveryDate;
 
-    boolean healthChecked;
+    @Column(nullable = false)
+    boolean healthChecked = false;
+
+    @NotEmpty(message = "Packing method cannot be empty")
     String packingMethod;
 
     @ManyToOne
@@ -41,5 +47,11 @@ public class Shipments {
     @Enumerated(EnumType.STRING)
     ShipmentStatus status;
 
+    @CreationTimestamp
+    @Column(updatable = false)
+    LocalDateTime createdAt = LocalDateTime.now();
+
+
+    @UpdateTimestamp
     LocalDateTime updatedAt = LocalDateTime.now();
 }

@@ -5,6 +5,7 @@ import com.koi_express.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +15,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Table(uniqueConstraints =
+        {@UniqueConstraint(columnNames = {"staff_id", "order_id"})}
+)
 public class StaffAssignment {
 
     @Id
@@ -39,4 +43,8 @@ public class StaffAssignment {
     protected void onCreate() {
         assignedAt = LocalDateTime.now();
     }
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
 }

@@ -60,6 +60,12 @@ public class AuthController {
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
 
+        if (email == null || name == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "OAuth2 login failed", null));
+        }
+
+
         ApiResponse<String> response = new ApiResponse<>(HttpStatus.OK.value(), "Google login successful", email);
         return ResponseEntity.ok(response);
     }

@@ -1,17 +1,20 @@
 package com.koi_express.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse <T> {
 
-    private int code;
-    private String message;
-    private T result;
+    int code;
+    String message;
+    T result;
+
 }

@@ -11,6 +11,8 @@ import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.CustomersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -51,6 +53,7 @@ public class CustomerService {
 
         customersRepository.save(customer);
         return new ApiResponse<>(HttpStatus.OK.value(), "User registration successfully", customer);
+
     }
 
     public ApiResponse<String> authenticateCustomer(LoginRequest loginRequest) {
@@ -58,19 +61,21 @@ public class CustomerService {
                 .orElseThrow(() -> new RuntimeException("Invalid phone number"));
 
         if(!passwordEncoder.matches(loginRequest.getPassword(), customer.getPasswordHash())) {
-            throw new RuntimeException("Invalid password");
+            throw new AppException(ErrorCode.PASSWORD_INCORRECT);
         }
+
 
         return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", null);
     }
 
-    public List<Customers> getAllCustomers() {
-        return customersRepository.findAll();
+    public Page<Customers> getAllCustomers(Pageable pageable) {
+        return customersRepository.findAll(pageable);
     }
+
 
     public boolean delteteCustomer(Long id) {
         if(!customersRepository.existsById(id)) {
-            throw new RuntimeException("Customer not found");
+            throw new AppException(ErrorCode.CUSTOMER_NOT_FOUND);
         }
 
         customersRepository.deleteById(id);
@@ -86,4 +91,16 @@ public class CustomerService {
         Optional<Customers> customerOptional = customersRepository.findByEmail(email);
         return customerOptional.orElse(null);
     }
+
+    public ApiResponse<Customers> updateCustomer(Long id, UpdateRequest updateRequest) {
+        Customers customer = customersRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+
+        customer.setFullName(updateRequest.getFullName());
+        customer.setAddress(updateRequest.getAddress());
+
+        customersRepository.save(customer);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully", customer);
+    }
+
 }

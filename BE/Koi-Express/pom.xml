@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.3.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>com.koi_express</groupId>
 	<artifactId>Koi-Express</artifactId>
@@ -96,6 +96,7 @@
 			<version>0.11.2</version>
 		</dependency>
 
+
 	</dependencies>
 
 	<build>
@@ -112,6 +113,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
+
 		</plugins>
 	</build>
 
