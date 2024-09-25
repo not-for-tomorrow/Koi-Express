@@ -1,5 +1,6 @@
 package com.koi_express.service;
 
+import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.LoginRequest;
 import com.koi_express.dto.request.RegisterRequest;
 import com.koi_express.dto.request.UpdateRequest;
@@ -18,14 +19,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CustomerService {
 
-    private final CustomersRepository customersRepository;
-    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    private CustomersRepository customersRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtil jwUtil;
 
     @Autowired
     public CustomerService(CustomersRepository customersRepository, PasswordEncoder passwordEncoder) {
@@ -64,8 +70,9 @@ public class CustomerService {
             throw new AppException(ErrorCode.PASSWORD_INCORRECT);
         }
 
+        String token = jwUtil.generateToken(customer.getPhoneNumber());
 
-        return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", null);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", token);
     }
 
     public Page<Customers> getAllCustomers(Pageable pageable) {
