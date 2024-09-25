@@ -24,19 +24,15 @@ import java.util.Optional;
 @Service
 public class CustomerService {
 
-    @Autowired
-    private CustomersRepository customersRepository;
+    private final CustomersRepository customersRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtUtil jwUtil;
-
-    @Autowired
-    public CustomerService(CustomersRepository customersRepository, PasswordEncoder passwordEncoder) {
+    public CustomerService(CustomersRepository customersRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.customersRepository = customersRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     public ApiResponse<Customers> registerCustomer(RegisterRequest registerRequest) {
@@ -70,7 +66,7 @@ public class CustomerService {
             throw new AppException(ErrorCode.PASSWORD_INCORRECT);
         }
 
-        String token = jwUtil.generateToken(customer.getPhoneNumber());
+        String token = jwtUtil.generateToken(customer.getPhoneNumber(), "Koi-Express", customer.getRole().name());
 
         return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", token);
     }
@@ -80,7 +76,7 @@ public class CustomerService {
     }
 
 
-    public boolean delteteCustomer(Long id) {
+    public boolean deleteCustomer(Long id) {
         if(!customersRepository.existsById(id)) {
             throw new AppException(ErrorCode.CUSTOMER_NOT_FOUND);
         }
@@ -92,6 +88,12 @@ public class CustomerService {
     public Customers getCustomerById(Long customerId){
         return customersRepository.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Couldn't find customer'"));
+    }
+
+    public Customers findByPhoneNumber(String phoneNumber) {
+        Optional<Customers> customerOptional = customersRepository.findByPhoneNumber(phoneNumber);
+        return customerOptional.orElseThrow(()
+                -> new RuntimeException("Couldn't find'"));
     }
 
     public Customers findByEmail(String email) {
