@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5de1b9a1-1f08-4f18-8ab7-0f0d13f608a0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/Koi-Express/src/main/java/com/koi_express/config/WebConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/BE/Koi-Express/src/main/java/com/koi_express/config/WebConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/Koi-Express/src/main/java/com/koi_express/dto/request/RegisterRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/BE/Koi-Express/src/main/java/com/koi_express/dto/request/RegisterRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BE/Koi-Express/src/main/java/com/koi_express/service/CustomerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/BE/Koi-Express/src/main/java/com/koi_express/service/CustomerService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-    </list>
+    <list default="true" id="5de1b9a1-1f08-4f18-8ab7-0f0d13f608a0" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -109,7 +103,7 @@
       <workItem from="1727370117125" duration="1460000" />
       <workItem from="1727372728921" duration="237000" />
       <workItem from="1727373013118" duration="3944000" />
-      <workItem from="1727377613299" duration="5015000" />
+      <workItem from="1727377613299" duration="5444000" />
     </task>
     <servers />
   </component>
