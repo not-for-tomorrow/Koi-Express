@@ -21,5 +21,6 @@ public class UpdateRequest {
     String phoneNumber;
 
     String fullName;
+
     String address;
 }

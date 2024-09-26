@@ -71,30 +71,7 @@ public class CustomerService {
         return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", token);
     }
 
-    public Page<Customers> getAllCustomers(Pageable pageable) {
-        return customersRepository.findAll(pageable);
-    }
 
-
-    public boolean deleteCustomer(Long id) {
-        if(!customersRepository.existsById(id)) {
-            throw new AppException(ErrorCode.CUSTOMER_NOT_FOUND);
-        }
-
-        customersRepository.deleteById(id);
-        return true;
-    }
-
-    public Customers getCustomerById(Long customerId){
-        return customersRepository.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Couldn't find customer'"));
-    }
-
-    public Customers findByPhoneNumber(String phoneNumber) {
-        Optional<Customers> customerOptional = customersRepository.findByPhoneNumber(phoneNumber);
-        return customerOptional.orElseThrow(()
-                -> new RuntimeException("Couldn't find'"));
-    }
 
     public Customers findByEmail(String email) {
         Optional<Customers> customerOptional = customersRepository.findByEmail(email);

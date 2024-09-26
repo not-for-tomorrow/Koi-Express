@@ -47,7 +47,10 @@ public class SecurityConfig {
                                         "/oauth2/**",
                                         "/api/auth/**",
                                         "/api/customers/**",
-                                        "/api/customers/delete/**").permitAll()
+                                        "api/customers/id/**",
+                                        "/api/customers/update/**",
+                                        "/api/customers/delete/**",
+                                        "/api/manager/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
