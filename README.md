@@ -3,6 +3,8 @@
 
 Koi Express là hệ thống vận chuyển cá Koi chuyên nghiệp, cung cấp dịch vụ vận chuyển cá Koi trong nước với các tiêu chuẩn an toàn cao nhất. Hệ thống hỗ trợ khách hàng trong toàn bộ quy trình, từ khi đặt đơn, tính toán chi phí, kiểm tra sức khỏe cá, đến theo dõi quá trình vận chuyển và nhận phản hồi sau khi giao hàng.
 
+![Koi Express](./assets/images/Logo.jpg)
+
 ## 🚀 **Tính Năng Chính**
 - **Quản Lý Đơn Hàng Vận Chuyển**: Khách hàng có thể dễ dàng đặt đơn vận chuyển cá Koi, cung cấp thông tin đầy đủ về loại cá, trọng lượng và kích thước.
   
