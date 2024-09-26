@@ -1,0 +1,28 @@
+.splide__pagination__page {
+  width: 25px;
+  height: 4px;
+  background-color: #ccc;
+  border-radius: 5px;
+  margin: 0 5px;
+  transition: background-color 0.3s ease;
+}
+
+.splide__pagination__page.is-active {
+  background-color: #0834c5;
+}
+
+.splide__arrow {
+  background-color: #fffefe;
+  border-radius: 50%;
+  color: white;
+  width: 40px;
+  height: 40px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.splide__arrow:hover {
+  opacity: 1;
+  background-color: #2bb0d8;
+  color: white;
+}
