@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.registerpage {
+  background: url("../../assets/images/KoiBG.webp") no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+
+.registercard {
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 8px 8px 40px rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(6px);
+  border: 2px solid rgba(255, 255, 255, 0.61);
+  z-index: 999;
+}
