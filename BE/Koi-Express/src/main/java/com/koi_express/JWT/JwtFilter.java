@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.aspectj.weaver.ast.Var;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserCache;
@@ -42,7 +43,10 @@ public class JwtFilter extends OncePerRequestFilter {
             try {
                 phoneNumber = jwtUtil.extractPhoneNumber(jwt);
             } catch (ExpiredJwtException e) {
-                System.out.println("JWT expired");
+                response.setContentType("application/json");
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                response.getOutputStream().println("{ \"error\": \"Invalid token\" }");
+                return;
             }
         }
 
