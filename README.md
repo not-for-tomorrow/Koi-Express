@@ -122,6 +122,3 @@ Koi Express là hệ thống vận chuyển cá Koi chuyên nghiệp, cung cấp
 
 ## 🤝 **Đóng Góp**
 Chúng tôi hoan nghênh sự đóng góp từ cộng đồng! Hãy tạo một pull request hoặc mở issue nếu bạn có ý tưởng hay cần giải quyết lỗi.
-
-## 📄 **Giấy Phép**
-Dự án này được cấp phép theo giấy phép MIT. Vui lòng tham khảo file LICENSE để biết thêm chi tiết.
