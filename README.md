@@ -92,16 +92,36 @@ Koi Express là hệ thống vận chuyển cá Koi chuyên nghiệp, cung cấp
 
 4. **Cấu Hình MySQL**: Cập nhật thông tin cơ sở dữ liệu trong `application.properties`.
    ```properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/koi_express
-   spring.datasource.username=root
-   spring.datasource.password=yourpassword
+   spring:
+    datasource:
+      url: jdbc:mysql://localhost:3306/koi_express
+      username: root
+      password: yourpassword
+      driver-class-name: com.mysql.cj.jdbc.Driver
    ```
 
 5. **Tích Hợp OAuth2 và JWT**: Cấu hình thông tin OAuth2 và JWT trong file cấu hình.
    ```properties
-   security.oauth2.client.clientId=your-client-id
-   security.oauth2.client.clientSecret=your-client-secret
-   jwt.secret=your-jwt-secret-key
+   pring:
+    security:
+      oauth2:
+        client:
+          registration:
+            google:
+              client-id: your-client-id
+              client-secret: your-client-secret
+              scope:
+                - profile
+                - email
+            facebook:
+              client-id: your-client-id
+              client-secret: your-client-secret
+              scope:
+                - public_profile
+                - email
+
+   jwt:
+    secret-key: "your-jwt-secret-key"
    ```
 
 6. **Docker**: Sử dụng Docker để khởi chạy ứng dụng.
