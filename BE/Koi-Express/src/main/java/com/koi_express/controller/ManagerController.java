@@ -1,5 +1,7 @@
 package com.koi_express.controller;
 
+import com.koi_express.JWT.JwtUtil;
+import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.Customers;
 import com.koi_express.service.ManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,15 +18,18 @@ import org.springframework.web.bind.annotation.*;
 public class ManagerController {
 
     private final ManagerService managerService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public ManagerController(ManagerService managerService) {
+    public ManagerController(ManagerService managerService, JwtUtil jwtUtil) {
         this.managerService = managerService;
+        this.jwtUtil = jwtUtil;
     }
 
-    //    @PreAuthorize("hasRole('MANAGER')")
-    @GetMapping("/all")
+    @PreAuthorize("hasRole('MANAGER')")
+    @GetMapping(value = "/all", produces = "application/json")
     public ResponseEntity<Page<Customers>> getAllCustomers(
+            @RequestHeader("Authorization") String token,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
@@ -34,12 +39,19 @@ public class ManagerController {
         return new ResponseEntity<>(customersPage, HttpStatus.OK);
     }
 
-
+    @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/id/{customerId}")
-    @PreAuthorize("#customerId == principal.id or hasRole('MANAGER')")
-    public ResponseEntity<Customers> getCustomerById(@PathVariable Long customerId) {
+    public ResponseEntity<ApiResponse<Customers>> getCustomerById(@RequestHeader("Authorization") String token, @PathVariable Long customerId) {
+
+        String jwt = token.substring(7);
+        String role = jwtUtil.extractClaim(jwt, claims -> claims.get("role", String.class));
+
+        if (!"MANAGER".equals(role)) {
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.FORBIDDEN.value(), "Access denied. Manager role required.", null), HttpStatus.FORBIDDEN);
+        }
+
         Customers customers = managerService.getCustomerById(customerId);
-        return ResponseEntity.ok(customers);
+        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Customer find", customers), HttpStatus.OK);
     }
 
     @GetMapping("/phone/{phoneNumber}")

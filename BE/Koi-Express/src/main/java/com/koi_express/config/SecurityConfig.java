@@ -47,10 +47,10 @@ public class SecurityConfig {
                                         "/oauth2/**",
                                         "/api/auth/**",
                                         "/api/customers/**",
-                                        "api/customers/id/**",
                                         "/api/customers/update/**",
                                         "/api/customers/delete/**",
-                                        "/api/manager/**").permitAll()
+                                        "/api/manager/**",
+                                        "/api/manager/id/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
@@ -63,6 +63,8 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login")
                 )
+
+
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

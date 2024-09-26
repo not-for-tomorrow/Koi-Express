@@ -78,16 +78,4 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/userinfo")
-    public ResponseEntity<ApiResponse<Customers>> userInfo(@AuthenticationPrincipal OAuth2User oAuth2User) {
-        String email = oAuth2User.getAttribute("email");
-        Customers customer = customerService.findByEmail(email);
-
-        if(customer != null ) {
-            ApiResponse<Customers> response = new ApiResponse<>(HttpStatus.OK.value(), "User found", customer);
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), "User not found", null));
-        }
-    }
 }

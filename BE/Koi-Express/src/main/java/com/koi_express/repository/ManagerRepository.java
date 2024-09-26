@@ -13,4 +13,5 @@ public interface ManagerRepository extends JpaRepository<Customers, Long> {
     List<Customers> findByRole(String role);
 
     Optional<Customers> findByPhoneNumber(String phoneNumber);
+
 }

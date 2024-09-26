@@ -71,11 +71,9 @@ public class CustomerService {
         return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", token);
     }
 
-
-
-    public Customers findByEmail(String email) {
-        Optional<Customers> customerOptional = customersRepository.findByEmail(email);
-        return customerOptional.orElse(null);
+    public Customers getCustomerDetails(String phoneNumber) {
+        return customersRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
     }
 
     public ApiResponse<Customers> updateCustomer(Long id, UpdateRequest updateRequest) {
@@ -88,5 +86,7 @@ public class CustomerService {
         customersRepository.save(customer);
         return new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully", customer);
     }
+
+
 
 }

@@ -42,7 +42,7 @@ public class ManagerService {
 
     public Customers getCustomerById(Long customerId){
         return managerRepository.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Couldn't find customer'"));
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
     }
 
     public Customers updateCustomer(Long id, String fullName, String address) {

@@ -1,19 +1,14 @@
 package com.koi_express.controller;
 
+import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.UpdateRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.Customers;
 import com.koi_express.service.CustomerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedModel;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,11 +17,12 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public CustomerController(CustomerService customerService) {
+    public CustomerController(CustomerService customerService, JwtUtil jwtUtil) {
         this.customerService = customerService;
-
+        this.jwtUtil = jwtUtil;
     }
 
     @PutMapping("/update/{id}")
@@ -43,5 +39,15 @@ public class CustomerController {
         ApiResponse<Customers> response = customerService.updateCustomer(id, updateRequest);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("me")
+    public ResponseEntity<ApiResponse<Customers>> getCustomerDetails(@RequestHeader("Authorization") String token) {
+        String jwt = token.substring(7);
+        String phoneNumber = jwtUtil.extractPhoneNumber(jwt);
+
+        Customers customers = customerService.getCustomerDetails(phoneNumber);
+        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "User details retrieved successfully", customers), HttpStatus.OK);
+    }
+
 }
 
