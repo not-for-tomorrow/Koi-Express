@@ -45,6 +45,7 @@ public class CustomerService {
         String encodedPassword = passwordEncoder.encode(registerRequest.getPassword());
 
         Customers customer = Customers.builder()
+                .fullName(registerRequest.getFullName())
                 .phoneNumber(registerRequest.getPhoneNumber())
                 .email(email)
                 .passwordHash(encodedPassword) // Sử dụng sdt làm mật khẩu và mã hóa
