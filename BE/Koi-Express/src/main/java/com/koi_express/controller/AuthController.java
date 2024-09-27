@@ -5,6 +5,7 @@ import com.koi_express.dto.request.RegisterRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.Customers;
 import com.koi_express.service.CustomerService;
+import com.koi_express.service.OtpService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,9 @@ public class AuthController {
     @Autowired
     private CustomerService customerService;
 
+    @Autowired
+    private OtpService otpService;
+
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Customers>> registerUser(@RequestBody @Valid RegisterRequest registerRequest, BindingResult bindingResult) {
 
@@ -29,12 +33,34 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
         }
 
+        String generatedOtp = otpService.generateOtp();
+        otpService.sendOtp(registerRequest.getPhoneNumber(), generatedOtp);
+
+        customerService.saveOtp(registerRequest.getPhoneNumber(), generatedOtp);
+
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "OTP sent successfully", null));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestBody @Valid RegisterRequest registerRequest, BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            String errorMessage = bindingResult.getFieldError() != null ? bindingResult.getFieldError().getDefaultMessage() : "Validation failed";
+            return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
+        }
+
+        boolean isOtpValid = customerService.verifyOtp(registerRequest.getPhoneNumber(), registerRequest.getOtp());
+
+        if(!isOtpValid){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid OTP", null));
+        }
+
         ApiResponse<Customers> response = customerService.registerCustomer(registerRequest);
 
         if(response.getCode() == HttpStatus.OK.value()){
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "User registered successfully", null));
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), response.getMessage(), null));
         }
     }
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+
 import axios from "axios";
 import './Register.css'
 
@@ -8,6 +9,7 @@ const Register = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   // const [confirmPassword, setConfirmPassword] = useState("");
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -20,24 +22,29 @@ const Register = () => {
   };
 
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     // Validate phone number length
     if (phoneNumber.length !== 10) {
       setError("Please enter exactly 10 digits for the phone number.");
       return;
     }
 
+
     setError(""); // Clear errors
 
     // API request payload
     const requestData = {
       fullName,
+
       phoneNumber,
       password,
     };
 
     try {
+
       // Axios POST request to the register endpoint
       const response = await axios.post("http://localhost:8080/api/auth/register", requestData, {
         headers: {

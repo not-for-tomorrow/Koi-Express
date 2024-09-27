@@ -25,5 +25,15 @@ spring:
 jwt:
   secret-key: "Qcm41hV7dw/EE0Eo8oY87pkREbUoZaU78LZZCbsCq9iqCBWmFUqsLVHVA36CGOEr"
 
+
+twilio:
+  account:
+    sid: "AC3ef4ae3863c8afadb40c0c02d9ac3cee"
+  auth:
+    token: "5d2e0c0a2a0baadbf23d8bbbf4d4cf4b"
+  phone:
+    number: "+15877418003"
+
+
 spring.config.import: "classpath:application-secret.yaml"
 
