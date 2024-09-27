@@ -17,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class CustomerService {
@@ -24,6 +26,8 @@ public class CustomerService {
     private final CustomersRepository customersRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+
+    private Map<String, String> otpMap = new HashMap<>();
 
     @Autowired
     public CustomerService(CustomersRepository customersRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
@@ -66,7 +70,7 @@ public class CustomerService {
 
         String token = jwtUtil.generateToken(customer.getPhoneNumber(), "Koi-Express", customer.getRole().name());
 
-        return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", token);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", "token_string");
     }
 
     public Customers getCustomerDetails(String phoneNumber) {
@@ -85,6 +89,12 @@ public class CustomerService {
         return new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully", customer);
     }
 
+    public void saveOtp(String phoneNumber, String otp) {
+        otpMap.put(phoneNumber, otp);
+    }
 
+    public boolean verifyOtp(String phoneNumber, String otp) {
+        return otpMap.containsKey(phoneNumber) && otpMap.get(phoneNumber).equals(otp);
+    }
 
 }
