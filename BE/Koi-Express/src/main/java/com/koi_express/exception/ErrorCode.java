@@ -11,6 +11,9 @@ public enum ErrorCode {
     PASSWORD_INCORRECT(1007, "Invalid password"),
     SUCCESS(1007,"Register successfully"),
     CUSTOMER_NOT_FOUND(1008,"Customer not found"),
+    ROUTE_NOT_FOUND(1009,"Route not found"),
+    ORDER_CREATION_FAILED(1010,"Order creation failed"),
+    GOOGLE_MAPS_API_ERROR(1011,"Google Maps API error"),
     ;
 
     ErrorCode(int code, String message) {
