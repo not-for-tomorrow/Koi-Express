@@ -16,6 +16,7 @@ public enum ErrorCode {
     GOOGLE_MAPS_API_ERROR(1011,"Google Maps API error"),
     ORDER_NOT_FOUND(1012,"Order not found"),
     ORDER_ALREADY_PROCESSED(1013,"Order already processed"),
+    UNAUTHORIZED(1014,"Unauthorized"),
     ;
 
     ErrorCode(int code, String message) {

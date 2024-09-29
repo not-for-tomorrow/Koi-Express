@@ -3,6 +3,7 @@ package com.koi_express.JWT;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -44,35 +45,49 @@ public class JwtFilter extends OncePerRequestFilter {
             try {
                 phoneNumber = jwtUtil.extractPhoneNumber(jwt);
             } catch (ExpiredJwtException e) {
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                response.getWriter().write("{\"error\": \"Invalid or expired token\"}");
+                handleException(response, "Token expired");
+                return;
+            } catch(Exception e) {
+                handleException(response, "Invalid token");
                 return;
             }
         }
 
         if( phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(phoneNumber);
-
-            if(jwtUtil.validateToken(jwt, userDetails)) {
-
-                String role = jwtUtil.extractRole(jwt);
-
-                List<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(role);
-
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, authorities);
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            }
+            validateAndAuthenticateToken(request, jwt, phoneNumber);
         }
 
         logger.info("Authorization Header: " + authorizationHeader);
         logger.info("Extracted phone number: " + phoneNumber);
         logger.info("Extracted JWT: " + jwt);
         filterChain.doFilter(request, response);
+    }
+
+    private void validateAndAuthenticateToken(HttpServletRequest request, String jwt, String phoneNumber) {
+        UserDetails userDetails = this.userDetailsService.loadUserByUsername(phoneNumber);
+
+        if(jwtUtil.validateToken(jwt, userDetails)) {
+
+            String role = jwtUtil.extractRole(jwt);
+
+            List<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList("ROLE_" + role);
+            logger.info("Extracted role: " + role);
+
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, authorities);
+            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            logger.info("Authentication in SecurityContext: " + SecurityContextHolder.getContext().getAuthentication());
+
+        }
+    }
+
+    private void handleException(HttpServletResponse response, String message) throws  IOException{
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.getWriter().write("{\"error\": \"" + message + "\"}");
     }
 }

@@ -44,10 +44,9 @@ public class SecurityConfig {
                                         "/api/auth/**",
                                         "/api/customers/**",
                                         "/api/customers/update/**",
-                                        "/api/customers/delete/**",
-                                        "/api/manager/**",
-                                        "/api/manager/id/**").permitAll()
-                                .requestMatchers("/api/orders/**").hasAnyAuthority("CUSTOMER", "MANAGER")
+                                        "/api/customers/delete/**").permitAll()
+                                .requestMatchers("/api/manager/**", "/api/manager/id/**").hasAnyAuthority("ROLE_MANAGER")
+                                .requestMatchers("/api/orders/**").hasAnyAuthority("CUSTOMER", "ROLE_MANAGER")
                                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

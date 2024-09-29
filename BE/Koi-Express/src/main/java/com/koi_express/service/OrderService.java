@@ -14,6 +14,8 @@ import com.koi_express.repository.OrderRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -206,5 +208,9 @@ public class OrderService {
 
         logger.info("Order with ID {} has been delivered", orderId);
         return new ApiResponse<>(HttpStatus.OK.value(), "Order delivered successfully", null);
+    }
+
+    public Page<Orders> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable);
     }
 }
