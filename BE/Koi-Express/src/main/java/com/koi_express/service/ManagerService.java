@@ -22,6 +22,7 @@ public class ManagerService {
     }
 
     public Page<Customers> getAllCustomers(Pageable pageable) {
+
         return managerRepository.findAll(pageable);
     }
 

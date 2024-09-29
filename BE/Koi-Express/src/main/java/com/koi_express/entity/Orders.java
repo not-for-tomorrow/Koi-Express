@@ -39,15 +39,12 @@ public class Orders {
     @NotEmpty(message = "Koi type cannot be empty")
     String koiType;
 
-
     double koiWeight;
 
     @Positive(message = "Koi quantity must be positive")
     int koiQuantity;
 
-
     double koiSize;
-
 
     @NotEmpty(message = "Origin location cannot be empty")
     String originLocation;

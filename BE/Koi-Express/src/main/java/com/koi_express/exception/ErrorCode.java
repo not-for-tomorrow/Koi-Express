@@ -14,6 +14,8 @@ public enum ErrorCode {
     ROUTE_NOT_FOUND(1009,"Route not found"),
     ORDER_CREATION_FAILED(1010,"Order creation failed"),
     GOOGLE_MAPS_API_ERROR(1011,"Google Maps API error"),
+    ORDER_NOT_FOUND(1012,"Order not found"),
+    ORDER_ALREADY_PROCESSED(1013,"Order already processed"),
     ;
 
     ErrorCode(int code, String message) {

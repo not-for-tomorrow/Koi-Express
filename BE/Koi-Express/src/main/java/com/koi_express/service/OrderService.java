@@ -1,12 +1,11 @@
 package com.koi_express.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.Customers;
 import com.koi_express.entity.Orders;
+import com.koi_express.enums.OrderStatus;
 import com.koi_express.enums.PackingMethod;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class OrderService {
@@ -39,6 +37,7 @@ public class OrderService {
 
     @Autowired
     private JwtUtil jwtUtil;
+
 
     // Create Order with OrderRequest, order with add into database base on customerId in payload of token
     public ApiResponse<Orders> createOrder(OrderRequest orderRequest, String token) {
@@ -87,7 +86,7 @@ public class OrderService {
         double TAX_RATE = 0.05;
         double BASIC_PACKAGING_COST_FER_FISH = 50000;
         double SPECIAL_PACKAGING_COST_FER_FISH = 100000;
-        final double FUEL_COST_PER_KM = 10000;
+        double FUEL_COST_PER_KM = 10000;
 
         int quantity = orderRequest.getKoiQuantity();
         double weightFee = orderRequest.getKoiQuantity();
@@ -177,4 +176,35 @@ public class OrderService {
         return distance * FUEL_COST_PER_KM;
     }
 
+//    Cancel Order
+    public ApiResponse<String> cancelOrder(Long orderId) {
+        Orders orders = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (orders.getStatus() == OrderStatus.CANCELED || orders.getStatus() == OrderStatus.COMPLETED) {
+            throw  new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order has already been processed");
+        }
+
+        orders.setStatus(OrderStatus.CANCELED);
+        orderRepository.save(orders);
+
+        logger.info("Order with ID {} has been canceled", orderId);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Order canceled successfully", null);
+    }
+
+//    Delivered Order
+    public ApiResponse<String> deliveredOrder(Long orderId) {
+        Orders orders = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (orders.getStatus() == OrderStatus.CANCELED || orders.getStatus() == OrderStatus.COMPLETED) {
+            throw  new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order has already been processed");
+        }
+
+        orders.setStatus(OrderStatus.COMPLETED);
+        orderRepository.save(orders);
+
+        logger.info("Order with ID {} has been delivered", orderId);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Order delivered successfully", null);
+    }
 }

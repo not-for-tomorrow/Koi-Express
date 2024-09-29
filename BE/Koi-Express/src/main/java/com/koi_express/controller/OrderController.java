@@ -6,10 +6,9 @@ import com.koi_express.entity.Orders;
 import com.koi_express.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -23,6 +22,18 @@ public class OrderController {
         String token = httpServletRequest.getHeader("Authorization").substring(7);
 
         return orderService.createOrder(orderRequest, token);
+    }
+
+    @PostMapping("/cancel/{orderId}")
+    public ResponseEntity<ApiResponse<String>> cancelOrder(@PathVariable Long orderId) {
+        ApiResponse<String> response = orderService.cancelOrder(orderId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/deliver/{orderId}")
+    public ResponseEntity<ApiResponse<String>> deliverOrder(@PathVariable Long orderId) {
+        ApiResponse<String> response = orderService.deliveredOrder(orderId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 }
