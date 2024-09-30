@@ -40,14 +40,14 @@ public class CustomerService {
         if (customersRepository.existsByPhoneNumber(registerRequest.getPhoneNumber()))
             throw new AppException(ErrorCode.USER_EXISTED);
 
-        String email = registerRequest.getEmail() != null ? registerRequest.getEmail() : registerRequest.getPhoneNumber() + "@noemail.com";
+//        String email = registerRequest.getEmail() != null ? registerRequest.getEmail() : registerRequest.getPhoneNumber() + "@noemail.com";
 
         String encodedPassword = passwordEncoder.encode(registerRequest.getPassword());
 
         Customers customer = Customers.builder()
                 .fullName(registerRequest.getFullName())
                 .phoneNumber(registerRequest.getPhoneNumber())
-                .email(email)
+                .email(registerRequest.getEmail())
                 .passwordHash(encodedPassword) // Sử dụng sdt làm mật khẩu và mã hóa
                 .authProvider(AuthProvider.LOCAL) // Đăng ký bằng số điện thoại nên authProvider là LOCAL
                 .role(Role.CUSTOMER) // Mặc định role là CUSTOMER

@@ -37,8 +37,6 @@ public class AuthController {
             }
     }
 
-
-
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> authenticateUser(@RequestBody @Valid LoginRequest loginRequest, BindingResult bindingResult) {
 
