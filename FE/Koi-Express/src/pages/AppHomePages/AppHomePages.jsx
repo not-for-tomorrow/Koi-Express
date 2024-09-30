@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Sidebar from "../../components/Sidebar/Sidebar";
-import Profile from "../profile/profile";
+import Profile from "../Profile/Profile";
 
 const AppHomePages = () => {
   const [activePage, setActivePage] = useState("Đơn hàng mới");
