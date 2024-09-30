@@ -33,7 +33,7 @@ const Login = () => {
           sessionStorage.setItem("token", response.data.result);
         }
         // Điều hướng tới trang tiếp theo sau khi login thành công
-        navigate("/fpt");
+        navigate("/apphomepage");
       }
     } catch (err) {
       if (err.response) {
@@ -99,7 +99,7 @@ const Login = () => {
                 id="rememberMe"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4"
+                className="w-4 h-4"
               />
               <label htmlFor="rememberMe" className="text-white">
                 Remember Me
