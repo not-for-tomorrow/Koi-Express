@@ -1,4 +1,4 @@
-package com.koi_express.service;
+package com.koi_express.service.Order;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
@@ -6,17 +6,18 @@ import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.Customers;
 import com.koi_express.entity.Orders;
 import com.koi_express.enums.OrderStatus;
-import com.koi_express.enums.PackingMethod;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
-import com.koi_express.repository.CustomersRepository;
 import com.koi_express.repository.OrderRepository;
+import com.koi_express.service.ManagerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -35,10 +36,16 @@ public class OrderService {
     private OrderRepository orderRepository;
 
     @Autowired
-    private CustomersRepository customersRepository;
+    private JwtUtil jwtUtil;
 
     @Autowired
-    private JwtUtil jwtUtil;
+    private JavaMailSender  javaMailSender;
+
+    @Autowired
+    private OrderFeeCalculator orderFeeCalculator;
+
+    @Autowired
+    private ManagerService managerService;
 
 
     // Create Order with OrderRequest, order with add into database base on customerId in payload of token
@@ -46,31 +53,12 @@ public class OrderService {
 
         try {
             String customerId = jwtUtil.extractCustomerId(token);
-            logger.info("Extracted customerId: {}", customerId);
-
-            Customers customer = customersRepository.findById(Long.parseLong(customerId))
-                    .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
-            logger.info("Retrieved customer: {}", customer);
-
-            Orders order = new Orders();
-            order.setCustomer(customer);
-            order.setRecipientName(orderRequest.getRecipientName());
-            order.setRecipientPhone(orderRequest.getRecipientPhone());
-            order.setKoiType(orderRequest.getKoiType());
-            order.setKoiQuantity(orderRequest.getKoiQuantity());
-            order.setOriginLocation(orderRequest.getOriginLocation());
-            order.setDestinationLocation(orderRequest.getDestinationLocation());
-            order.setPackingMethod(orderRequest.getPackingMethod());
-            order.setPaymentMethod(orderRequest.getPaymentMethod());
-            order.setInsurance(orderRequest.isInsurance());
-            order.setSpecialCare(orderRequest.isSpecialCare());
-            order.setHealthCheck(orderRequest.isHealthCheck());
-
-            double totalFee = calculateTotalFee(orderRequest);
-            order.setTotalFee(totalFee);
-
-            Orders savedOrder = orderRepository.save(order);
+            Customers customer = managerService.getCustomerById(Long.parseLong(customerId));
+            Orders orders = buildOrder(orderRequest, customer);
+            Orders savedOrder = orderRepository.save(orders);
             logger.info("Order created successfully: {}", savedOrder);
+
+            sendOrderConfirmationEmail(customer.getEmail());
 
             return new ApiResponse<>(HttpStatus.OK.value(), "Order created successfully", savedOrder);
         } catch (Exception e) {
@@ -79,60 +67,41 @@ public class OrderService {
         }
     }
 
-    public double calculateTotalFee(OrderRequest orderRequest) {
+    private void sendOrderConfirmationEmail(String recipientEmail) {
 
-        double BASE_PRICE_PER_KG = 10000;
-        double INSURANCE_COST_FER_FISH = 50000;
-        double SPECIAL_CARE_COST_FER_FISH = 100000;
-        double HEALTH_CHECK_COST_FER_FISH = 50000;
-        double TAX_RATE = 0.05;
-        double BASIC_PACKAGING_COST_FER_FISH = 50000;
-        double SPECIAL_PACKAGING_COST_FER_FISH = 100000;
-        double FUEL_COST_PER_KM = 10000;
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(recipientEmail);
+        message.setSubject("Order Confirmation");
+        message.setText("Your order has been confirmed. " +
+                "Thank you for choosing Koi Express!");
+        javaMailSender.send(message);
 
-        int quantity = orderRequest.getKoiQuantity();
-        double weightFee = orderRequest.getKoiQuantity();
-        double distance  = calculateDistance(orderRequest.getOriginLocation(), orderRequest.getDestinationLocation());
-        boolean isInsurance = orderRequest.isInsurance();
-        boolean isSpecialCare = orderRequest.isSpecialCare();
-        boolean isHealthCheck = orderRequest.isHealthCheck();
-        PackingMethod packingMethod = orderRequest.getPackingMethod();
-
-        double totalFee = 0;
-
-        double basePrice = weightFee * BASE_PRICE_PER_KG;
-        totalFee += basePrice;
-
-
-        if(isInsurance) {
-            totalFee += INSURANCE_COST_FER_FISH;
-        }
-
-        if(isSpecialCare) {
-            totalFee += SPECIAL_CARE_COST_FER_FISH;
-        }
-
-        if(isHealthCheck) {
-            totalFee += HEALTH_CHECK_COST_FER_FISH;
-        }
-
-        if(packingMethod == PackingMethod.NORMAL_PACKAGING) {
-            totalFee += BASIC_PACKAGING_COST_FER_FISH;
-        } else if(packingMethod == PackingMethod.SPECIAL_PACKAGING) {
-            totalFee += SPECIAL_PACKAGING_COST_FER_FISH;
-        }
-
-        double tax = totalFee * TAX_RATE;
-        totalFee += tax;
-
-        double fuelCost = calculateFuelCost(distance);
-        totalFee += fuelCost;
-
-        return totalFee;
+        logger.info("Order confirmation email sent to: {}", recipientEmail);
     }
 
-    private double calculateDistance(String originLocation, String destinationLocation) {
-        return 0;
+    private String extractCustomerIdFromToken(String token) {
+        return jwtUtil.extractCustomerId(token);
+    }
+
+    private Orders buildOrder(OrderRequest orderRequest, Customers customer) {
+        Orders order = new Orders();
+        order.setCustomer(customer);
+        order.setRecipientName(orderRequest.getRecipientName());
+        order.setRecipientPhone(orderRequest.getRecipientPhone());
+        order.setKoiType(orderRequest.getKoiType());
+        order.setKoiQuantity(orderRequest.getKoiQuantity());
+        order.setOriginLocation(orderRequest.getOriginLocation());
+        order.setDestinationLocation(orderRequest.getDestinationLocation());
+        order.setPackingMethod(orderRequest.getPackingMethod());
+        order.setPaymentMethod(orderRequest.getPaymentMethod());
+        order.setInsurance(orderRequest.isInsurance());
+        order.setSpecialCare(orderRequest.isSpecialCare());
+        order.setHealthCheck(orderRequest.isHealthCheck());
+
+        double totalFee = orderFeeCalculator.calculateTotalFee(orderRequest);
+        order.setTotalFee(totalFee);
+
+        return order;
     }
 
 //    private double calculateDistance(String originLocation, String destinationLocation) {
@@ -173,10 +142,7 @@ public class OrderService {
 //        }
 //    }
 
-    private double calculateFuelCost(double distance) {
-        double FUEL_COST_PER_KM = 10000;
-        return distance * FUEL_COST_PER_KM;
-    }
+
 
 //    Cancel Order
     public ApiResponse<String> cancelOrder(Long orderId) {

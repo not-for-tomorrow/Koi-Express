@@ -46,7 +46,7 @@ public class SecurityConfig {
                                         "/api/customers/update/**",
                                         "/api/customers/delete/**").permitAll()
                                 .requestMatchers("/api/manager/**", "/api/manager/id/**").hasAnyAuthority("ROLE_MANAGER")
-                                .requestMatchers("/api/orders/**").hasAnyAuthority("CUSTOMER", "ROLE_MANAGER")
+                                .requestMatchers("/api/orders/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_MANAGER")
                                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
