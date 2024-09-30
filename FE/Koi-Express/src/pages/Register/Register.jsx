@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+
 import axios from "axios";
 import "./Register.css";
 
 const Register = () => {
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState(""); // New email state
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  // const [confirmPassword, setConfirmPassword] = useState("");
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -21,6 +23,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     // Validate phone number length
     if (phoneNumber.length !== 10) {
       setError("Please enter exactly 10 digits for the phone number.");
@@ -32,6 +35,7 @@ const Register = () => {
     // API request payload
     const requestData = {
       fullName,
+      email,
       phoneNumber,
       password,
     };
@@ -53,6 +57,7 @@ const Register = () => {
         // Optionally clear form or redirect
 
         setFullName("");
+        setEmail(""); // Clear email
         setPhoneNumber("");
         setPassword("");
       } else {
@@ -87,7 +92,7 @@ const Register = () => {
           </div>
 
           <form onSubmit={handleSubmit}>
-            {/* Username Field */}
+            {/* FullName Field */}
             <div className="w-full h-auto mb-5">
               <label htmlFor="fullName" className="block mb-1 text-white">
                 FullName
@@ -99,6 +104,21 @@ const Register = () => {
                 onChange={(e) => setFullName(e.target.value)}
                 className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md"
                 placeholder="Enter your FullName"
+              />
+            </div>
+
+            {/* Email Field */}
+            <div className="w-full h-auto mb-5">
+              <label htmlFor="email" className="block mb-1 text-white">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md"
+                placeholder="Enter your email"
               />
             </div>
 
@@ -141,13 +161,13 @@ const Register = () => {
 
             <button
               type="submit"
-              disabled={!fullName || !phoneNumber || !password}
+              disabled={!fullName || !email || !phoneNumber || !password}
               className={`w-full h-12 text-lg font-medium text-black rounded-md outline-none mb-7 
-             bg-white/70 ${
-               !fullName || !phoneNumber || !password
-                 ? "opacity-50 cursor-not-allowed"
-                 : ""
-             }`}
+                bg-white/70 ${
+                  !fullName || !email || !phoneNumber || !password
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
             >
               Sign up
             </button>
