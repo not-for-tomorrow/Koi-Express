@@ -3,6 +3,7 @@ package com.koi_express.config;
 import com.koi_express.JWT.JwtFilter;
 import com.koi_express.service.CustomOAuth2UserService;
 import com.koi_express.service.CustomerDetailsService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,11 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -48,9 +44,9 @@ public class SecurityConfig {
                                         "/api/auth/**",
                                         "/api/customers/**",
                                         "/api/customers/update/**",
-                                        "/api/customers/delete/**",
-                                        "/api/manager/**",
-                                        "/api/manager/id/**").permitAll()
+                                        "/api/customers/delete/**").permitAll()
+                                .requestMatchers("/api/manager/**", "/api/manager/id/**").hasAnyAuthority("ROLE_MANAGER")
+                                .requestMatchers("/api/orders/**").hasAnyAuthority("CUSTOMER", "ROLE_MANAGER")
                                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
@@ -63,7 +59,13 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login")
                 )
-
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                        })
+                )
 
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

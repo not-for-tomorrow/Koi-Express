@@ -17,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class CustomerService {
@@ -24,6 +26,7 @@ public class CustomerService {
     private final CustomersRepository customersRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+
 
     @Autowired
     public CustomerService(CustomersRepository customersRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
@@ -64,7 +67,7 @@ public class CustomerService {
             throw new AppException(ErrorCode.PASSWORD_INCORRECT);
         }
 
-        String token = jwtUtil.generateToken(customer.getPhoneNumber(), "Koi-Express", customer.getRole().name());
+        String token = jwtUtil.generateToken(customer.getPhoneNumber(), "Koi-Express", customer.getRole().name(), customer.getCustomerId().toString());
 
         return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", token);
     }
@@ -84,7 +87,6 @@ public class CustomerService {
         customersRepository.save(customer);
         return new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully", customer);
     }
-
 
 
 }

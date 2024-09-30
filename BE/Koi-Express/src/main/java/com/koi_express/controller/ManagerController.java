@@ -3,7 +3,10 @@ package com.koi_express.controller;
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.Customers;
+import com.koi_express.exception.AppException;
+import com.koi_express.exception.ErrorCode;
 import com.koi_express.service.ManagerService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/manager")
+@PreAuthorize("hasRole('MANAGER')")
 public class ManagerController {
 
     private final ManagerService managerService;
@@ -26,59 +30,65 @@ public class ManagerController {
         this.jwtUtil = jwtUtil;
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
-    @GetMapping(value = "/all", produces = "application/json")
+
+    @GetMapping(value = "/all")
     public ResponseEntity<Page<Customers>> getAllCustomers(
-            @RequestHeader("Authorization") String token,
+            HttpServletRequest httpServletRequest,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
+
         Pageable paging = PageRequest.of(page, size);
-        Page<Customers> customersPage  = managerService.getAllCustomers(paging);
+        Page<Customers> customersPage  = managerService.getAllCustomers(paging, token);
 
         return new ResponseEntity<>(customersPage, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/id/{customerId}")
-    public ResponseEntity<ApiResponse<Customers>> getCustomerById(@RequestHeader("Authorization") String token, @PathVariable Long customerId) {
+    public ResponseEntity<ApiResponse<Customers>> getCustomerById(
+            HttpServletRequest httpServletRequest,
+            @PathVariable Long customerId) {
 
-        String jwt = token.substring(7);
-        String role = jwtUtil.extractClaim(jwt, claims -> claims.get("role", String.class));
-
-        if (!"MANAGER".equals(role)) {
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.FORBIDDEN.value(), "Access denied. Manager role required.", null), HttpStatus.FORBIDDEN);
-        }
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
 
         Customers customers = managerService.getCustomerById(customerId);
         return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Customer find", customers), HttpStatus.OK);
     }
 
     @GetMapping("/phone/{phoneNumber}")
-    public ResponseEntity<Customers> getCustomerByPhoneNumber(@PathVariable String phoneNumber) {
+    public ResponseEntity<Customers> getCustomerByPhoneNumber(
+            HttpServletRequest httpServletRequest,
+            @PathVariable String phoneNumber) {
+
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
+
         Customers customers = managerService.findByPhoneNumber(phoneNumber);
         return ResponseEntity.ok(customers);
     }
 
-    //    @PreAuthorize("hasRole('MANAGER')")
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteCustomer(@PathVariable Long id) {
-        boolean isDeleted = managerService.deleteCustomer(id);
-        if (isDeleted) {
-            return ResponseEntity.ok("Customer deleted successfully.");
-        } else {
-            return ResponseEntity.status(404).body("Customer not found");
-        }
+    public ResponseEntity<ApiResponse<String>> deleteCustomer(
+            HttpServletRequest httpServletRequest,
+            @PathVariable Long id) {
+
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
+
+        managerService.deleteCustomer(id);
+        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Customer deleted successfully.", null), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
     @PutMapping("/update/{id}")
-    public ResponseEntity<Customers> updateCustomer(
+    public ResponseEntity<ApiResponse<String>> updateCustomer(
+            HttpServletRequest httpServletRequest,
             @PathVariable Long id,
             @RequestParam String fullName,
             @RequestParam String address) {
-        Customers updatedCustomer = managerService.updateCustomer(id, fullName, address);
-        return ResponseEntity.ok(updatedCustomer);
+
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
+
+        managerService.updateCustomer(id, fullName, address);
+        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully.", null), HttpStatus.OK);
     }
 
 }

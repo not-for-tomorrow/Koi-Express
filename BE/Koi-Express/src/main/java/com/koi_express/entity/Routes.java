@@ -8,10 +8,12 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -33,7 +35,7 @@ public class Routes {
     String destination;
 
     @Positive(message = "Distance must be positive")
-    double distanceKm;
+    BigDecimal distanceKm;
     boolean optimal;
 
     @CreationTimestamp

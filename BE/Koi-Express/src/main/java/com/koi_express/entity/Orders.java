@@ -1,8 +1,8 @@
 package com.koi_express.entity;
 
 import com.koi_express.enums.OrderStatus;
+import com.koi_express.enums.PackingMethod;
 import com.koi_express.enums.PaymentMethod;
-import com.koi_express.enums.TransportMethod;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
@@ -14,7 +14,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -29,20 +30,21 @@ public class Orders {
     @JoinColumn(name = "customer_id", nullable = false)
     Customers customer;
 
+    @NotEmpty(message = "Recipient name cannot be empty")
+    String recipientName;
+
+    @NotEmpty(message = "Recipient phone cannot be empty")
+    String recipientPhone;
+
     @NotEmpty(message = "Koi type cannot be empty")
     String koiType;
 
-    @Positive(message = "Koi weight must be positive")
     double koiWeight;
 
     @Positive(message = "Koi quantity must be positive")
     int koiQuantity;
 
-    @Positive(message = "Koi quantity must be positive")
     double koiSize;
-
-    @Enumerated(EnumType.STRING)
-    TransportMethod transportMethod;
 
     @NotEmpty(message = "Origin location cannot be empty")
     String originLocation;
@@ -53,6 +55,9 @@ public class Orders {
     boolean insurance;
     boolean specialCare;
     boolean healthCheck;
+
+    @Enumerated(EnumType.STRING)
+    PackingMethod packingMethod;
 
     double distanceFee;
     double careFee;

@@ -3,7 +3,6 @@ package com.koi_express.controller;
 import com.koi_express.dto.request.LoginRequest;
 import com.koi_express.dto.request.RegisterRequest;
 import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.entity.Customers;
 import com.koi_express.service.CustomerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,21 +21,23 @@ public class AuthController {
     private CustomerService customerService;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Customers>> registerUser(@RequestBody @Valid RegisterRequest registerRequest, BindingResult bindingResult) {
+    public ResponseEntity<ApiResponse<?>> registerUser(@RequestBody @Valid RegisterRequest registerRequest, BindingResult bindingResult) {
 
-        if (bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getFieldError() != null ? bindingResult.getFieldError().getDefaultMessage() : "Validation failed";
-            return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
-        }
+            if (bindingResult.hasErrors()) {
+                String errorMessage = bindingResult.getFieldError() != null ? bindingResult.getFieldError().getDefaultMessage() : "Validation failed";
+                return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
+            }
 
-        ApiResponse<Customers> response = customerService.registerCustomer(registerRequest);
+            ApiResponse<?> response = customerService.registerCustomer(registerRequest);
 
-        if(response.getCode() == HttpStatus.OK.value()){
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
+            if(response.getCode() == HttpStatus.OK.value()){
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
     }
+
+
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> authenticateUser(@RequestBody @Valid LoginRequest loginRequest, BindingResult bindingResult) {

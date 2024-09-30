@@ -24,4 +24,6 @@ public class RegisterRequest {
     String password;
 
     String email;
+
+    String otp;
 }

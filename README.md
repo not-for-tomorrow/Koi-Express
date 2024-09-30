@@ -72,7 +72,7 @@ Koi Express là hệ thống vận chuyển cá Koi chuyên nghiệp, cung cấp
 ### Hướng Dẫn Cài Đặt:
 1. **Clone Repository**:
    ```bash
-   git clone https://github.com/your-repo/koi-express.git
+   git clone https://github.com/not-for-tomorrow/Koi-Express.git
    cd koi-express
    ```
 
@@ -138,7 +138,7 @@ Koi Express là hệ thống vận chuyển cá Koi chuyên nghiệp, cung cấp
   
 - **backend/**: Chứa mã nguồn dịch vụ backend.
   - **src/main/java/**: Chứa các controller, service, repository và các lớp quản lý logic của ứng dụng.
-  - **src/main/resources/**: File cấu hình Spring Boot như `application.properties`.
+  - **src/main/resources/**: File cấu hình Spring Boot như `application.yaml`.
 
 ## 🤝 **Đóng Góp**
 Chúng tôi hoan nghênh sự đóng góp từ cộng đồng! Hãy tạo một pull request hoặc mở issue nếu bạn có ý tưởng hay cần giải quyết lỗi.
