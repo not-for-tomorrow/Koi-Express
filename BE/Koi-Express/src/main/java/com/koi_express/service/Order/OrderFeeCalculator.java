@@ -17,7 +17,7 @@ public class OrderFeeCalculator {
         double BASIC_PACKAGING_COST_FER_FISH = 50000;
         double SPECIAL_PACKAGING_COST_FER_FISH = 100000;
         double FUEL_COST_PER_KM = 10000;
-z
+
         int quantity = orderRequest.getKoiQuantity();
         double weightFee = orderRequest.getKoiQuantity();
         double distance  = calculateDistance(orderRequest.getOriginLocation(), orderRequest.getDestinationLocation());
