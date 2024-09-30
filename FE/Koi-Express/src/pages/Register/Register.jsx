@@ -2,13 +2,16 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 import axios from "axios";
-import './Register.css'
+import "./Register.css";
 
 const Register = () => {
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState(""); // New email state
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+
   // const [confirmPassword, setConfirmPassword] = useState("");
+
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -20,7 +23,6 @@ const Register = () => {
       setPhoneNumber(value);
     }
   };
-
 
 
   const handleSubmit = async (e) => {
@@ -39,6 +41,8 @@ const Register = () => {
     const requestData = {
       fullName,
 
+      email,
+
       phoneNumber,
       password,
     };
@@ -46,17 +50,22 @@ const Register = () => {
     try {
 
       // Axios POST request to the register endpoint
-      const response = await axios.post("http://localhost:8080/api/auth/register", requestData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:8080/api/auth/register",
+        requestData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.status === 200) {
         setSuccess("Registration successful!");
         // Optionally clear form or redirect
 
         setFullName("");
+        setEmail(""); // Clear email
         setPhoneNumber("");
         setPassword("");
       } else {
@@ -77,98 +86,116 @@ const Register = () => {
       } else {
         setError("An error occurred. Please try again.");
       }
-      }
-    };
-
-    return (
-      <>
-        <div className="flex items-center justify-center w-full min-h-screen registerpage">
-          <div className="w-[32%] h-auto py-10 px-12 rounded-xl registercard">
-            <div className="w-full h-auto">
-              <h1 className="text-[2rem] text-white font-semibold-mb-1 text-center">
-                Sign up
-              </h1>
-            </div>
-
-            <form onSubmit={handleSubmit}>
-              {/* Username Field */}
-              <div className="w-full h-auto mb-5">
-                <label htmlFor="fullName" className="block mb-1 text-white">
-                  FullName
-                </label>
-                <input
-                  type="text"
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md"
-                  placeholder="Enter your FullName"
-                />
-              </div>
-
-              {/* Phone Number Field */}
-              <div className="w-full h-auto mb-5">
-                <label htmlFor="phone" className="block mb-1 text-white">
-                  Phone Number
-                </label>
-                <input
-                  type="text"
-                  id="phone"
-                  value={phoneNumber}
-                  onChange={handlePhoneNumberChange}
-                  maxLength="10"
-                  className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md"
-                  placeholder="Enter your phone number"
-                />
-              </div>
-
-              {/* Error and Success Messages */}
-              {error && <p className="mb-5 text-sm text-red-500">{error}</p>}
-              {success && (
-                <p className="mb-5 text-sm text-green-500">{success}</p>
-              )}
-
-              {/* Password Field */}
-              <div className="w-full h-auto mb-9">
-                <label htmlFor="password" className="block mb-1 text-white">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md"
-                  placeholder="Enter your password"
-                />
-              </div>
-
-
-              <button
-                type="submit"
-                disabled={!fullName || !phoneNumber || !password}
-                className={`w-full h-12 text-lg font-medium text-black rounded-md outline-none mb-7 
-             bg-white/70 ${!fullName || !phoneNumber || !password ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                Sign up
-              </button>
-            </form>
-
-            <div className="flex items-center justify-center w-full h-auto gap-x-1">
-              <p className="text-base font-medium text-white">
-                Already have an account?
-              </p>
-              <Link
-                to="/login"
-                className="text-base font-medium text-white duration-500 ease-out hover:underline"
-              >
-                Back to login
-              </Link>
-            </div>
-          </div>
-        </div>
-      </>
-    );
+    }
   };
 
-  export default Register;
+  return (
+    <>
+      <div className="flex items-center justify-center w-full min-h-screen registerpage">
+        <div className="w-[32%] h-auto py-10 px-12 rounded-xl registercard">
+          <div className="w-full h-auto">
+            <h1 className="text-[2rem] text-white font-semibold-mb-1 text-center">
+              Sign up
+            </h1>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            {/* FullName Field */}
+            <div className="w-full h-auto mb-5">
+              <label htmlFor="fullName" className="block mb-1 text-white">
+                FullName
+              </label>
+              <input
+                type="text"
+                id="fullName"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md"
+                placeholder="Enter your FullName"
+              />
+            </div>
+
+            {/* Email Field */}
+            <div className="w-full h-auto mb-5">
+              <label htmlFor="email" className="block mb-1 text-white">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            {/* Phone Number Field */}
+            <div className="w-full h-auto mb-5">
+              <label htmlFor="phone" className="block mb-1 text-white">
+                Phone Number
+              </label>
+              <input
+                type="text"
+                id="phone"
+                value={phoneNumber}
+                onChange={handlePhoneNumberChange}
+                maxLength="10"
+                className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md"
+                placeholder="Enter your phone number"
+              />
+            </div>
+
+            {/* Error and Success Messages */}
+            {error && <p className="mb-5 text-sm text-red-500">{error}</p>}
+            {success && (
+              <p className="mb-5 text-sm text-green-500">{success}</p>
+            )}
+
+            {/* Password Field */}
+            <div className="w-full h-auto mb-9">
+              <label htmlFor="password" className="block mb-1 text-white">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md"
+                placeholder="Enter your password"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={!fullName || !email || !phoneNumber || !password}
+              className={`w-full h-12 text-lg font-medium text-black rounded-md outline-none mb-7 
+                bg-white/70 ${
+                  !fullName || !email || !phoneNumber || !password
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
+            >
+              Sign up
+            </button>
+          </form>
+
+          <div className="flex items-center justify-center w-full h-auto gap-x-1">
+            <p className="text-base font-medium text-white">
+              Already have an account?
+            </p>
+            <Link
+              to="/login"
+              className="text-base font-medium text-white duration-500 ease-out hover:underline"
+            >
+              Back to login
+            </Link>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Register;
