@@ -17,6 +17,7 @@ public enum ErrorCode {
     ORDER_NOT_FOUND(1012,"Order not found"),
     ORDER_ALREADY_PROCESSED(1013,"Order already processed"),
     UNAUTHORIZED(1014,"Unauthorized"),
+    EMAIL_SENDING_FAILED(1015,"Email sending failed"),
     ;
 
     ErrorCode(int code, String message) {

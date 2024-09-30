@@ -67,7 +67,12 @@ public class CustomerService {
             throw new AppException(ErrorCode.PASSWORD_INCORRECT);
         }
 
-        String token = jwtUtil.generateToken(customer.getPhoneNumber(), "Koi-Express", customer.getRole().name(), customer.getCustomerId().toString());
+        String token = jwtUtil.generateToken(customer.getPhoneNumber(),
+                "Koi-Express",
+                customer.getRole().name(),
+                customer.getCustomerId().toString(),
+                customer.getFullName(),
+                customer.getEmail());
 
         return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", token);
     }
