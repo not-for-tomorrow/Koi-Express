@@ -17,25 +17,6 @@
       </state>
     </system>
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Interface" />
-        <option value="Class" />
-      </list>
-    </option>
-  </component>
-  <component name="Git.Settings">
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$" value="main" />
-      </map>
-    </option>
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
-  <component name="JpbToolWindowState">
-    <option name="isToolWindowVisible" value="false" />
-  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 7
@@ -47,35 +28,14 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Notification.DisplayName-DoNotAsk-GitHub Copilot": "GitHub Copilot",
-    "Notification.DoNotAsk-GitHub Copilot": "true",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "Spring Boot.KoiExpressApplication.executor": "Run",
-    "git-widget-placeholder": "FE",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/FPT/Semester 5/SWP/Koi_Express",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "MavenRunHelper",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager">
-    <configuration name="KoiExpressApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="Koi-Express" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.koi_express.KoiExpressApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -94,16 +54,6 @@
       <updated>1726830354524</updated>
       <workItem from="1726830356299" duration="110000" />
       <workItem from="1726830509104" duration="207000" />
-      <workItem from="1727271245290" duration="88000" />
-      <workItem from="1727276436661" duration="3672000" />
-      <workItem from="1727320260905" duration="5526000" />
-      <workItem from="1727328426682" duration="2020000" />
-      <workItem from="1727357719982" duration="10727000" />
-      <workItem from="1727369047041" duration="1018000" />
-      <workItem from="1727370117125" duration="1460000" />
-      <workItem from="1727372728921" duration="237000" />
-      <workItem from="1727373013118" duration="3944000" />
-      <workItem from="1727377613299" duration="5444000" />
     </task>
     <servers />
   </component>

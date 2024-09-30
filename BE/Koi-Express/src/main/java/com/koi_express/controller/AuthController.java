@@ -3,9 +3,7 @@ package com.koi_express.controller;
 import com.koi_express.dto.request.LoginRequest;
 import com.koi_express.dto.request.RegisterRequest;
 import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.entity.Customers;
 import com.koi_express.service.CustomerService;
-import com.koi_express.service.OtpService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,47 +20,24 @@ public class AuthController {
     @Autowired
     private CustomerService customerService;
 
-    @Autowired
-    private OtpService otpService;
-
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Customers>> registerUser(@RequestBody @Valid RegisterRequest registerRequest, BindingResult bindingResult) {
+    public ResponseEntity<ApiResponse<?>> registerUser(@RequestBody @Valid RegisterRequest registerRequest, BindingResult bindingResult) {
 
-        if (bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getFieldError() != null ? bindingResult.getFieldError().getDefaultMessage() : "Validation failed";
-            return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
-        }
+            if (bindingResult.hasErrors()) {
+                String errorMessage = bindingResult.getFieldError() != null ? bindingResult.getFieldError().getDefaultMessage() : "Validation failed";
+                return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
+            }
 
-        String generatedOtp = otpService.generateOtp();
-        otpService.sendOtp(registerRequest.getPhoneNumber(), generatedOtp);
+            ApiResponse<?> response = customerService.registerCustomer(registerRequest);
 
-        customerService.saveOtp(registerRequest.getPhoneNumber(), generatedOtp);
-
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "OTP sent successfully", null));
+            if(response.getCode() == HttpStatus.OK.value()){
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
     }
 
-    @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestBody @Valid RegisterRequest registerRequest, BindingResult bindingResult) {
 
-        if (bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getFieldError() != null ? bindingResult.getFieldError().getDefaultMessage() : "Validation failed";
-            return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
-        }
-
-        boolean isOtpValid = customerService.verifyOtp(registerRequest.getPhoneNumber(), registerRequest.getOtp());
-
-        if(!isOtpValid){
-            return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid OTP", null));
-        }
-
-        ApiResponse<Customers> response = customerService.registerCustomer(registerRequest);
-
-        if(response.getCode() == HttpStatus.OK.value()){
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "User registered successfully", null));
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), response.getMessage(), null));
-        }
-    }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> authenticateUser(@RequestBody @Valid LoginRequest loginRequest, BindingResult bindingResult) {

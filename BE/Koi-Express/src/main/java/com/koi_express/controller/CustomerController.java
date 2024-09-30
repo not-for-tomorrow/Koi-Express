@@ -4,6 +4,7 @@ import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.UpdateRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.Customers;
+import com.koi_express.repository.CustomersRepository;
 import com.koi_express.service.CustomerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +19,13 @@ public class CustomerController {
 
     private final CustomerService customerService;
     private final JwtUtil jwtUtil;
+    private final CustomersRepository customersRepository;
 
     @Autowired
-    public CustomerController(CustomerService customerService, JwtUtil jwtUtil) {
+    public CustomerController(CustomerService customerService, JwtUtil jwtUtil, CustomersRepository customersRepository) {
         this.customerService = customerService;
         this.jwtUtil = jwtUtil;
+        this.customersRepository = customersRepository;
     }
 
     @PutMapping("/update/{id}")
@@ -48,6 +51,7 @@ public class CustomerController {
         Customers customers = customerService.getCustomerDetails(phoneNumber);
         return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "User details retrieved successfully", customers), HttpStatus.OK);
     }
+
 
 }
 
