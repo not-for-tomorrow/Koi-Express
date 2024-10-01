@@ -11,6 +11,7 @@ const Sidebar = ({ setActivePage }) => {
     setActiveItem(item.id);
     setActivePage(item.title);
   };
+  
 
   return (
     <div className="flex items-start">

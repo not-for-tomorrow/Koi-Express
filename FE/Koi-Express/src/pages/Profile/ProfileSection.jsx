@@ -1,6 +1,6 @@
 import React from "react";
 
-const ProfileSection = () => {
+const ProfileSection = ({fullName, phoneNumber, email}) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-8 mt-4 md:mt-0 w-full max-w-auto h-[437px] mx-auto flex flex-col items-center justify-between">
       <img
@@ -10,10 +10,10 @@ const ProfileSection = () => {
       />
       <div className="flex flex-col items-center mt-2 space-y-4 text-center">
         <h2 className="text-2xl font-semibold text-gray-800">
-          Nguyễn Nhất Huy
+        {fullName || "No Name Available"}
         </h2>
-        <p className="text-sm text-gray-500">+84 91 363 31 84</p>
-        <p className="text-sm text-gray-500">nhathuyn1369@gmail.com</p>
+        <p className="text-sm text-gray-500">{phoneNumber || "No Phone Number Available"}</p>
+        <p className="text-sm text-gray-500">{email || "No Email Available"}</p>
       </div>
 
       <div className="w-full h-[1.5px] bg-gray-200 rounded-md"></div>
