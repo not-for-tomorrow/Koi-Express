@@ -16,9 +16,11 @@ public class JwtUtil {
     @Value("${jwt.secret-key}")
     private String SECRET_KEY;
 
-    public String generateToken(String phoneNumber, String projectName, String role, String customerId) {
+    public String generateToken(String phoneNumber, String projectName, String role, String customerId, String fullName, String email) {
         Map<String, Object> claims = new LinkedHashMap<>();
         claims.put("Application", projectName);
+        claims.put("fullName", fullName);
+        claims.put("email", email);
         claims.put("customerId", customerId);
         claims.put("role", role);
 

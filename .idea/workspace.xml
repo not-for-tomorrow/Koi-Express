@@ -5,8 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5de1b9a1-1f08-4f18-8ab7-0f0d13f608a0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FE/Koi-Express/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/FE/Koi-Express/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FE/Koi-Express/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/FE/Koi-Express/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FE/Koi-Express/src/components/Sidebar/Sidebar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/FE/Koi-Express/src/components/Sidebar/Sidebar.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FE/Koi-Express/src/pages/AppHomePages/AppHomePages.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/FE/Koi-Express/src/pages/AppHomePages/AppHomePages.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FE/Koi-Express/src/pages/Login/Login.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/FE/Koi-Express/src/pages/Login/Login.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FE/Koi-Express/src/pages/Profile/ProfileSection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/FE/Koi-Express/src/pages/Profile/ProfileSection.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FE/Koi-Express/src/pages/Register/Register.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/FE/Koi-Express/src/pages/Register/Register.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,6 +30,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -44,13 +51,14 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
     &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
     &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
     &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
     &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;Spring Boot.KoiExpressApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;BE&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;D:/FPT/Semester 5/SWP/Koi_Express&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
@@ -92,6 +100,10 @@
       <workItem from="1727708014282" duration="8813000" />
       <workItem from="1727718804124" duration="19000" />
       <workItem from="1727719782620" duration="69000" />
+      <workItem from="1727720771872" duration="5328000" />
+      <workItem from="1727726672053" duration="218000" />
+      <workItem from="1727743148298" duration="1498000" />
+      <workItem from="1727744789278" duration="625000" />
     </task>
     <servers />
   </component>
