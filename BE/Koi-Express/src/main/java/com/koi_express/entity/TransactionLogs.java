@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"order_id", "customer_id"})}
 )
-public class TransactionLogs {
+public class TransactionLogs { //Nhật ký giao dịch
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

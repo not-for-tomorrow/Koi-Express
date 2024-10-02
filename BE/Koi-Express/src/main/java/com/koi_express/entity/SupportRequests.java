@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"customer_id", "subject"})
 })
-public class SupportRequests {
+public class SupportRequests { //Yêu cầu hỗ trợ khách hàng
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
