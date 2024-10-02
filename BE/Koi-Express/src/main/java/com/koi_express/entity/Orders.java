@@ -30,39 +30,12 @@ public class Orders { // Quản lý đơn hàng
     @JoinColumn(name = "customer_id", nullable = false)
     Customers customer;
 
-    @NotEmpty(message = "Recipient name cannot be empty")
-    String recipientName;
-
-    @NotEmpty(message = "Recipient phone cannot be empty")
-    String recipientPhone;
-
-    @NotEmpty(message = "Koi type cannot be empty")
-    String koiType;
-
-    double koiWeight;
-
-    @Positive(message = "Koi quantity must be positive")
-    int koiQuantity;
-
-    double koiSize;
-
     @NotEmpty(message = "Origin location cannot be empty")
     String originLocation;
 
     @NotEmpty(message = "Destination location cannot be empty")
     String destinationLocation;
 
-    boolean insurance;
-    boolean specialCare;
-    boolean healthCheck;
-
-    @Enumerated(EnumType.STRING)
-    PackingMethod packingMethod;
-
-    double distanceFee;
-    double careFee;
-    double tollFee;
-    double weightFee;
     double totalFee;
 
     @Enumerated(EnumType.STRING)
@@ -75,18 +48,6 @@ public class Orders { // Quản lý đơn hàng
     @CreationTimestamp
     LocalDateTime createdAt = LocalDateTime.now();
 
-    @UpdateTimestamp
-    LocalDateTime updatedAt = LocalDateTime.now();
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    OrderDetail orderDetail;
 }

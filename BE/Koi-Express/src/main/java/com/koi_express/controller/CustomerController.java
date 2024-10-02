@@ -52,6 +52,5 @@ public class CustomerController {
         return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "User details retrieved successfully", customers), HttpStatus.OK);
     }
 
-
 }
 

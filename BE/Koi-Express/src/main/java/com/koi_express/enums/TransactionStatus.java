@@ -6,5 +6,4 @@ public enum TransactionStatus {
     FAILED,             // Giao dịch thất bại
     REFUNDED,           // Giao dịch đã được hoàn trả
     CANCELED            // Giao dịch đã bị hủy
-
 }

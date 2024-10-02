@@ -4,6 +4,7 @@ import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.Customers;
+import com.koi_express.entity.OrderDetail;
 import com.koi_express.entity.Orders;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.exception.AppException;
@@ -132,24 +133,32 @@ public class OrderService {
     }
 
     private Orders buildOrder(OrderRequest orderRequest, Customers customer) {
-        Orders order = new Orders();
-        order.setCustomer(customer);
-        order.setRecipientName(orderRequest.getRecipientName());
-        order.setRecipientPhone(orderRequest.getRecipientPhone());
-        order.setKoiType(orderRequest.getKoiType());
-        order.setKoiQuantity(orderRequest.getKoiQuantity());
-        order.setOriginLocation(orderRequest.getOriginLocation());
-        order.setDestinationLocation(orderRequest.getDestinationLocation());
-        order.setPackingMethod(orderRequest.getPackingMethod());
-        order.setPaymentMethod(orderRequest.getPaymentMethod());
-        order.setInsurance(orderRequest.isInsurance());
-        order.setSpecialCare(orderRequest.isSpecialCare());
-        order.setHealthCheck(orderRequest.isHealthCheck());
 
-        double totalFee = orderFeeCalculator.calculateTotalFee(orderRequest);
-        order.setTotalFee(totalFee);
+        Orders orders = Orders.builder()
+                .customer(customer)
+                .originLocation(orderRequest.getOriginLocation())
+                .destinationLocation(orderRequest.getDestinationLocation())
+                .status(OrderStatus.PENDING)
+                .totalFee(orderFeeCalculator.calculateTotalFee(orderRequest))
+                .paymentMethod(orderRequest.getPaymentMethod())
+                .build();
 
-        return order;
+        OrderDetail orderDetail = OrderDetail.builder()
+                .order(orders)
+                .recipientName(orderRequest.getRecipientName())
+                .recipientPhone(orderRequest.getRecipientPhone())
+                .koiType(orderRequest.getKoiType())
+                .koiQuantity(orderRequest.getKoiQuantity())
+                .packingMethod(orderRequest.getPackingMethod())
+                .paymentMethod(orderRequest.getPaymentMethod())
+                .insurance(orderRequest.isInsurance())
+                .specialCare(orderRequest.isSpecialCare())
+                .healthCheck(orderRequest.isHealthCheck())
+                .build();
+
+
+        orders.setOrderDetail(orderDetail);
+        return orders;
     }
 
 //    private double calculateDistance(String originLocation, String destinationLocation) {

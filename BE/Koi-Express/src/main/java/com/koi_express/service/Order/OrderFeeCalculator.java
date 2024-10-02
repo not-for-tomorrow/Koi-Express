@@ -31,7 +31,6 @@ public class OrderFeeCalculator {
         double basePrice = weightFee * BASE_PRICE_PER_KG;
         totalFee += basePrice;
 
-
         if(isInsurance) {
             totalFee += INSURANCE_COST_FER_FISH;
         }

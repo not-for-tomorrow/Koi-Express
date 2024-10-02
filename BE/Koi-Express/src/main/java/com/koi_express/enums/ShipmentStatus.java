@@ -9,5 +9,4 @@ public enum ShipmentStatus {
     DELIVERED,            // Đã giao hàng thành công
     FAILED_DELIVERY,      // Giao hàng không thành công
     RETURNED              // Hàng đã được trả lại
-
 }
