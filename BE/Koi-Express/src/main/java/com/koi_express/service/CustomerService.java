@@ -40,7 +40,9 @@ public class CustomerService {
         if (customersRepository.existsByPhoneNumber(registerRequest.getPhoneNumber()))
             throw new AppException(ErrorCode.USER_EXISTED);
 
-//        String email = registerRequest.getEmail() != null ? registerRequest.getEmail() : registerRequest.getPhoneNumber() + "@noemail.com";
+        if(registerRequest.getEmail() != null && customersRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
 
         String encodedPassword = passwordEncoder.encode(registerRequest.getPassword());
 
