@@ -49,7 +49,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 oAuth2User.getAttribute("id");
 
 
-
         // Determine the auth provider dynamically (Google or Facebook)
         AuthProvider authProvider = AuthProvider.valueOf(registrationId.toUpperCase());
 

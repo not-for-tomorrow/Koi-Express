@@ -30,5 +30,4 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
 
     List<Customers> findAll(Sort sort);
 
-
 }

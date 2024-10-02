@@ -6,5 +6,4 @@ public enum OrderStatus {
     IN_TRANSIT,         // Đang trên đường vận chuyển
     COMPLETED,          // Đơn hàng đã hoàn thành và xác nhận
     CANCELED,           // Đơn hàng bị hủy
-
 }
