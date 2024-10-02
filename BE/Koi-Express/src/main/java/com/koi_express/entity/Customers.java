@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"email", "authProvider"})
 })
-public class Customers {
+public class Customers { // quản lí thông tin khách hàng
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,8 +38,6 @@ public class Customers {
     String passwordHash;
 
     @Pattern(regexp = "\\d{10}", message = "Phone number must contain exactly 10 digits")
-    @Size(min = 10, max = 10, message = "Phone number must be exactly 10 digits")
-    @Column(nullable = true, unique = true)
     String phoneNumber;
 
     @Enumerated(EnumType.STRING)

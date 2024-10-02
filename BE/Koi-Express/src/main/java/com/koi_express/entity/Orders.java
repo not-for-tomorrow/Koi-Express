@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Orders {
+public class Orders { // Quản lý đơn hàng
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
