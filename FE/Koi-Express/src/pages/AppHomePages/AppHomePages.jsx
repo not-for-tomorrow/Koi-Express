@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Profile from "../Profile/Profile";
 import axios from "axios";
+import OrderPage from "../OrderPage/OrderPage";
 
 const AppHomePages = () => {
   const [activePage, setActivePage] = useState("Đơn hàng mới");
@@ -39,13 +40,16 @@ const AppHomePages = () => {
   const renderContent = () => {
     switch (activePage) {
       case "Profile":
-        return userInfo && (
-          <Profile
-            fullName={userInfo.fullName}
-            phoneNumber={userInfo.phoneNumber}
-            email={userInfo.email}
-          />
-        );
+        // return // userInfo && (
+        //   <Profile
+             // fullName={userInfo.fullName}
+            // phoneNumber={userInfo.phoneNumber}
+            // email={userInfo.email}
+        //   />
+        // );
+        return <Profile />;
+      case "Đơn hàng mới":
+        return <OrderPage />;
       default:
         return <Profile />;
     }
