@@ -3,6 +3,7 @@ import Sidebar from "../../components/Sidebar/Sidebar";
 import Profile from "../Profile/Profile";
 import axios from "axios";
 import OrderPage from "../OrderPage/OrderPage";
+import OrderHistory from "../OrderHistory/OrderHistory";
 
 const AppHomePages = () => {
   const [activePage, setActivePage] = useState("Đơn hàng mới");
@@ -50,6 +51,8 @@ const AppHomePages = () => {
         return <Profile />;
       case "Đơn hàng mới":
         return <OrderPage />;
+      case "Lịch sử đơn hàng":
+        return <OrderHistory/>;
       default:
         return <Profile />;
     }
