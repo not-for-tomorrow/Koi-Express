@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class CustomerService {
@@ -40,7 +41,9 @@ public class CustomerService {
         if (customersRepository.existsByPhoneNumber(registerRequest.getPhoneNumber()))
             throw new AppException(ErrorCode.USER_EXISTED);
 
-//        String email = registerRequest.getEmail() != null ? registerRequest.getEmail() : registerRequest.getPhoneNumber() + "@noemail.com";
+        if(registerRequest.getEmail() != null && customersRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
 
         String encodedPassword = passwordEncoder.encode(registerRequest.getPassword());
 
@@ -93,4 +96,14 @@ public class CustomerService {
         return new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully", customer);
     }
 
+    public void activateCustomerAccount(String phoneNumber) {
+
+        Optional<Customers> customersOptional = customersRepository.findByPhoneNumber(phoneNumber);
+
+        if(customersOptional.isPresent()) {
+            Customers customers = customersOptional.get();
+            customers.setActivated(true);
+            customersRepository.save(customers);
+        }
+    }
 }
