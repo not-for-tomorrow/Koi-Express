@@ -44,7 +44,7 @@ const Sidebar = ({ setActivePage }) => {
 
             <div
               className="p-3 mt-8 mb-6 bg-blue-300 rounded-lg cursor-pointer"
-              onClick={() => setActivePage("Profile")}
+              onClick={() => {setActivePage("Profile")}}
             >
               <div className="flex items-center gap-4">
                 <img
