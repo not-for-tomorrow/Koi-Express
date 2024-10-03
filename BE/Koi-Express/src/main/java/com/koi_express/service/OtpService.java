@@ -12,8 +12,8 @@ import java.util.Map;
 public class OtpService {
 
     private static final String ACCOUNT_SID = "AC6ebe5c4cf2fb07c85783a6dbee771aae";
-    private static final String AUTH_TOKEN = "ca8f69db831a696283f2f65aae23403d";
-    private static final String FROM_PHONE = "+19543291519";
+    private static final String AUTH_TOKEN = "e21dffb2f6f8a50878aabe5fab8b2806";
+    private static final String FROM_PHONE = "+13182521661";
 
     private Map<String, String> otpData = new HashMap<>();
     private SecureRandom random = new SecureRandom();

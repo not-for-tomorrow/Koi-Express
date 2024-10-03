@@ -53,7 +53,7 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo ->
                                 userInfo.userService(customOAuth2UserService) // Sử dụng CustomOAuth2UserService
                         )
-                        .defaultSuccessUrl("/api/auth/userinfo", true)
+                        .defaultSuccessUrl("http://localhost:5173/apphomepage", true)
                         .failureUrl("/login?error=true")
                 )
                 .logout(logout -> logout
