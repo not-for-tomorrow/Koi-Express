@@ -40,4 +40,3 @@ logging:
   level:
     root: INFO
     com.koi_express: DEBUG
-

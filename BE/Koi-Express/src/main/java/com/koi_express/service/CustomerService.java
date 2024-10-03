@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class CustomerService {
@@ -95,4 +96,14 @@ public class CustomerService {
         return new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully", customer);
     }
 
+    public void activateCustomerAccount(String phoneNumber) {
+
+        Optional<Customers> customersOptional = customersRepository.findByPhoneNumber(phoneNumber);
+
+        if(customersOptional.isPresent()) {
+            Customers customers = customersOptional.get();
+            customers.setActivated(true);
+            customersRepository.save(customers);
+        }
+    }
 }
