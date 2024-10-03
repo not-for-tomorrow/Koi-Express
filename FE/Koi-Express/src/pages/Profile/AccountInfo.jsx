@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { iconsData } from "./IconsData.jsx";
 import { FaPlus, FaTimes } from "react-icons/fa";
+import PropTypes from "prop-types";
 
-const AccountInfo = () => {
+const AccountInfo = ({ fullName, phoneNumber, email }) => {
   const [tags, setTags] = useState([
     "Khách hàng tiềm năng",
     "Hàng cồng kềnh",
@@ -23,6 +24,9 @@ const AccountInfo = () => {
 
   return (
     <div className="p-8 mt-4 space-y-6 md:mt-0">
+      
+
+      {/* Các card thông tin khác */}
       {iconsData.map((card, index) => (
         <div
           key={index}
@@ -38,6 +42,7 @@ const AccountInfo = () => {
         </div>
       ))}
 
+      {/* Ngôn ngữ */}
       <div className="flex items-center justify-between p-6 transition-shadow duration-300 ease-in-out bg-white rounded-lg shadow-md hover:shadow-lg">
         <div>
           <h1 className="text-[20px] font-semibold text-gray-800">Ngôn ngữ</h1>
@@ -62,6 +67,7 @@ const AccountInfo = () => {
         </div>
       </div>
 
+      {/* Tag đơn hàng */}
       <div className="p-6 transition-shadow duration-300 ease-in-out bg-white rounded-lg shadow-md hover:shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-[20px] font-semibold text-gray-800">
@@ -95,6 +101,12 @@ const AccountInfo = () => {
       </div>
     </div>
   );
+};
+
+AccountInfo.propTypes = {
+  fullName: PropTypes.string,
+  phoneNumber: PropTypes.string,
+  email: PropTypes.string,
 };
 
 export default AccountInfo;

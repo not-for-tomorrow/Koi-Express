@@ -4,10 +4,17 @@ import Profile from "../Profile/Profile";
 import axios from "axios";
 import OrderPage from "../OrderPage/OrderPage";
 import OrderHistory from "../OrderHistory/OrderHistory";
+import { useNavigate } from 'react-router-dom';
 
 const AppHomePages = () => {
   const [activePage, setActivePage] = useState("Đơn hàng mới");
-  const [userInfo, setUserInfo] = useState(null);
+  const [userInfo, setUserInfo] = useState({
+    fullName: "",
+    phoneNumber: "",
+    email: ""
+  });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -15,7 +22,8 @@ const AppHomePages = () => {
         // Get token from localStorage or sessionStorage
         const token = localStorage.getItem("token") || sessionStorage.getItem("token");
         if (!token) {
-          throw new Error("No token found");
+          console.warn("No token found, waiting for authentication...");
+          return;
         }
 
         // Make an API request to get user information
@@ -31,30 +39,35 @@ const AppHomePages = () => {
       } catch (error) {
         console.error("Failed to fetch user information:", error);
         // Redirect user to login page if fetching user info fails
-        // window.location.href = "/login";
+        navigate("/login");
       }
     };
 
-    fetchUserInfo();
-  }, []);
+    const timer = setTimeout(fetchUserInfo, 1000);
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   const renderContent = () => {
     switch (activePage) {
       case "Profile":
-        // return // userInfo && (
-        //   <Profile
-             // fullName={userInfo.fullName}
-            // phoneNumber={userInfo.phoneNumber}
-            // email={userInfo.email}
-        //   />
-        // );
-        return <Profile />;
+        return userInfo && (
+          <Profile
+            fullName={userInfo.fullName}
+            phoneNumber={userInfo.phoneNumber}
+            email={userInfo.email}
+          />
+        );
       case "Đơn hàng mới":
         return <OrderPage />;
       case "Lịch sử đơn hàng":
-        return <OrderHistory/>;
+        return <OrderHistory />;
       default:
-        return <Profile />;
+        return <Profile 
+          fullName={userInfo.fullName}
+          phoneNumber={userInfo.phoneNumber}
+          email={userInfo.email}
+        />;
     }
   };
 
