@@ -3,37 +3,21 @@ package com.koi_express.service.Order;
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.entity.Customers;
-import com.koi_express.entity.OrderDetail;
-import com.koi_express.entity.Orders;
+import com.koi_express.entity.customer.Customers;
+import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.OrderRepository;
-import com.koi_express.service.ManagerService;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.koi_express.service.Manager.ManagerService;
+import com.koi_express.service.Verification.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMailMessage;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -43,8 +27,6 @@ public class OrderService {
 //    private static final String GOOGLE_MAPS_API_KEY = "AIzaSyBEtydz_RCAU5lDodbyLDOf4UJcHhAWXgI";
 //    private static final String GOOGLE_MAPS_DISTANCE_MATRIX_URL = "https://maps.googleapis.com/maps/api/distancematrix/json";
 
-    @Autowired
-    private RestTemplate restTemplate;
 
     @Autowired
     private OrderRepository orderRepository;
@@ -53,13 +35,13 @@ public class OrderService {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private JavaMailSender  javaMailSender;
-
-    @Autowired
-    private OrderFeeCalculator orderFeeCalculator;
-
-    @Autowired
     private ManagerService managerService;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private OrderBuilder orderBuilder;
 
 
     // Create Order with OrderRequest, order with add into database base on customerId in payload of token
@@ -68,11 +50,11 @@ public class OrderService {
         try {
             String customerId = jwtUtil.extractCustomerId(token);
             Customers customer = managerService.getCustomerById(Long.parseLong(customerId));
-            Orders orders = buildOrder(orderRequest, customer);
+            Orders orders = orderBuilder.buildOrder(orderRequest, customer);
             Orders savedOrder = orderRepository.save(orders);
             logger.info("Order created successfully: {}", savedOrder);
 
-            sendOrderConfirmationEmail(customer.getEmail(), savedOrder);
+            emailService.sendOrderConfirmationEmail(customer.getEmail(), savedOrder);
 
             return new ApiResponse<>(HttpStatus.OK.value(), "Order created successfully", savedOrder);
         } catch (Exception e) {
@@ -81,85 +63,11 @@ public class OrderService {
         }
     }
 
-    private void sendOrderConfirmationEmail(String recipientEmail, Orders order) throws IOException {
-
-        try {
-
-            String htmlTemplate = loadEmailTemplate("Order Confirmation.html");
-
-            Map<String, String> placeholders = new HashMap<>();
-            placeholders.put("{{CustomerName}}", order.getCustomer().getFullName());
-            placeholders.put("{{OrderID}}", String.valueOf(order.getOrderId()));
-            placeholders.put("{{OrderDate}}", order.getCreatedAt().toString());
-            placeholders.put("{{Address}}", order.getDestinationLocation());
-            placeholders.put("{{TotalAmount}}", String.format("%.2f", order.getTotalFee()));
-            placeholders.put("{{TrackOrderLink}}", "https://koiexpress.com/track-order/" + order.getOrderId());
-
-            htmlTemplate = replacePlaceholders(htmlTemplate, placeholders);
-
-            MimeMessage message = javaMailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setTo(recipientEmail);
-            helper.setSubject("Order Confirmation - Koi Express");
-            helper.setText(htmlTemplate, true);
-            javaMailSender.send(message);
-
-            logger.info("Order confirmation email sent to: {}", recipientEmail);
-        } catch (Exception e) {
-            logger.error("Error sending order confirmation email: ", e);
-            throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
-        }
-    }
-
-    private String loadEmailTemplate(String fileName) throws IOException {
-
-        ClassPathResource resource = new ClassPathResource(fileName);
-
-        try(BufferedReader reader = new BufferedReader(
-                new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
-            return reader.lines().collect(Collectors.joining(System.lineSeparator()));
-        }
-    }
-
-    private String replacePlaceholders(String template, Map<String, String> values) {
-        for (Map.Entry<String, String> entry : values.entrySet()) {
-            template = template.replace(entry.getKey(), entry.getValue());
-        }
-        return template;
-    }
-
     private String extractCustomerIdFromToken(String token) {
         return jwtUtil.extractCustomerId(token);
     }
 
-    private Orders buildOrder(OrderRequest orderRequest, Customers customer) {
 
-        Orders orders = Orders.builder()
-                .customer(customer)
-                .originLocation(orderRequest.getOriginLocation())
-                .destinationLocation(orderRequest.getDestinationLocation())
-                .status(OrderStatus.PENDING)
-                .totalFee(orderFeeCalculator.calculateTotalFee(orderRequest))
-                .paymentMethod(orderRequest.getPaymentMethod())
-                .build();
-
-        OrderDetail orderDetail = OrderDetail.builder()
-                .order(orders)
-                .recipientName(orderRequest.getRecipientName())
-                .recipientPhone(orderRequest.getRecipientPhone())
-                .koiType(orderRequest.getKoiType())
-                .koiQuantity(orderRequest.getKoiQuantity())
-                .packingMethod(orderRequest.getPackingMethod())
-                .paymentMethod(orderRequest.getPaymentMethod())
-                .insurance(orderRequest.isInsurance())
-                .specialCare(orderRequest.isSpecialCare())
-                .healthCheck(orderRequest.isHealthCheck())
-                .build();
-
-
-        orders.setOrderDetail(orderDetail);
-        return orders;
-    }
 
 //    private double calculateDistance(String originLocation, String destinationLocation) {
 //
@@ -233,6 +141,7 @@ public class OrderService {
         return new ApiResponse<>(HttpStatus.OK.value(), "Order delivered successfully", null);
     }
 
+//    Get All Orders
     public Page<Orders> getAllOrders(Pageable pageable) {
         return orderRepository.findAll(pageable);
     }

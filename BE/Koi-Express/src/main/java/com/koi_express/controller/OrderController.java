@@ -3,7 +3,7 @@ package com.koi_express.controller;
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.entity.Orders;
+import com.koi_express.entity.order.Orders;
 import com.koi_express.service.Order.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;

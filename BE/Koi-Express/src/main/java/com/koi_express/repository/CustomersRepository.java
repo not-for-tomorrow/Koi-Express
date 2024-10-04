@@ -1,6 +1,6 @@
 package com.koi_express.repository;
 
-import com.koi_express.entity.Customers;
+import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.AuthProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,6 +1,6 @@
 package com.koi_express.JWT;
 
-import com.koi_express.entity.Customers;
+import com.koi_express.entity.customer.Customers;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
