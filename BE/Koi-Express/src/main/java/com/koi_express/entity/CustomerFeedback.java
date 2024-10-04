@@ -28,6 +28,10 @@ public class CustomerFeedback { //thu thập phản hồi và đánh gi từ kh�
     @JoinColumn(name = "customer_id", nullable = false)
     Customers customer;
 
+    @ManyToOne
+    @JoinColumn(name = "delivering_staff_id", nullable = false)
+    DeliveringStaff deliveringStaff;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     FeedbackType feedbackType;
