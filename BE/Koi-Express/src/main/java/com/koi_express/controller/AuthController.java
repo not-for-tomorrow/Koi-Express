@@ -47,6 +47,7 @@ public class AuthController {
         otpService.sendOtp(formattedPhoneNumber);
 
         // Lưu thông tin đăng ký tạm thời để xác minh sau
+        registerRequest.setPhoneNumber(formattedPhoneNumber);
         otpService.saveTempRegisterRequest(registerRequest);
 
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "OTP has been sent to your phone number", null));
@@ -54,10 +55,12 @@ public class AuthController {
 
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestParam String phoneNumber, @RequestParam String otp) {
-        boolean isValid = otpService.validateOtp(phoneNumber, otp);
+        String formattedPhoneNumber = otpService.formatPhoneNumber(phoneNumber);
+
+        boolean isValid = otpService.validateOtp(formattedPhoneNumber, otp);
         if (isValid) {
             // Tìm thông tin đăng ký tạm thời dựa vào số điện thoại
-            RegisterRequest tempRegisterRequest = otpService.getTempRegisterRequest(phoneNumber);
+            RegisterRequest tempRegisterRequest = otpService.getTempRegisterRequest(formattedPhoneNumber);
             if (tempRegisterRequest != null) {
                 // Tạo tài khoản cho khách hàng và lưu vào cơ sở dữ liệu
                 ApiResponse<?> response = customerService.registerCustomer(tempRegisterRequest);

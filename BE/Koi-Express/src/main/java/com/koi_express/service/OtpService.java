@@ -27,6 +27,7 @@ public class OtpService {
 
         String otp = String.format("%04d", random.nextInt(10000));
         otpData.put(phoneNumber, otp);
+        System.out.println("Generated OTP for " + phoneNumber + ": " + otp);
         return otp;
     }
 
@@ -34,7 +35,7 @@ public class OtpService {
 
         String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
 
-        String otp = generateOtp(phoneNumber);
+        String otp = generateOtp(formattedPhoneNumber);
 
         com.twilio.rest.api.v2010.account.Message.creator(
                 new com.twilio.type.PhoneNumber(phoneNumber),
@@ -56,6 +57,7 @@ public class OtpService {
 
     public void saveTempRegisterRequest(RegisterRequest registerRequest) {
         tempRegisterData.put(registerRequest.getPhoneNumber(), registerRequest);
+        System.out.println("Saved temp register request for " + registerRequest.getPhoneNumber());
     }
 
     public RegisterRequest getTempRegisterRequest(String phoneNumber) {
