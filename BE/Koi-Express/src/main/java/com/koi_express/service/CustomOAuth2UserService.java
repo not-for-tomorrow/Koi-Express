@@ -1,5 +1,6 @@
 package com.koi_express.service;
 
+import com.koi_express.JWT.JwtUtil;
 import com.koi_express.entity.Customers;
 import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
@@ -21,8 +22,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Autowired
     private final CustomersRepository customersRepository;
 
-    public CustomOAuth2UserService(CustomersRepository customersRepository) {
+    @Autowired
+    private final JwtUtil jwtUtil;
+
+    public CustomOAuth2UserService(CustomersRepository customersRepository, JwtUtil jwtUtil) {
         this.customersRepository = customersRepository;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -54,28 +59,33 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // Check if a customer exists with the same email and provider
         Optional<Customers> existingCustomer = customersRepository.findByEmailAndAuthProvider(email, authProvider);
+        Customers customer;
 
         if (!existingCustomer.isPresent()) {
             // Create new customer for OAuth2 login
-            Customers newCustomer = new Customers();
-            newCustomer.setEmail(email);
-            newCustomer.setFullName(fullName);
-            newCustomer.setAuthProvider(authProvider); // Set provider (Google or Facebook)
-            newCustomer.setProviderId(providerId);
-            newCustomer.setRole(Role.CUSTOMER);  // Default role
+            customer = new Customers();
+            customer.setEmail(email);
+            customer.setFullName(fullName);
+            customer.setAuthProvider(authProvider); // Set provider (Google or Facebook)
+            customer.setProviderId(providerId);
+            customer.setRole(Role.CUSTOMER);  // Default role
 
             // No need to store password when using OAuth2
-            newCustomer.setPasswordHash(null);
+            customer.setPasswordHash(null);
 
-            customersRepository.save(newCustomer);
+            customersRepository.save(customer);
         } else {
             // If customer exists, update provider ID if necessary
-            Customers existing = existingCustomer.get();
-            if (!existing.getProviderId().equals(providerId)) {
-                existing.setProviderId(providerId);
-                customersRepository.save(existing);
+            customer = existingCustomer.get();
+            if (!customer.getProviderId().equals(providerId)) {
+                customer.setProviderId(providerId);
+                customersRepository.save(customer);
             }
         }
+
+        String token = jwtUtil.generateToken(customer);
+
+        log.info("Generated token for user {}: {}", email, token);
 
         return oAuth2User;
     }

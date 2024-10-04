@@ -1,5 +1,6 @@
 package com.koi_express.JWT;
 
+import com.koi_express.entity.Customers;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,6 +32,17 @@ public class JwtUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))  // Token có thời hạn 10 giờ
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)  // Sử dụng thuật toán HS256
                 .compact();
+    }
+
+    public String generateToken(Customers customer) {
+        return generateToken(
+                customer.getEmail(),
+                customer.getFullName(),
+                customer.getAuthProvider().name(),
+                customer.getProviderId(),
+                customer.getRole().name(),
+                "someAdditionalInfo"  // Replace with actual value or remove if not needed
+        );
     }
 
     public String extractPhoneNumber(String token) {

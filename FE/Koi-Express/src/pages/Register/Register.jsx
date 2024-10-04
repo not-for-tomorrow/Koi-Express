@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
+import OtpModal from "../OTP/OtpModal";
 import "./Register.css";
 
 const Register = () => {
@@ -10,9 +11,8 @@ const Register = () => {
   const [password, setPassword] = useState("");
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
 
   const handlePhoneNumberChange = (e) => {
     const value = e.target.value;
@@ -23,11 +23,14 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+
     if (phoneNumber.length !== 10) {
       setError("Please enter exactly 10 digits for the phone number.");
+      setLoading(false);
       return;
     }
-    setError("");
 
     const requestData = {
       fullName,
@@ -48,40 +51,27 @@ const Register = () => {
       );
 
       if (response.status === 200) {
-        setSuccess("Registration successful!");
-        setFullName("");
-        setEmail("");
-        setPhoneNumber("");
-        setPassword("");
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
+        // Show OTP modal
+        setShowOtpModal(true);
       } else {
         setError("Registration failed. Please try again.");
       }
     } catch (err) {
-      if (err.response) {
-        switch (err.response.status) {
-          case 400:
-            setError("Invalid data. Please check your input.");
-            break;
-          case 500:
-            setError("Server error. Please try again later.");
-            break;
-          default:
-            setError("An error occurred. Please try again.");
-        }
-      } else {
-        setError("An error occurred. Please try again.");
-      }
+      setError("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleOtpVerifySuccess = () => {
+    setShowOtpModal(false);
+    // Proceed with successful registration logic, e.g., redirect to homepage or login
+    alert("Registration successful! OTP verified.");
   };
 
   return (
     <section className="registerpage bg-gray-50 min-h-screen flex items-center justify-center">
-      {/* register container */}
       <div className="registercard bg-gray-100 flex rounded-2xl shadow-lg max-w-3xl p-5 items-center justify-start">
-        {/* image */}
         <div className="md:block hidden w-1/2 mr-auto">
           <img
             className="rounded-2xl"
@@ -90,25 +80,46 @@ const Register = () => {
           />
         </div>
 
-        {/* form */}
         <div className="md:w-1/2 px-8 md:px-16">
           <h2 className="font-bold text-2xl text-[#002D74]">Register</h2>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-4"
+            autoComplete="off"
+          >
+            {/* Hidden fields to prevent autofill */}
+            <input
+              type="text"
+              name="hidden-fullName"
+              style={{ display: "none" }}
+              autoComplete="fullName"
+            />
+            <input
+              type="password"
+              name="hidden-password"
+              style={{ display: "none" }}
+              autoComplete="new-password"
+            />
+
             <input
               className="p-2 mt-8 rounded-xl border"
               type="text"
-              name="fullName"
+              id="full_name_no_autofill"
+              name="register_full_name_custom"
               placeholder="Full Name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
               autoComplete="off"
+              data-lpignore="true"
+              data-form-type="other"
+              aria-autocomplete="none"
             />
             <input
               className="p-2 mt-4 rounded-xl border"
               type="email"
-              name="email"
+              name="register_email_custom"
               placeholder="Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -118,7 +129,7 @@ const Register = () => {
             <input
               className="p-2 mt-4 rounded-xl border"
               type="text"
-              name="phoneNumber"
+              name="register_phone_number_custom"
               placeholder="Phone Number"
               value={phoneNumber}
               onChange={handlePhoneNumberChange}
@@ -128,7 +139,8 @@ const Register = () => {
             <input
               className="p-2 rounded-xl border w-full"
               type="password"
-              name="password"
+              id="password_no_autofill"
+              name="register_password_custom"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -140,12 +152,11 @@ const Register = () => {
               type="submit"
               className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300"
             >
-              Register
+              {loading ? "Registering..." : "Register"}
             </button>
           </form>
 
           {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-          {success && <p className="text-green-500 text-sm mt-2">{success}</p>}
 
           <div className="mt-5 text-xs flex justify-between items-center text-[#002D74]">
             <p>Already have an account?</p>
@@ -157,6 +168,15 @@ const Register = () => {
           </div>
         </div>
       </div>
+
+      {/* OTP Modal */}
+      {showOtpModal && (
+        <OtpModal
+          phoneNumber={phoneNumber}
+          onClose={() => setShowOtpModal(false)}
+          onVerifySuccess={handleOtpVerifySuccess}
+        />
+      )}
     </section>
   );
 };
