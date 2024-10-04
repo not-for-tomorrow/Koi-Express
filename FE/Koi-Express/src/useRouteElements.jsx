@@ -19,11 +19,19 @@ export default function useRouteElements() {
     },
     {
       path: "/login",
-      element: <Login />,
+      element: (
+        <MainLayout>
+          <Login/>
+        </MainLayout>
+      ),
     },
     {
       path: "/register",
-      element: <Register />,
+      element: (
+        <MainLayout>
+          <Register/>
+        </MainLayout>
+      ),
     },
     {
       path: "/apphomepage",
