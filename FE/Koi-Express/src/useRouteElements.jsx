@@ -18,13 +18,17 @@ export default function useRouteElements() {
     {
       path: "/login",
       element: (
-        <Login/>
+        <MainLayout>
+          <Login/>
+        </MainLayout>
       ),
     },
     {
       path: "/register",
       element: (
-        <Register/>
+        <MainLayout>
+          <Register/>
+        </MainLayout>
       ),
     },
   ]);
