@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { FcGoogle } from "react-icons/fc"; // Google icon
+import { FaFacebook } from "react-icons/fa"; // Facebook icon
 import "./Login.css";
 
 const Login = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false); // New state for Remember Me
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,30 +18,32 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
+
     try {
       const response = await axios.post("http://localhost:8080/api/auth/login", {
         phoneNumber,
         password,
       });
-  
+
       if (response.status === 200) {
-        console.log(response.data);
         setSuccess("Login successful");
-        // Lưu JWT vào localStorage hoặc sessionStorage dựa trên Remember Me
-        if (rememberMe) {
-          localStorage.setItem("token", response.data.result);
-        } else {
-          sessionStorage.setItem("token", response.data.result);
-        }
-        // Điều hướng tới trang tiếp theo sau khi login thành công
-        navigate("/fpt");
+        
+        navigate("/apphomepage");
       }
     } catch (err) {
       if (err.response) {
-        setError("Login failed: " + (err.response.data.message || "Invalid credentials"));
+        switch (err.response.status) {
+          case 401:
+            setError("Invalid credentials. Please check your phone number and password.");
+            break;
+          case 500:
+            setError("Server error. Please try again later.");
+            break;
+          default:
+            setError("Login failed: " + (err.response.data.message || "Unknown error"));
+        }
       } else {
-        setError("An error occurred. Please try again.");
+        setError("An unexpected error occurred. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -54,140 +58,121 @@ const Login = () => {
     window.location.href = "http://localhost:8080/oauth2/authorization/facebook";
   };
 
-  return (
-    <div className="flex items-center justify-center w-full min-h-screen loginpage">
-      <div className="w-[32%] h-auto py-10 px-12 rounded-xl logincard">
-        <div className="w-full h-auto">
-          <h1 className="text-[2rem] text-white font-semibold-mb-1 text-center">
-            Sign in
-          </h1>
-        </div>
+  const handleRegister = () => {
+    navigate("/register");
+  };
 
-        <form onSubmit={handleSubmit}>
-          <div className="w-full h-auto mb-5">
-            <label htmlFor="phone" className="block mb-1 text-white">
-              Phone Number
-            </label>
+  return (
+    <section className="loginpage bg-gray-50 min-h-screen flex items-center justify-center ">
+      {/* login container */}
+      <div className="logincard bg-gray-100 flex rounded-2xl shadow-lg max-w-3xl p-5 items-center">
+        {/* form */}
+        <div className="md:w-1/2 px-8 md:px-16">
+          <h2 className="font-bold text-2xl text-[#002D74]">Login</h2>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <input
+              className="p-2 mt-8 rounded-xl border"
               type="text"
+              placeholder="Phone Number"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              maxLength="10"
-              className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md"
-              placeholder="Enter your phone number"
+              autoComplete="new-phone"
             />
-          </div>
-
-          <div className="w-full h-auto mb-5">
-            <label htmlFor="password" className="block mb-1 text-white">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md"
-              placeholder="Enter your password"
-            />
-          </div>
-
-          {/* Remember Me */}
-          <div className="flex items-center justify-between w-full mb-5">
-            <div className="flex items-center gap-x-2">
+            <div className="relative">
+              <input
+                className="p-2 rounded-xl border w-full"
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new password"
+              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="gray"
+                className="bi bi-eye absolute top-1/2 right-3 -translate-y-1/2"
+                viewBox="0 0 16 16"
+              >
+                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z" />
+                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z" />
+              </svg>
+            </div>
+            <div className="flex items-center">
               <input
                 type="checkbox"
-                id="rememberMe"
                 checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4"
+                onChange={() => setRememberMe(!rememberMe)}
+                id="rememberMe"
               />
-              <label htmlFor="rememberMe" className="text-white">
+              <label htmlFor="rememberMe" className="ml-2 text-sm text-[#002D74]">
                 Remember Me
               </label>
             </div>
+            <button
+              type="submit"
+              className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300"
+            >
+              {loading ? "Loading..." : "Login"}
+            </button>
+          </form>
 
-            {/* Forgot Password */}
-            <div>
-              <Link
-                to="/forgot-password"
-                className="text-sm text-gray-300 hover:underline"
-              >
-                Forgot Password?
-              </Link>
-            </div>
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+          {success && <p className="text-green-500 text-sm mt-2">{success}</p>}
+
+          <div className="mt-6 grid grid-cols-3 items-center text-gray-400">
+            <hr className="border-gray-400" />
+            <p className="text-center text-sm">OR</p>
+            <hr className="border-gray-400" />
           </div>
 
-          <button
-            type="submit"
-            className="w-full h-12 text-lg font-medium text-black rounded-md outline-none bg-white/70"
-            disabled={loading}
-          >
-            {loading ? "Signing in..." : "Sign in"}
-          </button>
-        </form>
-
-        {error && <p className="mt-5 text-sm text-red-500">{error}</p>}
-        {success && <p className="mt-5 text-sm text-green-500">{success}</p>}
-
-        <div className="flex items-center w-full h-auto my-5 gap-x-1">
-          <div className="w-1/2 h-[1.5px] rounded-md h1 bg-gray-200/40"></div>
-          <p className="px-2 text-sm font-normal text-gray-300">OR</p>
-          <div className="w-1/2 h-[1.5px] rounded-md h1 bg-gray-200/40"></div>
-        </div>
-
-        <div className="flex items-center w-full h-auto mb-5 gap-7">
-          <div className="w-1/2 h-auto">
+          <div className="flex flex-col gap-4 mt-5">
             <button
+              type="button"
               onClick={handleGoogleLogin}
-              className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md flex items-center gap-x-2 hover:bg-gray-100/40 ease-out duration-700"
+              className="bg-white border py-2 w-full rounded-xl flex items-center justify-center text-sm hover:scale-105 duration-300 text-[#002D74]"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                className="bi bi-google"
-                viewBox="0 0 16 16"
-              >
-                <path d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.7 7.7 0 0 1 5.352 2.082l-2.284 2.284A4.35 4.35 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.8 4.8 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.7 3.7 0 0 0 1.599-2.431H8v-3.08z" />
-              </svg>
-              Google
+              <FcGoogle size={24} className="mr-3" />
+              <span className="mr-4">Login with Google</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleFacebookLogin}
+              className="bg-white border py-2 w-full rounded-xl flex items-center justify-center text-sm hover:scale-105 duration-300 text-[#002D74]"
+            >
+              <FaFacebook size={24} className="mr-3 text-blue-600" />
+              <span>Login with Facebook</span>
             </button>
           </div>
 
-          <div className="w-1/2 h-auto">
+          <div className="mt-5 text-xs border-b border-[#002D74] py-4 text-[#002D74]">
+            <a href="#">Forgot your password?</a>
+          </div>
+
+          <div className="mt-3 text-xs flex justify-between items-center text-[#002D74]">
+            <p>Don't have an account?</p>
             <button
-              onClick={handleFacebookLogin}
-              className="w-full h-12 p-4 outline-none bg-transparent border-[2px] border-gray-200/40 text-white rounded-md flex items-center gap-x-2 hover:bg-gray-100/40 ease-out duration-700"
+              onClick={handleRegister}
+              className="py-2 px-5 bg-white border rounded-xl hover:scale-110 duration-300"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                className="bi bi-facebook"
-                viewBox="0 0 16 16"
-              >
-                <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951" />
-              </svg>
-              Facebook
+              Register
             </button>
           </div>
         </div>
 
-        <div className="flex items-center justify-center w-full h-auto gap-x-1">
-          <p className="text-base font-medium text-white">
-            Don't have an account?
-          </p>
-          <Link
-            to="/register"
-            className="text-base font-medium text-white duration-500 ease-out hover:underline"
-          >
-            Create New Account
-          </Link>
+        {/* image */}
+        <div className="md:block hidden w-1/2">
+          <img
+            className="rounded-2xl"
+            src="https://images.unsplash.com/photo-1616606103915-dea7be788566?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1887&q=80"
+            alt="Login Illustration"
+          />
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

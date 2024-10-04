@@ -1,24 +1,39 @@
-package com.koi_express.service;
+package com.koi_express.service.Order;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.Customers;
+import com.koi_express.entity.OrderDetail;
 import com.koi_express.entity.Orders;
 import com.koi_express.enums.OrderStatus;
-import com.koi_express.enums.PackingMethod;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
-import com.koi_express.repository.CustomersRepository;
 import com.koi_express.repository.OrderRepository;
+import com.koi_express.service.ManagerService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMailMessage;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -35,10 +50,16 @@ public class OrderService {
     private OrderRepository orderRepository;
 
     @Autowired
-    private CustomersRepository customersRepository;
+    private JwtUtil jwtUtil;
 
     @Autowired
-    private JwtUtil jwtUtil;
+    private JavaMailSender  javaMailSender;
+
+    @Autowired
+    private OrderFeeCalculator orderFeeCalculator;
+
+    @Autowired
+    private ManagerService managerService;
 
 
     // Create Order with OrderRequest, order with add into database base on customerId in payload of token
@@ -46,31 +67,12 @@ public class OrderService {
 
         try {
             String customerId = jwtUtil.extractCustomerId(token);
-            logger.info("Extracted customerId: {}", customerId);
-
-            Customers customer = customersRepository.findById(Long.parseLong(customerId))
-                    .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
-            logger.info("Retrieved customer: {}", customer);
-
-            Orders order = new Orders();
-            order.setCustomer(customer);
-            order.setRecipientName(orderRequest.getRecipientName());
-            order.setRecipientPhone(orderRequest.getRecipientPhone());
-            order.setKoiType(orderRequest.getKoiType());
-            order.setKoiQuantity(orderRequest.getKoiQuantity());
-            order.setOriginLocation(orderRequest.getOriginLocation());
-            order.setDestinationLocation(orderRequest.getDestinationLocation());
-            order.setPackingMethod(orderRequest.getPackingMethod());
-            order.setPaymentMethod(orderRequest.getPaymentMethod());
-            order.setInsurance(orderRequest.isInsurance());
-            order.setSpecialCare(orderRequest.isSpecialCare());
-            order.setHealthCheck(orderRequest.isHealthCheck());
-
-            double totalFee = calculateTotalFee(orderRequest);
-            order.setTotalFee(totalFee);
-
-            Orders savedOrder = orderRepository.save(order);
+            Customers customer = managerService.getCustomerById(Long.parseLong(customerId));
+            Orders orders = buildOrder(orderRequest, customer);
+            Orders savedOrder = orderRepository.save(orders);
             logger.info("Order created successfully: {}", savedOrder);
+
+            sendOrderConfirmationEmail(customer.getEmail(), savedOrder);
 
             return new ApiResponse<>(HttpStatus.OK.value(), "Order created successfully", savedOrder);
         } catch (Exception e) {
@@ -79,60 +81,84 @@ public class OrderService {
         }
     }
 
-    public double calculateTotalFee(OrderRequest orderRequest) {
+    private void sendOrderConfirmationEmail(String recipientEmail, Orders order) throws IOException {
 
-        double BASE_PRICE_PER_KG = 10000;
-        double INSURANCE_COST_FER_FISH = 50000;
-        double SPECIAL_CARE_COST_FER_FISH = 100000;
-        double HEALTH_CHECK_COST_FER_FISH = 50000;
-        double TAX_RATE = 0.05;
-        double BASIC_PACKAGING_COST_FER_FISH = 50000;
-        double SPECIAL_PACKAGING_COST_FER_FISH = 100000;
-        double FUEL_COST_PER_KM = 10000;
+        try {
 
-        int quantity = orderRequest.getKoiQuantity();
-        double weightFee = orderRequest.getKoiQuantity();
-        double distance  = calculateDistance(orderRequest.getOriginLocation(), orderRequest.getDestinationLocation());
-        boolean isInsurance = orderRequest.isInsurance();
-        boolean isSpecialCare = orderRequest.isSpecialCare();
-        boolean isHealthCheck = orderRequest.isHealthCheck();
-        PackingMethod packingMethod = orderRequest.getPackingMethod();
+            String htmlTemplate = loadEmailTemplate("Order Confirmation.html");
 
-        double totalFee = 0;
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("{{CustomerName}}", order.getCustomer().getFullName());
+            placeholders.put("{{OrderID}}", String.valueOf(order.getOrderId()));
+            placeholders.put("{{OrderDate}}", order.getCreatedAt().toString());
+            placeholders.put("{{Address}}", order.getDestinationLocation());
+            placeholders.put("{{TotalAmount}}", String.format("%.2f", order.getTotalFee()));
+            placeholders.put("{{TrackOrderLink}}", "https://koiexpress.com/track-order/" + order.getOrderId());
 
-        double basePrice = weightFee * BASE_PRICE_PER_KG;
-        totalFee += basePrice;
+            htmlTemplate = replacePlaceholders(htmlTemplate, placeholders);
 
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(recipientEmail);
+            helper.setSubject("Order Confirmation - Koi Express");
+            helper.setText(htmlTemplate, true);
+            javaMailSender.send(message);
 
-        if(isInsurance) {
-            totalFee += INSURANCE_COST_FER_FISH;
+            logger.info("Order confirmation email sent to: {}", recipientEmail);
+        } catch (Exception e) {
+            logger.error("Error sending order confirmation email: ", e);
+            throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
         }
-
-        if(isSpecialCare) {
-            totalFee += SPECIAL_CARE_COST_FER_FISH;
-        }
-
-        if(isHealthCheck) {
-            totalFee += HEALTH_CHECK_COST_FER_FISH;
-        }
-
-        if(packingMethod == PackingMethod.NORMAL_PACKAGING) {
-            totalFee += BASIC_PACKAGING_COST_FER_FISH;
-        } else if(packingMethod == PackingMethod.SPECIAL_PACKAGING) {
-            totalFee += SPECIAL_PACKAGING_COST_FER_FISH;
-        }
-
-        double tax = totalFee * TAX_RATE;
-        totalFee += tax;
-
-        double fuelCost = calculateFuelCost(distance);
-        totalFee += fuelCost;
-
-        return totalFee;
     }
 
-    private double calculateDistance(String originLocation, String destinationLocation) {
-        return 0;
+    private String loadEmailTemplate(String fileName) throws IOException {
+
+        ClassPathResource resource = new ClassPathResource(fileName);
+
+        try(BufferedReader reader = new BufferedReader(
+                new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
+            return reader.lines().collect(Collectors.joining(System.lineSeparator()));
+        }
+    }
+
+    private String replacePlaceholders(String template, Map<String, String> values) {
+        for (Map.Entry<String, String> entry : values.entrySet()) {
+            template = template.replace(entry.getKey(), entry.getValue());
+        }
+        return template;
+    }
+
+    private String extractCustomerIdFromToken(String token) {
+        return jwtUtil.extractCustomerId(token);
+    }
+
+    private Orders buildOrder(OrderRequest orderRequest, Customers customer) {
+
+        Orders orders = Orders.builder()
+                .customer(customer)
+                .originLocation(orderRequest.getOriginLocation())
+                .destinationLocation(orderRequest.getDestinationLocation())
+                .status(OrderStatus.PENDING)
+                .totalFee(orderFeeCalculator.calculateTotalFee(orderRequest))
+                .paymentMethod(orderRequest.getPaymentMethod())
+                .build();
+
+        OrderDetail orderDetail = OrderDetail.builder()
+                .order(orders)
+                .recipientName(orderRequest.getRecipientName())
+                .recipientPhone(orderRequest.getRecipientPhone())
+                .koiType(orderRequest.getKoiType())
+                .koiQuantity(orderRequest.getKoiQuantity())
+                .packingMethod(orderRequest.getPackingMethod())
+                .paymentMethod(orderRequest.getPaymentMethod())
+                .insurance(orderRequest.isInsurance())
+                .specialCare(orderRequest.isSpecialCare())
+                .healthCheck(orderRequest.isHealthCheck())
+                .build();
+
+
+        orders.setOrderDetail(orderDetail);
+        return orders;
     }
 
 //    private double calculateDistance(String originLocation, String destinationLocation) {
@@ -165,7 +191,7 @@ public class OrderService {
 //
 //            double distanceInMeters = jsonNode.path("distance").path("value").asDouble();
 //
-////          chuyển đổi t m sang km
+////          chuyển đổi tu m sang km
 //            return distanceInMeters / 1000.0;
 //        } catch (Exception e) {
 //            logger.error("Error calculating distance: ", e);
@@ -173,10 +199,7 @@ public class OrderService {
 //        }
 //    }
 
-    private double calculateFuelCost(double distance) {
-        double FUEL_COST_PER_KM = 10000;
-        return distance * FUEL_COST_PER_KM;
-    }
+
 
 //    Cancel Order
     public ApiResponse<String> cancelOrder(Long orderId) {

@@ -46,7 +46,11 @@ public class ManagerController {
     }
 
     @GetMapping("/id/{customerId}")
-    public ResponseEntity<ApiResponse<Customers>> getCustomerById( @PathVariable Long customerId) {
+    public ResponseEntity<ApiResponse<Customers>> getCustomerById(
+            HttpServletRequest httpServletRequest,
+            @PathVariable Long customerId) {
+
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
 
         Customers customers = managerService.getCustomerById(customerId);
         return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Customer find", customers), HttpStatus.OK);
@@ -54,7 +58,10 @@ public class ManagerController {
 
     @GetMapping("/phone/{phoneNumber}")
     public ResponseEntity<Customers> getCustomerByPhoneNumber(
+            HttpServletRequest httpServletRequest,
             @PathVariable String phoneNumber) {
+
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
 
         Customers customers = managerService.findByPhoneNumber(phoneNumber);
         return ResponseEntity.ok(customers);
@@ -62,7 +69,10 @@ public class ManagerController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ApiResponse<String>> deleteCustomer(
+            HttpServletRequest httpServletRequest,
             @PathVariable Long id) {
+
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
 
         managerService.deleteCustomer(id);
         return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Customer deleted successfully.", null), HttpStatus.OK);
@@ -70,9 +80,12 @@ public class ManagerController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse<String>> updateCustomer(
+            HttpServletRequest httpServletRequest,
             @PathVariable Long id,
             @RequestParam String fullName,
             @RequestParam String address) {
+
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
 
         managerService.updateCustomer(id, fullName, address);
         return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully.", null), HttpStatus.OK);

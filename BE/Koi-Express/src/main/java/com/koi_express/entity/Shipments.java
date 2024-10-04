@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Shipments {
+public class Shipments { // quản lý vận chuyển
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -7,5 +7,4 @@ import com.koi_express.entity.Orders;
 @Repository
 public interface OrderRepository extends JpaRepository<Orders, Long> {
 
-
 }

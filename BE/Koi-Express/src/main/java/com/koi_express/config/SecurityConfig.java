@@ -46,14 +46,14 @@ public class SecurityConfig {
                                         "/api/customers/update/**",
                                         "/api/customers/delete/**").permitAll()
                                 .requestMatchers("/api/manager/**", "/api/manager/id/**").hasAnyAuthority("ROLE_MANAGER")
-                                .requestMatchers("/api/orders/**").hasAnyAuthority("CUSTOMER", "ROLE_MANAGER")
+                                .requestMatchers("/api/orders/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_MANAGER")
                                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo ->
                                 userInfo.userService(customOAuth2UserService) // Sử dụng CustomOAuth2UserService
                         )
-                        .defaultSuccessUrl("/api/auth/userinfo", true)
+                        .defaultSuccessUrl("http://localhost:5173/apphomepage", true)
                         .failureUrl("/login?error=true")
                 )
                 .logout(logout -> logout

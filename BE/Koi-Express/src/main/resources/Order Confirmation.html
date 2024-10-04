@@ -1,0 +1,171 @@
+<!-- File: order-confirmation-email.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - Koi Express</title>
+    <style>
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            animation: fadeIn 2s ease-in;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0077b6, #00a8e8);
+            color: #ffffff;
+            text-align: center;
+            padding: 30px 10px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 40px;
+            line-height: 1.8;
+            color: #333333;
+        }
+
+        .content h2 {
+            color: #0077b6;
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .content p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .order-summary {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-top: 20px;
+        }
+
+        .order-summary p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #0077b6, #00a8e8);
+            color: #ffffff;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 30px;
+            animation: fadeIn 3.5s ease-in;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .button:hover {
+            background-color: #005f85;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #777;
+            background-color: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer a {
+            color: #0077b6;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .order-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+        }
+
+        .order-summary-item p {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Thank You for Your Order!</h1>
+    </div>
+    <div class="content">
+        <h2>Order Confirmation</h2>
+        <p>Hello <strong>{{CustomerName}}</strong>,</p>
+        <p>Thank you for your order with Koi Express! We are delighted to confirm your order, and our team is already
+            preparing your precious Koi fish for delivery.</p>
+
+        <div class="order-summary">
+            <div class="order-summary-item">
+                <p><strong>Order ID:</strong></p>
+                <p>{{OrderID}}</p>
+            </div>
+            <div class="order-summary-item">
+                <p><strong>Date:</strong></p>
+                <p>{{OrderDate}}</p>
+            </div>
+            <div class="order-summary-item">
+                <p><strong>Delivery Address:</strong></p>
+                <p>{{Address}}</p>
+            </div>
+            <div class="order-summary-item">
+                <p><strong>Total Amount:</strong></p>
+                <p>{{TotalAmount}}</p>
+            </div>
+        </div>
+
+        <p>Click below to track your order and view the latest updates.</p>
+
+        <a href="{{TrackOrderLink}}" class="button">Track Your Order</a>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 Koi Express. All rights reserved.</p>
+        <p>For any assistance, please <a href="mailto:support@koiexpress.com">contact our support team</a>.</p>
+    </div>
+</div>
+</body>
+
+</html>

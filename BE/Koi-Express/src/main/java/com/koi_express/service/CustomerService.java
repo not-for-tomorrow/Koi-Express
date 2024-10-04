@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class CustomerService {
@@ -40,14 +41,16 @@ public class CustomerService {
         if (customersRepository.existsByPhoneNumber(registerRequest.getPhoneNumber()))
             throw new AppException(ErrorCode.USER_EXISTED);
 
-        String email = registerRequest.getEmail() != null ? registerRequest.getEmail() : registerRequest.getPhoneNumber() + "@noemail.com";
+        if(registerRequest.getEmail() != null && customersRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
 
         String encodedPassword = passwordEncoder.encode(registerRequest.getPassword());
 
         Customers customer = Customers.builder()
                 .fullName(registerRequest.getFullName())
                 .phoneNumber(registerRequest.getPhoneNumber())
-                .email(email)
+                .email(registerRequest.getEmail())
                 .passwordHash(encodedPassword) // Sử dụng sdt làm mật khẩu và mã hóa
                 .authProvider(AuthProvider.LOCAL) // Đăng ký bằng số điện thoại nên authProvider là LOCAL
                 .role(Role.CUSTOMER) // Mặc định role là CUSTOMER
@@ -67,7 +70,12 @@ public class CustomerService {
             throw new AppException(ErrorCode.PASSWORD_INCORRECT);
         }
 
-        String token = jwtUtil.generateToken(customer.getPhoneNumber(), "Koi-Express", customer.getRole().name(), customer.getCustomerId().toString());
+        String token = jwtUtil.generateToken(customer.getPhoneNumber(),
+                "Koi-Express",
+                customer.getRole().name(),
+                customer.getCustomerId().toString(),
+                customer.getFullName(),
+                customer.getEmail());
 
         return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", token);
     }
@@ -88,5 +96,14 @@ public class CustomerService {
         return new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully", customer);
     }
 
+    public void activateCustomerAccount(String phoneNumber) {
 
+        Optional<Customers> customersOptional = customersRepository.findByPhoneNumber(phoneNumber);
+
+        if(customersOptional.isPresent()) {
+            Customers customers = customersOptional.get();
+            customers.setActivated(true);
+            customersRepository.save(customers);
+        }
+    }
 }

@@ -4,6 +4,7 @@ import MainLayout from "./components/MainLayout/MainLayout";
 import HomePages from "./pages/HomePages/HomePages";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
+import AppHomePages from "./pages/AppHomePages/AppHomePages";
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
@@ -29,6 +30,12 @@ export default function useRouteElements() {
         <MainLayout>
           <Register/>
         </MainLayout>
+      ),
+    },
+    {
+      path: "/apphomepage",
+      element: (
+        <AppHomePages/>
       ),
     },
   ]);

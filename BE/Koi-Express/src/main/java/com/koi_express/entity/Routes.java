@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
         @UniqueConstraint(columnNames = {"origin", "destination"})
 })
 
-public class Routes {
+public class Routes {//Quản lý tuyến đường
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

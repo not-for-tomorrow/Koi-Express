@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"email", "authProvider"})
 })
-public class Customers {
+public class Customers { // quản lí thông tin khách hàng
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,9 +37,7 @@ public class Customers {
     @Column(nullable = true)
     String passwordHash;
 
-    @Pattern(regexp = "\\d{10}", message = "Phone number must contain exactly 10 digits")
-    @Size(min = 10, max = 10, message = "Phone number must be exactly 10 digits")
-    @Column(nullable = true, unique = true)
+    @Pattern(regexp = "\\+\\d{11,15}", message = "Phone number must be in international format starting with '+' and contain 11 to 15 digits")
     String phoneNumber;
 
     @Enumerated(EnumType.STRING)
@@ -54,5 +52,7 @@ public class Customers {
     @Column(updatable = false)
     @CreationTimestamp
     LocalDateTime createdAt = LocalDateTime.now();
+
+    boolean activated;
 
 }
