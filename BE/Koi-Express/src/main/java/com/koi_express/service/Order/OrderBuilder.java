@@ -19,7 +19,9 @@ public class OrderBuilder {
         Orders orders = Orders.builder()
                 .customer(customer)
                 .originLocation(orderRequest.getOriginLocation())
+                .originDetail(orderRequest.getOriginDetail())
                 .destinationLocation(orderRequest.getDestinationLocation())
+                .destinationDetail(orderRequest.getDestinationDetail())
                 .status(OrderStatus.PENDING)
                 .totalFee(orderFeeCalculator.calculateTotalFee(orderRequest))
                 .paymentMethod(orderRequest.getPaymentMethod())
@@ -27,6 +29,8 @@ public class OrderBuilder {
 
         OrderDetail orderDetail = OrderDetail.builder()
                 .order(orders)
+                .senderName(orderRequest.getSenderName())
+                .senderPhone(orderRequest.getSenderPhone())
                 .recipientName(orderRequest.getRecipientName())
                 .recipientPhone(orderRequest.getRecipientPhone())
                 .koiType(orderRequest.getKoiType())

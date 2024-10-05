@@ -39,6 +39,10 @@ public class Orders { // Quản lý đơn hàng
     @NotEmpty(message = "Destination location cannot be empty")
     String destinationLocation;
 
+    String originDetail;
+
+    String destinationDetail;
+
     double totalFee;
 
     @Enumerated(EnumType.STRING)

@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.SecureRandom;
 import java.util.stream.Collectors;
 
 @RestController
@@ -29,25 +30,34 @@ public class AuthController {
         this.otpService = otpService;
     }
 
-
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<?>> registerCustomer(@RequestBody @Valid RegisterRequest registerRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            String errorMessage = bindingResult.getAllErrors()
+                    .stream()
+                    .map(e -> e.getDefaultMessage())
+                    .collect(Collectors.joining(", "));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
+        }
 
-            if (bindingResult.hasErrors()) {
-                String errorMessage = bindingResult.getAllErrors()
-                        .stream()
-                        .map(e -> e.getDefaultMessage())
-                        .collect(Collectors.joining(", "));
-                return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
-            }
+        // Keep the original number for logging purposes
+        String originalPhoneNumber = registerRequest.getPhoneNumber();
 
-//            ApiResponse<?> response = customerService.registerCustomer(registerRequest);
+        // Format the phone number for internal usage (e.g., storing, sending OTP)
+        String formattedPhoneNumber = otpService.formatPhoneNumber(originalPhoneNumber);
 
-        String formattedPhoneNumber = otpService.formatPhoneNumber(registerRequest.getPhoneNumber());
-        otpService.sendOtp(formattedPhoneNumber);
+        // Generate OTP only once, log the original number for OTP generation
+        String otp = String.format("%04d", new SecureRandom().nextInt(10000)); // Generate OTP
+        otpService.saveOtp(formattedPhoneNumber, otp); // Save the OTP internally for later validation
 
-        // Lưu thông tin đăng ký tạm thời để xác minh sau
-        registerRequest.setPhoneNumber(formattedPhoneNumber);
+        // Log the OTP generation using the original phone number
+        System.out.println("Generated OTP for " + originalPhoneNumber + ": " + otp);
+
+        // Send the OTP using the formatted phone number
+        otpService.sendOtp(formattedPhoneNumber, otp);
+
+        // Save temporary registration data with the formatted phone number
+        registerRequest.setPhoneNumber(originalPhoneNumber);
         otpService.saveTempRegisterRequest(registerRequest);
 
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "OTP has been sent to your phone number", null));
@@ -55,14 +65,14 @@ public class AuthController {
 
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestParam String phoneNumber, @RequestParam String otp) {
-        String formattedPhoneNumber = otpService.formatPhoneNumber(phoneNumber);
+        // No formatting, use original phone number for retrieval
+        RegisterRequest tempRegisterRequest = otpService.getTempRegisterRequest(phoneNumber);
 
-        boolean isValid = otpService.validateOtp(formattedPhoneNumber, otp);
-        if (isValid) {
-            // Tìm thông tin đăng ký tạm thời dựa vào số điện thoại
-            RegisterRequest tempRegisterRequest = otpService.getTempRegisterRequest(formattedPhoneNumber);
-            if (tempRegisterRequest != null) {
-                // Tạo tài khoản cho khách hàng và lưu vào cơ sở dữ liệu
+        if (tempRegisterRequest != null) {
+            // Validate the OTP
+            boolean isValid = otpService.validateOtp(otpService.formatPhoneNumber(phoneNumber), otp);
+            if (isValid) {
+                // Create customer account and save it in the database
                 ApiResponse<?> response = customerService.registerCustomer(tempRegisterRequest);
                 if (response.getCode() == HttpStatus.OK.value()) {
                     return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Registration completed successfully", null));
@@ -70,10 +80,10 @@ public class AuthController {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Registration failed", null));
                 }
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Temporary registration data not found", null));
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid OTP. Please try again.", null));
             }
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid OTP. Please try again.", null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Temporary registration data not found", null));
         }
     }
 
