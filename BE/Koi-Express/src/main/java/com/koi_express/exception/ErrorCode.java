@@ -19,6 +19,8 @@ public enum ErrorCode {
     UNAUTHORIZED(1014,"Unauthorized"),
     EMAIL_SENDING_FAILED(1015,"Email sending failed"),
     EMAIL_ALREADY_EXISTS(1016,"Email already exists"),
+    USER_EXISTED_EMAIL(1017,"Email already registered"),
+    INVALID_ROLE(1018,"Invalid role"),
     ;
 
     ErrorCode(int code, String message) {

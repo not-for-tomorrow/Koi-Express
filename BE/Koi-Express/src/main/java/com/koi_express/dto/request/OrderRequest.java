@@ -1,6 +1,6 @@
 package com.koi_express.dto.request;
 
-import com.koi_express.entity.Customers;
+import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.PackingMethod;
 import com.koi_express.enums.PaymentMethod;
 import lombok.*;

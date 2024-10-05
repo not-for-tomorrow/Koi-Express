@@ -1,8 +1,8 @@
 package com.koi_express.config;
 
 import com.koi_express.JWT.JwtFilter;
-import com.koi_express.service.CustomOAuth2UserService;
-import com.koi_express.service.CustomerDetailsService;
+import com.koi_express.service.Customer.CustomOAuth2UserService;
+import com.koi_express.service.Customer.CustomerDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

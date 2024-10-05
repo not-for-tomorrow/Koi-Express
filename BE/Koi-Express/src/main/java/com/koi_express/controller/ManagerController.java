@@ -1,12 +1,12 @@
 package com.koi_express.controller;
 
 import com.koi_express.JWT.JwtUtil;
+import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.entity.Customers;
-import com.koi_express.exception.AppException;
-import com.koi_express.exception.ErrorCode;
-import com.koi_express.service.ManagerService;
+import com.koi_express.entity.customer.Customers;
+import com.koi_express.service.Manager.ManagerService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +30,14 @@ public class ManagerController {
         this.jwtUtil = jwtUtil;
     }
 
+    @PostMapping("/create-staff")
+    public ResponseEntity<ApiResponse<?>> createsStaff(@RequestBody @Valid CreateStaffRequest createStaffRequest, HttpServletRequest httpServletRequest) {
+
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
+
+        ApiResponse<?> response = managerService.createStaffAccount(createStaffRequest);
+        return ResponseEntity.status(response.getCode()).body(response);
+    }
 
     @GetMapping(value = "/all")
     public ResponseEntity<Page<Customers>> getAllCustomers(
