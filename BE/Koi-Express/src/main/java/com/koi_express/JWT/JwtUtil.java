@@ -34,15 +34,22 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String generateToken(Customers customer) {
-        return generateToken(
-                customer.getEmail(),
-                customer.getFullName(),
-                customer.getAuthProvider().name(),
-                customer.getProviderId(),
-                customer.getRole().name(),
-                "someAdditionalInfo"  // Replace with actual value or remove if not needed
-        );
+    public String generateTokenOAuth2(Customers customer) {
+        Map<String, Object> claims = new LinkedHashMap<>();
+        claims.put("application", "Koi Express");
+        claims.put("fullName", customer.getFullName()); // Correct full name here
+        claims.put("email", customer.getEmail()); // Correct email here
+        claims.put("customerId", customer.getCustomerId()); // Use customer's unique ID
+        claims.put("role", customer.getRole().name()); // Role, e.g., CUSTOMER
+        claims.put("authProvider", customer.getAuthProvider().name()); // Auth provider, e.g., GOOGLE
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(customer.getProviderId() != null ? customer.getProviderId() : customer.getEmail()) // Set subject based on unique identifier
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // Token valid for 10 hours
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .compact();
     }
 
     public String extractPhoneNumber(String token) {

@@ -83,11 +83,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             }
         }
 
-        String token = jwtUtil.generateToken(customer);
+        String token = jwtUtil.generateTokenOAuth2(customer);
 
         log.info("Generated token for user {}: {}", email, token);
 
-        return oAuth2User;
+        return new CustomOAuth2User(oAuth2User, token, String.valueOf(customer.getCustomerId()));
     }
 }
 

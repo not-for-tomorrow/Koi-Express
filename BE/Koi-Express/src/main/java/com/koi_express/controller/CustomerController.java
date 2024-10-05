@@ -3,6 +3,7 @@ package com.koi_express.controller;
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.UpdateRequest;
 import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.dto.response.BasicInfoResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.repository.CustomersRepository;
 import com.koi_express.service.Customer.CustomerService;
@@ -51,6 +52,24 @@ public class CustomerController {
         Customers customers = customerService.getCustomerDetails(phoneNumber);
         return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "User details retrieved successfully", customers), HttpStatus.OK);
     }
+
+    @GetMapping("/basic-info")
+    public ResponseEntity<ApiResponse<BasicInfoResponse>> getCustomerBasicInfo(@RequestHeader("Authorization") String token) {
+        // Trích xuất JWT token từ chuỗi "Authorization"
+        String jwt = token.substring(7);
+
+        // Lấy số điện thoại từ token
+        String phoneNumber = jwtUtil.extractPhoneNumber(jwt);
+
+        // Lấy thông tin khách hàng
+        Customers customer = customerService.getCustomerDetails(phoneNumber);
+
+        // Tạo đối tượng chứa thông tin cần lấy ra
+        BasicInfoResponse basicInfo = new BasicInfoResponse(customer.getFullName(), customer.getPhoneNumber(), customer.getEmail());
+
+        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Customer basic information retrieved successfully", basicInfo), HttpStatus.OK);
+    }
+
 
 }
 

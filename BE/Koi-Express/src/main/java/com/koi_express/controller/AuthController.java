@@ -1,8 +1,12 @@
 package com.koi_express.controller;
 
+import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.LoginRequest;
 import com.koi_express.dto.request.RegisterRequest;
 import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.entity.customer.Customers;
+import com.koi_express.enums.AuthProvider;
+import com.koi_express.enums.Role;
 import com.koi_express.service.Customer.CustomerService;
 import com.koi_express.service.Verification.OtpService;
 import jakarta.validation.Valid;
@@ -23,11 +27,13 @@ public class AuthController {
 
     private final CustomerService customerService;
     private final OtpService otpService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public AuthController(CustomerService customerService, OtpService otpService) {
+    public AuthController(CustomerService customerService, OtpService otpService, JwtUtil jwtUtil) {
         this.customerService = customerService;
         this.otpService = otpService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/register")
@@ -108,30 +114,33 @@ public class AuthController {
     }
 
     @GetMapping("/google")
-    public ResponseEntity<ApiResponse<String>> googleLogin(@AuthenticationPrincipal OAuth2User oAuth2User){
-        String email = oAuth2User.getAttribute("email");
-        String name = oAuth2User.getAttribute("name");
+    public ResponseEntity<ApiResponse<String>> googleLogin(@AuthenticationPrincipal OAuth2User oAuth2User) {
+        Customers customer = new Customers();  // Replace with actual user fetching logic
+        customer.setEmail(oAuth2User.getAttribute("email"));
+        customer.setFullName(oAuth2User.getAttribute("name"));
+        customer.setProviderId(oAuth2User.getAttribute("sub"));
+        customer.setRole(Role.CUSTOMER); // Set the role as per your application needs
+        customer.setAuthProvider(AuthProvider.GOOGLE);
 
-        if (email == null || name == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "OAuth2 login failed", null));
-        }
-        
-        ApiResponse<String> response = new ApiResponse<>(HttpStatus.OK.value(), "Google login successful", email);
+        String token = jwtUtil.generateTokenOAuth2(customer);
+
+        ApiResponse<String> response = new ApiResponse<>(HttpStatus.OK.value(), "Google login successful", token);
         return ResponseEntity.ok(response);
     }
 
+    // Facebook OAuth2 Login Endpoint
     @GetMapping("/facebook")
-    public ResponseEntity<ApiResponse<String>> facebookLogin(@AuthenticationPrincipal OAuth2User oAuth2User){
-        String email = oAuth2User.getAttribute("email");
-        String name = oAuth2User.getAttribute("name");
+    public ResponseEntity<ApiResponse<String>> facebookLogin(@AuthenticationPrincipal OAuth2User oAuth2User) {
+        Customers customer = new Customers();  // Replace with actual user fetching logic
+        customer.setEmail(oAuth2User.getAttribute("email"));
+        customer.setFullName(oAuth2User.getAttribute("name"));
+        customer.setProviderId(oAuth2User.getAttribute("id"));
+        customer.setRole(Role.CUSTOMER); // Set the role as per your application needs
+        customer.setAuthProvider(AuthProvider.FACEBOOK);
 
-        if (email == null || name == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "OAuth2 login failed", null));
-        }
+        String token = jwtUtil.generateTokenOAuth2(customer);
 
-        ApiResponse<String> response = new ApiResponse<>(HttpStatus.OK.value(), "Facebook login successful", email);
+        ApiResponse<String> response = new ApiResponse<>(HttpStatus.OK.value(), "Facebook login successful", token);
         return ResponseEntity.ok(response);
     }
 
