@@ -36,7 +36,7 @@ public class Customers { // quản lí thông tin khách hàng
     @Column(nullable = true)
     String passwordHash;
 
-    @Pattern(regexp = "\\+\\d{11,15}", message = "Phone number must be in international format starting with '+' and contain 11 to 15 digits")
+
     String phoneNumber;
 
     @Enumerated(EnumType.STRING)

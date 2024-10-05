@@ -16,6 +16,10 @@ public class OrderRequest {
 
     Customers customer;
 
+    String senderName;
+
+    String senderPhone;
+
     String recipientName;
 
     String recipientPhone;
@@ -27,6 +31,10 @@ public class OrderRequest {
     String originLocation;
 
     String destinationLocation;
+
+    String originDetail;
+
+    String destinationDetail;
 
     PackingMethod packingMethod;
 

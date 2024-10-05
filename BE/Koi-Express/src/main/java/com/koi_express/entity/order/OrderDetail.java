@@ -30,6 +30,12 @@ public class OrderDetail {
     @JoinColumn(name = "order_id", nullable = false)
     Orders order;
 
+    @NotEmpty(message = "Sender name cannot be empty")
+    String senderName;
+
+    @NotEmpty(message = "Sender phone cannot be empty")
+    String senderPhone;
+
     @NotEmpty(message = "Recipient name cannot be empty")
     String recipientName;
 

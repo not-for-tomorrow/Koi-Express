@@ -12,7 +12,7 @@ import java.util.Map;
 public class OtpService {
 
     private static final String ACCOUNT_SID = "AC6ebe5c4cf2fb07c85783a6dbee771aae";
-    private static final String AUTH_TOKEN = "e21dffb2f6f8a50878aabe5fab8b2806";
+    private static final String AUTH_TOKEN = "c95b6c7f6e9eedf44a9b0d711a8f7909";
     private static final String FROM_PHONE = "+13182521661";
 
     private Map<String, String> otpData = new HashMap<>();
@@ -23,20 +23,11 @@ public class OtpService {
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
     }
 
-    public String generateOtp(String phoneNumber) {
-
-        String otp = String.format("%04d", random.nextInt(10000));
+    public void saveOtp(String phoneNumber, String otp) {
         otpData.put(phoneNumber, otp);
-        System.out.println("Generated OTP for " + phoneNumber + ": " + otp);
-        return otp;
     }
 
-    public void sendOtp(String phoneNumber) {
-
-        String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
-
-        String otp = generateOtp(formattedPhoneNumber);
-
+    public void sendOtp(String phoneNumber, String otp) {
         com.twilio.rest.api.v2010.account.Message.creator(
                 new com.twilio.type.PhoneNumber(phoneNumber),
                 new com.twilio.type.PhoneNumber(FROM_PHONE),
@@ -44,8 +35,15 @@ public class OtpService {
         ).create();
     }
 
+
     public boolean validateOtp(String phoneNumber, String otp) {
-        return otp.equals(otpData.get(phoneNumber));
+        String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
+        String storedOtp = otpData.get(formattedPhoneNumber);
+        if (otp.equals(storedOtp)) {
+            otpData.remove(formattedPhoneNumber); // Remove OTP once validated
+            return true;
+        }
+        return false;
     }
 
     public String formatPhoneNumber(String phoneNumber) {
