@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import ReactDOM from "react-dom";
 
 const OrderForm = ({
   pickupAddress,
@@ -13,6 +12,7 @@ const OrderForm = ({
   handleSelect,
   distance,
 }) => {
+  const roundedCost = Math.ceil((distance * 20000) / 1000) * 1000;
   const [isFormValid, setIsFormValid] = useState(false);
   const [showPickupDetail, setShowPickupDetail] = useState(false);
   const [showDeliveryDetail, setShowDeliveryDetail] = useState(false);
@@ -22,6 +22,8 @@ const OrderForm = ({
   const [senderPhone, setSenderPhone] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
+  const [pickupCollapsed, setPickupCollapsed] = useState(false);
+  const [deliveryCollapsed, setDeliveryCollapsed] = useState(false);
 
   useEffect(() => {
     setIsFormValid(
@@ -51,7 +53,7 @@ const OrderForm = ({
       senderPhone,
       recipientName,
       recipientPhone,
-      cost: distance * 10000, // Tính toán chi phí dựa trên khoảng cách
+      cost: distance * 20000, // Calculate cost based on distance
     };
 
     try {
@@ -67,215 +69,213 @@ const OrderForm = ({
     }
   };
 
+  const handlePickupToggle = () => {
+    setPickupCollapsed(!pickupCollapsed);
+  };
+
+  const handleDeliveryToggle = () => {
+    setDeliveryCollapsed(!deliveryCollapsed);
+  };
+
   return (
-    <div className="w-1/3 p-10 overflow-y-auto bg-white border-r border-gray-200 shadow-lg relative z-20">
-      <h2 className="text-xl font-extrabold text-gray-900">Đơn hàng mới</h2>
+    <div className="relative z-20 flex flex-col w-1/3 h-full p-10 bg-white border-r border-gray-200 shadow-lg">
+      {/* Scrollable Content Section */}
+      <div className="flex-grow pr-4 overflow-y-auto">
+        <h2 className="text-xl font-semibold text-gray-900">Đơn hàng mới</h2>
 
-      {/* Pickup Address Box */}
-      <div className="mt-8 border p-4 rounded-lg shadow-inner">
-        <label className="block mb-2 font-semibold text-sm text-gray-700">
-          Địa chỉ lấy hàng
-        </label>
-        <input
-          type="text"
-          value={pickupAddress}
-          onChange={(e) => handleAddressChange(e, true)}
-          placeholder="Chọn địa điểm"
-          className="w-full p-3 mt-1 transition-all bg-white border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-500"
-        />
-        <div className="mt-2 overflow-y-auto bg-white border rounded-lg shadow-md max-h-60">
-          {pickupSuggestions.map((suggestion) => (
-            <div
-              key={suggestion.place_id}
-              className="p-3 transition-colors cursor-pointer hover:bg-gray-100"
-              onClick={() => handleSelect(suggestion, true)}
-            >
-              <span className="text-sm">{suggestion.display_name}</span>
-            </div>
-          ))}
-        </div>
-        {/* Thay đổi nút hiển thị chi tiết địa chỉ */}
-        {pickupDetail ? (
-          <p
-            className="text-blue-500 text-sm mt-2 cursor-pointer"
-            onClick={() => setShowPickupDetail(true)}
-          >
-            Chi tiết địa chỉ:{" "}
-            <span className="font-semibold">{pickupDetail}</span>
-          </p>
-        ) : (
-          <p
-            className="text-blue-500 text-sm mt-2 cursor-pointer"
-            onClick={() => setShowPickupDetail(true)}
-          >
-            + Chi tiết địa chỉ
+        {/* Display Route Distance */}
+        {deliveryCollapsed && distance > 0 && (
+          <p className="mt-4 text-sm font-semibold text-gray-700">
+            Lộ trình điểm giao: {distance.toFixed(2)} km
           </p>
         )}
 
-        {/* Thêm các trường Tên người gửi và Số điện thoại */}
-        <div className="mt-4">
-          <label className="block mb-2 font-semibold text-sm text-gray-700">
-            Tên người gửi và Số điện thoại
+        {/* Pickup Address Box */}
+        <div
+          className="p-4 mt-4 border rounded-lg shadow-inner cursor-pointer"
+          onClick={
+            pickupCollapsed && pickupAddress ? handlePickupToggle : undefined
+          }
+        >
+          <label className="block mb-2 text-sm font-semibold text-gray-700">
+            Địa chỉ lấy hàng
           </label>
-          <div className="flex space-x-4">
-            <input
-              type="text"
-              value={senderName}
-              onChange={(e) => setSenderName(e.target.value)}
-              placeholder="Tên người gửi"
-              className="w-1/2 p-3 mt-1 transition-all bg-white border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-500"
-            />
-            <input
-              type="text"
-              value={senderPhone}
-              onChange={(e) => setSenderPhone(e.target.value)}
-              placeholder="Số điện thoại"
-              className="w-1/2 p-3 mt-1 transition-all bg-white border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Delivery Address Box */}
-      <div className="mt-8 border p-4 rounded-lg shadow-inner">
-        <label className="block mb-2 font-semibold text-sm text-gray-700">
-          Địa chỉ giao hàng
-        </label>
-        <input
-          type="text"
-          value={deliveryAddress}
-          onChange={(e) => handleAddressChange(e, false)}
-          placeholder="Chọn địa điểm"
-          className="w-full p-3 mt-1 transition-all bg-white border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-500"
-        />
-        <div className="mt-2 overflow-y-auto bg-white border rounded-lg shadow-md max-h-60">
-          {deliverySuggestions.map((suggestion) => (
-            <div
-              key={suggestion.place_id}
-              className="p-3 transition-colors cursor-pointer hover:bg-gray-100"
-              onClick={() => handleSelect(suggestion, false)}
-            >
-              <span className="text-sm">{suggestion.display_name}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Thay đổi nút hiển thị chi tiết địa chỉ */}
-        {deliveryDetail ? (
-          <p
-            className="text-blue-500 text-sm mt-2 cursor-pointer"
-            onClick={() => setShowDeliveryDetail(true)}
-          >
-            Chi tiết địa chỉ:{" "}
-            <span className="font-semibold">{deliveryDetail}</span>
-          </p>
-        ) : (
-          <p
-            className="text-blue-500 text-sm mt-2 cursor-pointer"
-            onClick={() => setShowDeliveryDetail(true)}
-          >
-            + Chi tiết địa chỉ
-          </p>
-        )}
-
-        {/* Thêm các trường Tên người nhận và Số điện thoại */}
-        <div className="mt-4">
-          <label className="block mb-2 font-semibold text-sm text-gray-700">
-            Tên người nhận và Số điện thoại
-          </label>
-          <div className="flex space-x-4">
-            <input
-              type="text"
-              value={recipientName}
-              onChange={(e) => setRecipientName(e.target.value)}
-              placeholder="Tên người nhận"
-              className="w-1/2 p-3 mt-1 transition-all bg-white border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-500"
-            />
-            <input
-              type="text"
-              value={recipientPhone}
-              onChange={(e) => setRecipientPhone(e.target.value)}
-              placeholder="Số điện thoại"
-              className="w-1/2 p-3 mt-1 transition-all bg-white border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Pickup Detail Modal */}
-      {showPickupDetail &&
-        ReactDOM.createPortal(
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-[9999]">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-1/3 z-[10000]">
-              <h3 className="text-lg font-bold mb-4">
-                Chi tiết địa chỉ lấy hàng
-              </h3>
+          {pickupCollapsed ? (
+            <>
+              <p className="font-semibold">{pickupAddress.split(",")[0]}</p>
+              <p>{pickupAddress.split(",").slice(1).join(", ")}</p>
+            </>
+          ) : (
+            <>
               <input
                 type="text"
-                value={pickupDetail}
-                onChange={(e) => setPickupDetail(e.target.value)}
-                placeholder="Số nhà, hẻm, tòa nhà..."
+                value={pickupAddress}
+                onChange={(e) => handleAddressChange(e, true)}
+                placeholder="Chọn địa điểm"
                 className="w-full p-3 mt-1 transition-all bg-white border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-500"
               />
-              <div className="flex justify-end space-x-4 mt-6">
-                <button
-                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg"
-                  onClick={() => setShowPickupDetail(false)}
+              <div className="mt-2 overflow-y-auto bg-white border rounded-lg shadow-md max-h-60">
+                {pickupSuggestions.map((suggestion) => (
+                  <div
+                    key={suggestion.place_id}
+                    className="p-3 transition-colors cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSelect(suggestion, true)}
+                  >
+                    <span className="text-sm">{suggestion.display_name}</span>
+                  </div>
+                ))}
+              </div>
+              {pickupDetail ? (
+                <p
+                  className="mt-2 text-sm text-blue-500 cursor-pointer"
+                  onClick={() => setShowPickupDetail(true)}
                 >
-                  Hủy
-                </button>
+                  Chi tiết địa chỉ:{" "}
+                  <span className="font-semibold">{pickupDetail}</span>
+                </p>
+              ) : (
+                <p
+                  className="mt-2 text-sm text-blue-500 cursor-pointer"
+                  onClick={() => setShowPickupDetail(true)}
+                >
+                  + Chi tiết địa chỉ
+                </p>
+              )}
+              <div className="mt-4">
+                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  Tên người gửi và Số điện thoại
+                </label>
+                <div className="flex space-x-4">
+                  <input
+                    type="text"
+                    value={senderName}
+                    onChange={(e) => setSenderName(e.target.value)}
+                    placeholder="Tên người gửi"
+                    className="w-1/2 p-3 mt-1 transition-all bg-white border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-500"
+                  />
+                  <input
+                    type="text"
+                    value={senderPhone}
+                    onChange={(e) => setSenderPhone(e.target.value)}
+                    placeholder="Số điện thoại"
+                    className="w-1/2 p-3 mt-1 transition-all bg-white border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end mt-4 space-x-4">
                 <button
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                  onClick={() => {
-                    setShowPickupDetail(false);
-                  }}
+                  className={`bg-blue-500 text-white px-4 py-2 rounded-lg ${
+                    !pickupAddress ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  disabled={!pickupAddress}
+                  onClick={handlePickupToggle}
                 >
                   Xác nhận
                 </button>
               </div>
-            </div>
-          </div>,
-          document.body
-        )}
+            </>
+          )}
+        </div>
 
-      {/* Delivery Detail Modal */}
-      {showDeliveryDetail &&
-        ReactDOM.createPortal(
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-[9999]">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-1/3 z-[10000]">
-              <h3 className="text-lg font-bold mb-4">
-                Chi tiết địa chỉ giao hàng
-              </h3>
+        {/* Delivery Address Box */}
+        <div
+          className="p-4 mt-8 border rounded-lg shadow-inner cursor-pointer"
+          onClick={
+            deliveryCollapsed && deliveryAddress
+              ? handleDeliveryToggle
+              : undefined
+          }
+        >
+          <label className="block mb-2 text-sm font-semibold text-gray-700">
+            Địa chỉ giao hàng
+          </label>
+          {deliveryCollapsed ? (
+            <>
+              <p className="font-semibold">{deliveryAddress.split(",")[0]}</p>
+              <p>{deliveryAddress.split(",").slice(1).join(", ")}</p>
+            </>
+          ) : (
+            <>
               <input
                 type="text"
-                value={deliveryDetail}
-                onChange={(e) => setDeliveryDetail(e.target.value)}
-                placeholder="Số nhà, hẻm, tòa nhà..."
+                value={deliveryAddress}
+                onChange={(e) => handleAddressChange(e, false)}
+                placeholder="Chọn địa điểm"
                 className="w-full p-3 mt-1 transition-all bg-white border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-500"
               />
-              <div className="flex justify-end space-x-4 mt-6">
-                <button
-                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg"
-                  onClick={() => setShowDeliveryDetail(false)}
+              <div className="mt-2 overflow-y-auto bg-white border rounded-lg shadow-md max-h-60">
+                {deliverySuggestions.map((suggestion) => (
+                  <div
+                    key={suggestion.place_id}
+                    className="p-3 transition-colors cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSelect(suggestion, false)}
+                  >
+                    <span className="text-sm">{suggestion.display_name}</span>
+                  </div>
+                ))}
+              </div>
+              {deliveryDetail ? (
+                <p
+                  className="mt-2 text-sm text-blue-500 cursor-pointer"
+                  onClick={() => setShowDeliveryDetail(true)}
                 >
-                  Hủy
-                </button>
+                  Chi tiết địa chỉ:{" "}
+                  <span className="font-semibold">{deliveryDetail}</span>
+                </p>
+              ) : (
+                <p
+                  className="mt-2 text-sm text-blue-500 cursor-pointer"
+                  onClick={() => setShowDeliveryDetail(true)}
+                >
+                  + Chi tiết địa chỉ
+                </p>
+              )}
+              <div className="mt-4">
+                <label className="block mb-2 text-sm font-semibold text-gray-700">
+                  Tên người nhận và Số điện thoại
+                </label>
+                <div className="flex space-x-4">
+                  <input
+                    type="text"
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder="Tên người nhận"
+                    className="w-1/2 p-3 mt-1 transition-all bg-white border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-500"
+                  />
+                  <input
+                    type="text"
+                    value={recipientPhone}
+                    onChange={(e) => setRecipientPhone(e.target.value)}
+                    placeholder="Số điện thoại"
+                    className="w-1/2 p-3 mt-1 transition-all bg-white border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-4 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end mt-4 space-x-4">
                 <button
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                  onClick={() => {
-                    setShowDeliveryDetail(false);
-                  }}
+                  className={`bg-blue-500 text-white px-4 py-2 rounded-lg ${
+                    !deliveryAddress ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  disabled={!deliveryAddress}
+                  onClick={handleDeliveryToggle}
                 >
                   Xác nhận
                 </button>
               </div>
-            </div>
-          </div>,
-          document.body
-        )}
+            </>
+          )}
+        </div>
+      </div>
 
-      {/* Button to Confirm Order */}
-      <div className="flex mt-10 space-x-4">
+      {/* Display Calculated Cost Above the "Tiếp tục" Button */}
+      {distance > 0 && (
+        <p className="mb-4 text-lg font-semibold text-center text-gray-900">
+          {`Chi phí: ${new Intl.NumberFormat("vi-VN").format(roundedCost)} VND`}
+        </p>
+      )}
+
+      {/* Button to Confirm Order - Fixed at the Bottom */}
+      <div className="mt-4">
         <button
           className={`w-full p-3 rounded-lg text-base font-semibold transition-all transform ${
             isFormValid
