@@ -1,34 +1,44 @@
-
-import React, { useState } from 'react';
-import axios from 'axios';
-import OrderForm from './OrderForm';
-import MapComponent from './MapContainer';
+import React, { useState } from "react";
+import axios from "axios";
+import OrderForm from "./OrderForm";
+import { MapContainer as LeafletMap, TileLayer, Marker } from "react-leaflet";
+import RoutingControl from "./RoutingControl";
+import FitBoundsButton from "./FitBoundsButton";
 
 const OrderPage = () => {
-  const [pickupAddress, setPickupAddress] = useState('');
-  const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [recipientName, setRecipientName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [additionalInfo, setAdditionalInfo] = useState('');
-  const [pickupLocation, setPickupLocation] = useState({ lat: 10.8231, lng: 106.6297 });
-  const [deliveryLocation, setDeliveryLocation] = useState({ lat: 10.8231, lng: 106.6297 });
+  const [pickupAddress, setPickupAddress] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [recipientName, setRecipientName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [additionalInfo, setAdditionalInfo] = useState("");
+  const [pickupLocation, setPickupLocation] = useState({
+    lat: 10.8231,
+    lng: 106.6297,
+  });
+  const [deliveryLocation, setDeliveryLocation] = useState({
+    lat: 10.8231,
+    lng: 106.6297,
+  });
   const [pickupSuggestions, setPickupSuggestions] = useState([]);
   const [deliverySuggestions, setDeliverySuggestions] = useState([]);
   const [distance, setDistance] = useState(0);
 
   const fetchSuggestions = async (inputAddress, setSuggestions) => {
     try {
-      const response = await axios.get('https://nominatim.openstreetmap.org/search', {
-        params: {
-          q: inputAddress,
-          format: 'json',
-          addressdetails: 1,
-          limit: 5,
-        },
-      });
+      const response = await axios.get(
+        "https://us1.locationiq.com/v1/search.php",
+        {
+          params: {
+            key: "pk.57eb525ef1bdb7826a61cf49564f8a86", // Thay bằng API Key của bạn
+            q: inputAddress,
+            format: "json",
+            limit: 5,
+          },
+        }
+      );
       setSuggestions(response.data);
     } catch (error) {
-      console.error('Error fetching address suggestions:', error);
+      console.error("Error fetching address suggestions:", error);
     }
   };
 
@@ -53,7 +63,10 @@ const OrderPage = () => {
   };
 
   const handleSelect = (suggestion, isPickup) => {
-    const location = { lat: parseFloat(suggestion.lat), lng: parseFloat(suggestion.lon) };
+    const location = {
+      lat: parseFloat(suggestion.lat),
+      lng: parseFloat(suggestion.lon),
+    };
 
     if (isPickup) {
       setPickupAddress(suggestion.display_name);
@@ -89,7 +102,27 @@ const OrderPage = () => {
 
       {/* Full-Screen Map Section */}
       <div className="relative w-2/3 h-screen">
-        <MapComponent pickupLocation={pickupLocation} deliveryLocation={deliveryLocation} />
+        <LeafletMap
+          center={pickupLocation}
+          zoom={13}
+          style={{ width: "100%", height: "100%" }}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <Marker position={pickupLocation} />
+          <Marker position={deliveryLocation} />
+          <RoutingControl
+            pickupLocation={pickupLocation}
+            deliveryLocation={deliveryLocation}
+            setDistance={setDistance} // Truyền setDistance vào RoutingControl để cập nhật khoảng cách
+          />
+          <FitBoundsButton
+            pickupLocation={pickupLocation}
+            deliveryLocation={deliveryLocation}
+          />
+        </LeafletMap>
       </div>
     </div>
   );

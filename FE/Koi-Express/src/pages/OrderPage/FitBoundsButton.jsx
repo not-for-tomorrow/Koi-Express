@@ -1,6 +1,6 @@
-import React from 'react';
-import { useMap } from 'react-leaflet';
-import L from 'leaflet';
+import React from "react";
+import { useMap } from "react-leaflet";
+import L from "leaflet";
 
 const FitBoundsButton = ({ pickupLocation, deliveryLocation }) => {
   const map = useMap();
@@ -14,16 +14,16 @@ const FitBoundsButton = ({ pickupLocation, deliveryLocation }) => {
     <button
       onClick={fitBounds}
       style={{
-        position: 'absolute',
-        top: '10px',
-        right: '10px',
+        position: "absolute",
+        top: "10px",
+        right: "10px",
         zIndex: 1000,
-        padding: '10px',
-        backgroundColor: '#007bff',
-        color: 'white',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
+        padding: "10px",
+        backgroundColor: "#007bff",
+        color: "white",
+        border: "none",
+        borderRadius: "5px",
+        cursor: "pointer",
       }}
     >
       Xem toàn bộ tuyến đường
