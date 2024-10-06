@@ -21,6 +21,8 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXISTS(1016,"Email already exists"),
     USER_EXISTED_EMAIL(1017,"Email already registered"),
     INVALID_ROLE(1018,"Invalid role"),
+    ORDER_NOT_FOUND_CUSTOMER(1019,"Order not found for customer"),
+    ORDER_ALREADY_PROCESSED_CUSTOMER(1020,"Order already processed for customer"),
     ;
 
     ErrorCode(int code, String message) {

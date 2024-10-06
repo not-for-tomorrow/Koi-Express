@@ -6,7 +6,7 @@ import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.dto.response.BasicInfoResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.repository.CustomersRepository;
-import com.koi_express.service.Customer.CustomerService;
+import com.koi_express.service.customer.CustomerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

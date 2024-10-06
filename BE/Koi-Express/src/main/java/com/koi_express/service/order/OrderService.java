@@ -1,4 +1,4 @@
-package com.koi_express.service.Order;
+package com.koi_express.service.order;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
@@ -9,8 +9,8 @@ import com.koi_express.enums.OrderStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.OrderRepository;
-import com.koi_express.service.Manager.ManagerService;
-import com.koi_express.service.Verification.EmailService;
+import com.koi_express.service.manager.ManagerService;
+import com.koi_express.service.verification.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

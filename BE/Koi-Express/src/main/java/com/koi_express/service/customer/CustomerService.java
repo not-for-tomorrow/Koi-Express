@@ -1,4 +1,4 @@
-package com.koi_express.service.Customer;
+package com.koi_express.service.customer;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.LoginRequest;

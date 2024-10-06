@@ -1,4 +1,4 @@
-package com.koi_express.service.Customer;
+package com.koi_express.service.customer;
 
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.repository.CustomersRepository;

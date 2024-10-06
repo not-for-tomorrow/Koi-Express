@@ -1,4 +1,4 @@
-package com.koi_express.service.Verification;
+package com.koi_express.service.verification;
 
 import com.koi_express.entity.order.Orders;
 import com.koi_express.exception.AppException;

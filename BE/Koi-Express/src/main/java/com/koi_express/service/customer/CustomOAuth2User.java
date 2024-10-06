@@ -1,4 +1,4 @@
-package com.koi_express.service.Customer;
+package com.koi_express.service.customer;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;

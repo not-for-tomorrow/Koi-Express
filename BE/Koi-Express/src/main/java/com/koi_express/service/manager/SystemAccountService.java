@@ -1,4 +1,4 @@
-package com.koi_express.service.Manager;
+package com.koi_express.service.manager;
 
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -8,6 +8,8 @@ import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.SystemAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,8 @@ public class SystemAccountService {
 
     @Autowired
     private SystemAccountRepository systemAccountRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     public ApiResponse<?> createSalesStaffAccount(CreateStaffRequest createStaffRequest) {
@@ -36,5 +40,9 @@ public class SystemAccountService {
 
         systemAccountRepository.save(salesStaff);
         return new ApiResponse<>(HttpStatus.OK.value(), "Sales staff account created successfully", salesStaff);
+    }
+
+    public Page<SystemAccount> getAllAccountsByRole(Role role, Pageable pageable) {
+        return systemAccountRepository.findAllByRole(role, pageable);
     }
 }

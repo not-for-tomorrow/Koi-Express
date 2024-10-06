@@ -3,8 +3,9 @@ package com.koi_express.controller;
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.entity.customer.Customers;
-import com.koi_express.service.Manager.ManagerService;
+import com.koi_express.service.manager.ManagerService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class ManagerController {
         return ResponseEntity.status(response.getCode()).body(response);
     }
 
-    @GetMapping(value = "/all")
+    @GetMapping(value = "/customers", produces = "application/json")
     public ResponseEntity<Page<Customers>> getAllCustomers(
             HttpServletRequest httpServletRequest,
             @RequestParam(defaultValue = "0") int page,
@@ -97,6 +98,26 @@ public class ManagerController {
 
         managerService.updateCustomer(id, fullName, address);
         return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully.", null), HttpStatus.OK);
+    }
+
+    @GetMapping("/sales-staff")
+    public ResponseEntity<Page<SystemAccount>> getAllSalesStaff(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<SystemAccount> salesStaffAccounts = managerService.getAllSalesStaffAccounts(pageable);
+        return new ResponseEntity<>(salesStaffAccounts, HttpStatus.OK);
+    }
+
+    @GetMapping("/delivering-staff")
+    public ResponseEntity<Page<SystemAccount>> getAllDeliveringStaff(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<SystemAccount> deliveringStaffAccounts = managerService.getAllDeliveringStaffAccounts(pageable);
+        return new ResponseEntity<>(deliveringStaffAccounts, HttpStatus.OK);
     }
 
 }
