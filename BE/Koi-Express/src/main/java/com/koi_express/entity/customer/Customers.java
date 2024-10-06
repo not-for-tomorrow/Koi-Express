@@ -36,7 +36,6 @@ public class Customers { // quản lí thông tin khách hàng
     @Column(nullable = true)
     String passwordHash;
 
-
     String phoneNumber;
 
     @Enumerated(EnumType.STRING)
