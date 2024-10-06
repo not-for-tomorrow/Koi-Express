@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"email", "authProvider"})
 })
-public class Customers { // quản lí thông tin khách hàng
+public class Customers implements User { // quản lí thông tin khách hàng
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,4 +53,33 @@ public class Customers { // quản lí thông tin khách hàng
 
     boolean activated;
 
+    @Override
+    public Long getId() {
+        return customerId;
+    }
+
+    @Override
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    @Override
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    @Override
+    public String getFullName() {
+        return fullName;
+    }
+
+    @Override
+    public Role getRole() {
+        return role;
+    }
 }

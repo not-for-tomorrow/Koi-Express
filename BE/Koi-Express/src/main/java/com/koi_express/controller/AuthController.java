@@ -8,6 +8,7 @@ import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
 import com.koi_express.service.customer.CustomerService;
+import com.koi_express.service.verification.AuthService;
 import com.koi_express.service.verification.OtpService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +29,14 @@ public class AuthController {
     private final CustomerService customerService;
     private final OtpService otpService;
     private final JwtUtil jwtUtil;
+    private final AuthService authService;
 
     @Autowired
-    public AuthController(CustomerService customerService, OtpService otpService, JwtUtil jwtUtil) {
+    public AuthController(CustomerService customerService, OtpService otpService, JwtUtil jwtUtil, AuthService authService) {
         this.customerService = customerService;
         this.otpService = otpService;
         this.jwtUtil = jwtUtil;
+        this.authService = authService;
     }
 
     @PostMapping("/register")
@@ -104,7 +107,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
         }
 
-        ApiResponse<String> response = customerService.authenticateCustomer(loginRequest);
+        ApiResponse<String> response = authService.authenticateUser(loginRequest);
 
         if(response.getCode() == HttpStatus.OK.value()){
             return ResponseEntity.ok(response);

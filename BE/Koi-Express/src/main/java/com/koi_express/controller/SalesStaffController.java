@@ -13,14 +13,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/sales")
+@RequestMapping("/api/sales/orders")
 public class SalesStaffController {
 
     @Autowired
     private SalesStaffService salesStaffService;
 
     @PreAuthorize("hasRole('SALES_STAFF')")
-    @GetMapping("/orders/pending")
+    @GetMapping("/pending")
     public ResponseEntity<Page<Orders>> getPendingOrders(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -32,7 +32,7 @@ public class SalesStaffController {
     }
 
     @PreAuthorize("hasRole('SALES_STAFF')")
-    @GetMapping("/orders/completed")
+    @GetMapping("/accept/{orderId}")
     public ResponseEntity<ApiResponse<String>> acceptOrder(@PathVariable Long orderId) {
         ApiResponse<String> response = salesStaffService.acceptOrder(orderId);
         return new ResponseEntity<>(response, HttpStatus.OK);

@@ -60,24 +60,6 @@ public class CustomerService {
 
     }
 
-    public ApiResponse<String> authenticateCustomer(LoginRequest loginRequest) {
-        Customers customer = customersRepository.findByPhoneNumber(loginRequest.getPhoneNumber())
-                .orElseThrow(() -> new RuntimeException("Invalid phone number"));
-
-        if(!passwordEncoder.matches(loginRequest.getPassword(), customer.getPasswordHash())) {
-            throw new AppException(ErrorCode.PASSWORD_INCORRECT);
-        }
-
-        String token = jwtUtil.generateToken(customer.getPhoneNumber(),
-                "Koi-Express",
-                customer.getRole().name(),
-                customer.getCustomerId().toString(),
-                customer.getFullName(),
-                customer.getEmail());
-
-        return new ApiResponse<>(HttpStatus.OK.value(), "Login successfully", token);
-    }
-
     public Customers getCustomerDetails(String phoneNumber) {
         return customersRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
