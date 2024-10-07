@@ -1,4 +1,4 @@
-package com.koi_express.service.Manager;
+package com.koi_express.service.manager;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.entity.customer.Customers;

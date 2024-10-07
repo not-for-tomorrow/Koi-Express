@@ -1,4 +1,4 @@
-package com.koi_express.service.Order;
+package com.koi_express.service.order;
 
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.enums.PackingMethod;

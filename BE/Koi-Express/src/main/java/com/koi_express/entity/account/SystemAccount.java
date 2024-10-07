@@ -1,5 +1,6 @@
 package com.koi_express.entity.account;
 
+import com.koi_express.entity.customer.User;
 import com.koi_express.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SystemAccount {
+public class SystemAccount implements User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,5 +44,35 @@ public class SystemAccount {
     @Column(updatable = false)
     @CreationTimestamp
     LocalDateTime createdAt;
+
+    @Override
+    public Long getId() {
+        return accountId;
+    }
+
+    @Override
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    @Override
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    @Override
+    public String getFullName() {
+        return fullName;
+    }
+
+    @Override
+    public Role getRole() {
+        return role;
+    }
 
 }

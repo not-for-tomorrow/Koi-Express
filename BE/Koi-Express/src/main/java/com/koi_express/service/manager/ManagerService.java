@@ -1,8 +1,9 @@
-package com.koi_express.service.Manager;
+package com.koi_express.service.manager;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.Role;
 import com.koi_express.exception.AppException;
@@ -60,5 +61,13 @@ public class ManagerService {
         } else {
             throw new AppException(ErrorCode.INVALID_ROLE);
         }
+    }
+
+    public Page<SystemAccount> getAllSalesStaffAccounts(Pageable pageable) {
+        return systemAccountService.getAllAccountsByRole(Role.SALES_STAFF, pageable);
+    }
+
+    public Page<SystemAccount> getAllDeliveringStaffAccounts(Pageable pageable) {
+        return systemAccountService.getAllAccountsByRole(Role.DELIVERING_STAFF, pageable);
     }
 }

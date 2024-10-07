@@ -17,12 +17,26 @@ public class JwtUtil {
     @Value("${jwt.secret-key}")
     private String SECRET_KEY;
 
-    public String generateToken(String phoneNumber, String projectName, String role, String customerId, String fullName, String email) {
+    public String generateToken(String phoneNumber, String projectName, String role, String userId, String fullName, String email) {
         Map<String, Object> claims = new LinkedHashMap<>();
         claims.put("Application", projectName);
         claims.put("fullName", fullName);
         claims.put("email", email);
-        claims.put("customerId", customerId);
+        switch (role) {
+            case "CUSTOMER":
+                claims.put("customerId", userId);
+                break;
+            case "SALES_STAFF":
+            case "MANAGER":
+                claims.put("accountId", userId);
+                break;
+            case "DELIVERING_STAFF":
+                claims.put("staffId", userId);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid role specified");
+        }
+
         claims.put("role", role);
 
         return Jwts.builder()
@@ -58,6 +72,21 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
+    }
+
+    public String extractUserId(String token, String role) {
+        Claims claims = extractAllClaims(token);
+        switch (role) {
+            case "CUSTOMER":
+                return (String) claims.get("customerId");
+            case "SALES_STAFF":
+            case "MANAGER":
+                return (String) claims.get("accountId");
+            case "DELIVERING_STAFF":
+                return (String) claims.get("staffId");
+            default:
+                throw new IllegalArgumentException("Invalid role specified");
+        }
     }
 
     public String extractCustomerId(String token)  {

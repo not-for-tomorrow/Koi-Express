@@ -1,5 +1,6 @@
 package com.koi_express.entity.order;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.enums.PackingMethod;
 import com.koi_express.enums.PaymentMethod;
 import jakarta.persistence.*;
@@ -28,6 +29,7 @@ public class OrderDetail {
 
     @OneToOne
     @JoinColumn(name = "order_id", nullable = false)
+    @JsonIgnore
     Orders order;
 
     @NotEmpty(message = "Sender name cannot be empty")

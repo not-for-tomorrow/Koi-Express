@@ -1,5 +1,6 @@
 package com.koi_express.entity.order;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.OrderStatus;
@@ -29,7 +30,7 @@ public class Orders { // Quản lý đơn hàng
     @JoinColumn(name = "customer_id", nullable = false)
     Customers customer;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name ="delivering_staff_id", nullable = false)
     DeliveringStaff deliveringStaff;
 
@@ -56,5 +57,6 @@ public class Orders { // Quản lý đơn hàng
     LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     OrderDetail orderDetail;
 }
