@@ -1,14 +1,13 @@
 package com.koi_express.entity.customer;
 
+import java.time.LocalDateTime;
+
 import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -17,9 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"email", "authProvider"})
-})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"email", "authProvider"})})
 public class Customers implements User { // quản lí thông tin khách hàng
 
     @Id

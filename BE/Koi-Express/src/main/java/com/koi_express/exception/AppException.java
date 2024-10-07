@@ -1,6 +1,5 @@
 package com.koi_express.exception;
 
-
 public class AppException extends RuntimeException {
 
     public AppException(ErrorCode errorCode) {

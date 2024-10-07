@@ -1,5 +1,7 @@
 package com.koi_express.entity.staff;
 
+import java.time.LocalDateTime;
+
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.Role;
@@ -8,8 +10,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @Setter
@@ -17,10 +17,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(uniqueConstraints =
-        {@UniqueConstraint(columnNames = {"staff_id", "order_id"})}
-)
-public class StaffAssignment { //Phân công nhân viên
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"staff_id", "order_id"})})
+public class StaffAssignment { // Phân công nhân viên
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,5 +46,4 @@ public class StaffAssignment { //Phân công nhân viên
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
 }

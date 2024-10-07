@@ -20,7 +20,7 @@ public class OrderFeeCalculator {
 
         int quantity = orderRequest.getKoiQuantity();
         double weightFee = orderRequest.getKoiQuantity();
-        double distance  = calculateDistance(orderRequest.getOriginLocation(), orderRequest.getDestinationLocation());
+        double distance = calculateDistance(orderRequest.getOriginLocation(), orderRequest.getDestinationLocation());
         boolean isInsurance = orderRequest.isInsurance();
         boolean isSpecialCare = orderRequest.isSpecialCare();
         boolean isHealthCheck = orderRequest.isHealthCheck();
@@ -31,21 +31,21 @@ public class OrderFeeCalculator {
         double basePrice = weightFee * BASE_PRICE_PER_KG;
         totalFee += basePrice;
 
-        if(isInsurance) {
+        if (isInsurance) {
             totalFee += INSURANCE_COST_FER_FISH;
         }
 
-        if(isSpecialCare) {
+        if (isSpecialCare) {
             totalFee += SPECIAL_CARE_COST_FER_FISH;
         }
 
-        if(isHealthCheck) {
+        if (isHealthCheck) {
             totalFee += HEALTH_CHECK_COST_FER_FISH;
         }
 
-        if(packingMethod == PackingMethod.NORMAL_PACKAGING) {
+        if (packingMethod == PackingMethod.NORMAL_PACKAGING) {
             totalFee += BASIC_PACKAGING_COST_FER_FISH;
-        } else if(packingMethod == PackingMethod.SPECIAL_PACKAGING) {
+        } else if (packingMethod == PackingMethod.SPECIAL_PACKAGING) {
             totalFee += SPECIAL_PACKAGING_COST_FER_FISH;
         }
 

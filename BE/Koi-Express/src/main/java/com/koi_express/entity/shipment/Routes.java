@@ -1,5 +1,8 @@
 package com.koi_express.entity.shipment;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
@@ -8,9 +11,6 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @Setter
@@ -18,11 +18,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"origin", "destination"})
-})
-
-public class Routes {//Quản lý tuyến đường
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"origin", "destination"})})
+public class Routes { // Quản lý tuyến đường
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,6 +33,7 @@ public class Routes {//Quản lý tuyến đường
 
     @Positive(message = "Distance must be positive")
     BigDecimal distanceKm;
+
     boolean optimal;
 
     @CreationTimestamp

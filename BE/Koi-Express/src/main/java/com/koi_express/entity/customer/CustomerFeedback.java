@@ -1,13 +1,13 @@
 package com.koi_express.entity.customer;
 
-import com.koi_express.entity.shipment.DeliveringStaff;
+import java.time.LocalDateTime;
+
 import com.koi_express.entity.order.Orders;
+import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.FeedbackType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CustomerFeedback { //thu thập phản hồi và đánh gi từ khách hàng
+public class CustomerFeedback { // thu thập phản hồi và đánh gi từ khách hàng
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

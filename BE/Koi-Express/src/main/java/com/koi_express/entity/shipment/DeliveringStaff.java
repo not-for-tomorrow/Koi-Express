@@ -1,5 +1,8 @@
 package com.koi_express.entity.shipment;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import com.koi_express.entity.customer.CustomerFeedback;
 import com.koi_express.entity.customer.User;
 import com.koi_express.entity.order.Orders;
@@ -8,9 +11,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Getter

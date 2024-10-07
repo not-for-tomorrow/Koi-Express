@@ -1,5 +1,7 @@
 package com.koi_express.entity.audit;
 
+import java.time.LocalDateTime;
+
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.PaymentMethod;
@@ -10,8 +12,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @Setter
@@ -19,10 +19,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"order_id", "customer_id"})}
-)
-public class TransactionLogs { //Nhật ký giao dịch
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"order_id", "customer_id"})})
+public class TransactionLogs { // Nhật ký giao dịch
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

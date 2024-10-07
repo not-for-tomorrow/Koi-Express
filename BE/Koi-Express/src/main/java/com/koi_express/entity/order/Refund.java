@@ -1,11 +1,11 @@
 package com.koi_express.entity.order;
 
+import java.time.LocalDateTime;
+
 import com.koi_express.entity.customer.Customers;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter

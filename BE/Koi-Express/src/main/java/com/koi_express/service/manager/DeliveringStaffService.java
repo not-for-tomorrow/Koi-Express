@@ -31,6 +31,7 @@ public class DeliveringStaffService {
                 .build();
 
         deliveringStaffRepository.save(deliveringStaff);
-        return new ApiResponse<>(HttpStatus.OK.value(), "Delivering staff account created successfully", deliveringStaff);
+        return new ApiResponse<>(
+                HttpStatus.OK.value(), "Delivering staff account created successfully", deliveringStaff);
     }
 }

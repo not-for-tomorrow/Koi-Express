@@ -1,11 +1,11 @@
 package com.koi_express.entity.shipment;
 
+import java.time.LocalDateTime;
+
 import com.koi_express.enums.ShipmentCondition;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ShipmentLog { //ghi lại quá trình vận chuyển
+public class ShipmentLog { // ghi lại quá trình vận chuyển
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,8 +1,10 @@
 package com.koi_express.entity.order;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.enums.PaymentMethod;
 import jakarta.persistence.*;
@@ -10,8 +12,6 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -31,7 +31,7 @@ public class Orders { // Quản lý đơn hàng
     Customers customer;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name ="delivering_staff_id", nullable = false)
+    @JoinColumn(name = "delivering_staff_id", nullable = false)
     DeliveringStaff deliveringStaff;
 
     @NotEmpty(message = "Origin location cannot be empty")

@@ -22,12 +22,12 @@ public class DefaultAccountConfig {
             String email = "manager@koi-express.com";
             if (!systemAccountRepository.existsByEmail(email)) {
                 SystemAccount managerAccount = SystemAccount.builder()
-                        .accountId(0L)  // Setting the ID to 0 as per your requirement
+                        .accountId(0L) // Setting the ID to 0 as per your requirement
                         .fullName("Koi Express")
                         .email(email)
                         .phoneNumber("0000000000")
                         .passwordHash(passwordEncoder.encode("manager123"))
-                        .role(Role.MANAGER)  // Assuming Role.MANAGER is an appropriate role
+                        .role(Role.MANAGER) // Assuming Role.MANAGER is an appropriate role
                         .active(true)
                         .build();
                 systemAccountRepository.save(managerAccount);

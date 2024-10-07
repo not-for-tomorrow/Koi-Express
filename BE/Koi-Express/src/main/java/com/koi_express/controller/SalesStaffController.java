@@ -22,8 +22,7 @@ public class SalesStaffController {
     @PreAuthorize("hasRole('SALES_STAFF')")
     @GetMapping("/pending")
     public ResponseEntity<Page<Orders>> getPendingOrders(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 
         Pageable paging = PageRequest.of(page, size);
         Page<Orders> pendingOrders = salesStaffService.getPendingOrders(paging);

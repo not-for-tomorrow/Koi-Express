@@ -1,5 +1,7 @@
 package com.koi_express.service.customer;
 
+import java.util.Optional;
+
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.AuthProvider;
@@ -12,8 +14,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -45,14 +45,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String fullName = oAuth2User.getAttribute("name");
         if (fullName == null) {
-            fullName = "Unknown Name";  // Hoặc xử lý theo cách khác nếu thiếu tên
+            fullName = "Unknown Name"; // Hoặc xử lý theo cách khác nếu thiếu tên
         }
 
         // Define the provider ID field based on the provider
-        String providerId = registrationId.equalsIgnoreCase("google") ?
-                oAuth2User.getAttribute("sub") :
-                oAuth2User.getAttribute("id");
-
+        String providerId = registrationId.equalsIgnoreCase("google")
+                ? oAuth2User.getAttribute("sub")
+                : oAuth2User.getAttribute("id");
 
         // Determine the auth provider dynamically (Google or Facebook)
         AuthProvider authProvider = AuthProvider.valueOf(registrationId.toUpperCase());
@@ -68,7 +67,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             customer.setFullName(fullName);
             customer.setAuthProvider(authProvider); // Set provider (Google or Facebook)
             customer.setProviderId(providerId);
-            customer.setRole(Role.CUSTOMER);  // Default role
+            customer.setRole(Role.CUSTOMER); // Default role
 
             // No need to store password when using OAuth2
             customer.setPasswordHash(null);
@@ -90,4 +89,3 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         return new CustomOAuth2User(oAuth2User, token, String.valueOf(customer.getCustomerId()));
     }
 }
-

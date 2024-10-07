@@ -1,5 +1,7 @@
 package com.koi_express.entity.order;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.enums.PackingMethod;
 import com.koi_express.enums.PaymentMethod;
@@ -11,8 +13,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter

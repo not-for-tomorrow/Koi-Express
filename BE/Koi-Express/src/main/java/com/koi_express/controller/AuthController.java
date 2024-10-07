@@ -1,5 +1,8 @@
 package com.koi_express.controller;
 
+import java.security.SecureRandom;
+import java.util.stream.Collectors;
+
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.LoginRequest;
 import com.koi_express.dto.request.RegisterRequest;
@@ -19,9 +22,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.SecureRandom;
-import java.util.stream.Collectors;
-
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -32,7 +32,8 @@ public class AuthController {
     private final AuthService authService;
 
     @Autowired
-    public AuthController(CustomerService customerService, OtpService otpService, JwtUtil jwtUtil, AuthService authService) {
+    public AuthController(
+            CustomerService customerService, OtpService otpService, JwtUtil jwtUtil, AuthService authService) {
         this.customerService = customerService;
         this.otpService = otpService;
         this.jwtUtil = jwtUtil;
@@ -40,13 +41,14 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<?>> registerCustomer(@RequestBody @Valid RegisterRequest registerRequest, BindingResult bindingResult) {
+    public ResponseEntity<ApiResponse<?>> registerCustomer(
+            @RequestBody @Valid RegisterRequest registerRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getAllErrors()
-                    .stream()
+            String errorMessage = bindingResult.getAllErrors().stream()
                     .map(e -> e.getDefaultMessage())
                     .collect(Collectors.joining(", "));
-            return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
         }
 
         // Keep the original number for logging purposes
@@ -69,7 +71,8 @@ public class AuthController {
         registerRequest.setPhoneNumber(originalPhoneNumber);
         otpService.saveTempRegisterRequest(registerRequest);
 
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "OTP has been sent to your phone number", null));
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "OTP has been sent to your phone number", null));
     }
 
     @PostMapping("/verify-otp")
@@ -84,32 +87,39 @@ public class AuthController {
                 // Create customer account and save it in the database
                 ApiResponse<?> response = customerService.registerCustomer(tempRegisterRequest);
                 if (response.getCode() == HttpStatus.OK.value()) {
-                    return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Registration completed successfully", null));
+                    return ResponseEntity.ok(
+                            new ApiResponse<>(HttpStatus.OK.value(), "Registration completed successfully", null));
                 } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Registration failed", null));
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Registration failed", null));
                 }
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid OTP. Please try again.", null));
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(
+                                HttpStatus.BAD_REQUEST.value(), "Invalid OTP. Please try again.", null));
             }
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Temporary registration data not found", null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(
+                            HttpStatus.BAD_REQUEST.value(), "Temporary registration data not found", null));
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<String>> authenticateCustomer(@RequestBody @Valid LoginRequest loginRequest, BindingResult bindingResult) {
+    public ResponseEntity<ApiResponse<String>> authenticateCustomer(
+            @RequestBody @Valid LoginRequest loginRequest, BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getAllErrors()
-                    .stream()
+            String errorMessage = bindingResult.getAllErrors().stream()
                     .map(e -> e.getDefaultMessage())
                     .collect(Collectors.joining(", "));
-            return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
         }
 
         ApiResponse<String> response = authService.authenticateUser(loginRequest);
 
-        if(response.getCode() == HttpStatus.OK.value()){
+        if (response.getCode() == HttpStatus.OK.value()) {
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -118,7 +128,7 @@ public class AuthController {
 
     @GetMapping("/google")
     public ResponseEntity<ApiResponse<String>> googleLogin(@AuthenticationPrincipal OAuth2User oAuth2User) {
-        Customers customer = new Customers();  // Replace with actual user fetching logic
+        Customers customer = new Customers(); // Replace with actual user fetching logic
         customer.setEmail(oAuth2User.getAttribute("email"));
         customer.setFullName(oAuth2User.getAttribute("name"));
         customer.setProviderId(oAuth2User.getAttribute("sub"));
@@ -134,7 +144,7 @@ public class AuthController {
     // Facebook OAuth2 Login Endpoint
     @GetMapping("/facebook")
     public ResponseEntity<ApiResponse<String>> facebookLogin(@AuthenticationPrincipal OAuth2User oAuth2User) {
-        Customers customer = new Customers();  // Replace with actual user fetching logic
+        Customers customer = new Customers(); // Replace with actual user fetching logic
         customer.setEmail(oAuth2User.getAttribute("email"));
         customer.setFullName(oAuth2User.getAttribute("name"));
         customer.setProviderId(oAuth2User.getAttribute("id"));
@@ -146,5 +156,4 @@ public class AuthController {
         ApiResponse<String> response = new ApiResponse<>(HttpStatus.OK.value(), "Facebook login successful", token);
         return ResponseEntity.ok(response);
     }
-
 }

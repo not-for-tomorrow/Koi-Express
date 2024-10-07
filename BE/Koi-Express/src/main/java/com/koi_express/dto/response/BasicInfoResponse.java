@@ -12,5 +12,4 @@ public class BasicInfoResponse {
     private String fullName;
     private String phoneNumber;
     private String email;
-
 }
