@@ -3,9 +3,8 @@ spring:
     name: Koi-Express
 
   datasource:
-    url: jdbc:mysql://localhost:3306/koi_express
     driver-class-name: com.mysql.cj.jdbc.Driver
-
+    url: jdbc:mysql://localhost:3306/koi_express
     hikari:
       maximum-pool-size: 10
       connection-timeout: 20000
@@ -19,20 +18,28 @@ spring:
     main:
       allow-circular-references: true
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            scope:
+              - profile
+              - email
+          facebook:
+            scope:
+              - public_profile
+              - email
+
   mail:
     host: smtp.gmail.com
     port: 587
-    username: kn5253689@gmail.com
-    password: umzj lrkl nxdh bdly
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-
-jwt:
-  secret-key: "Qcm41hV7dw/EE0Eo8oY87pkREbUoZaU78LZZCbsCq9iqCBWmFUqsLVHVA36CGOEr"
 
 spring.config.import: "classpath:application-secret.yaml"
 
