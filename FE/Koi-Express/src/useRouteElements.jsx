@@ -5,7 +5,7 @@ import HomePages from "./pages/HomePages/HomePages";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import AppHomePages from "./pages/AppHomePages/AppHomePages";
-import OtpModal from "./pages/OTP/OtpModal"; 
+import OtpModal from "./pages/OTP/OtpModal";
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
@@ -19,19 +19,11 @@ export default function useRouteElements() {
     },
     {
       path: "/login",
-      element: (
-        <MainLayout>
-          <Login/>
-        </MainLayout>
-      ),
+      element: <Login />,
     },
     {
       path: "/register",
-      element: (
-        <MainLayout>
-          <Register/>
-        </MainLayout>
-      ),
+      element: <Register />,
     },
     {
       path: "/apphomepage",

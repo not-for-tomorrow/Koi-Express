@@ -46,7 +46,7 @@ export default function HomePages() {
               mỗi chuyến hàng.
             </h1>
             <button className="mt-5 text-left bg-amber-500 border rounded px-8 py-5">
-              <span className="font-semibold"><Link to="/apphomepage">Khám phá thêm</Link></span>
+              <span className="font-semibold">Khám phá thêm</span>
             </button>
           </div>
           <img
