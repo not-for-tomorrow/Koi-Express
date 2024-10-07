@@ -1,15 +1,15 @@
 package com.koi_express.JWT;
 
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Function;
+
 import com.koi_express.entity.customer.Customers;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 @Component
 public class JwtUtil {
@@ -17,7 +17,8 @@ public class JwtUtil {
     @Value("${jwt.secret-key}")
     private String SECRET_KEY;
 
-    public String generateToken(String phoneNumber, String projectName, String role, String userId, String fullName, String email) {
+    public String generateToken(
+            String phoneNumber, String projectName, String role, String userId, String fullName, String email) {
         Map<String, Object> claims = new LinkedHashMap<>();
         claims.put("Application", projectName);
         claims.put("fullName", fullName);
@@ -43,8 +44,8 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(phoneNumber)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))  // Token có thời hạn 10 giờ
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)  // Sử dụng thuật toán HS256
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // Token có thời hạn 10 giờ
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY) // Sử dụng thuật toán HS256
                 .compact();
     }
 
@@ -59,7 +60,10 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(customer.getProviderId() != null ? customer.getProviderId() : customer.getEmail()) // Set subject based on unique identifier
+                .setSubject(
+                        customer.getProviderId() != null
+                                ? customer.getProviderId()
+                                : customer.getEmail()) // Set subject based on unique identifier
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // Token valid for 10 hours
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
@@ -67,10 +71,8 @@ public class JwtUtil {
     }
 
     public String extractPhoneNumber(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
+        Claims claims =
+                Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
         return claims.getSubject();
     }
 
@@ -89,11 +91,9 @@ public class JwtUtil {
         }
     }
 
-    public String extractCustomerId(String token)  {
-        Claims claims = Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
+    public String extractCustomerId(String token) {
+        Claims claims =
+                Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
         return (String) claims.get("customerId");
     }
 
@@ -128,5 +128,4 @@ public class JwtUtil {
         Claims claims = extractAllClaims(token);
         return (String) claims.get("role");
     }
-
 }

@@ -1,5 +1,7 @@
 package com.koi_express.entity.shipment;
 
+import java.time.LocalDateTime;
+
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.ShipmentStatus;
@@ -9,8 +11,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -53,7 +53,6 @@ public class Shipments { // quản lý vận chuyển
     @CreationTimestamp
     @Column(updatable = false)
     LocalDateTime createdAt = LocalDateTime.now();
-
 
     @UpdateTimestamp
     LocalDateTime updatedAt = LocalDateTime.now();

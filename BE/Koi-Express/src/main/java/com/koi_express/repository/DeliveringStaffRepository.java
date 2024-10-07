@@ -1,11 +1,10 @@
 package com.koi_express.repository;
 
-import com.koi_express.entity.account.SystemAccount;
+import java.util.Optional;
+
 import com.koi_express.entity.shipment.DeliveringStaff;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
 public interface DeliveringStaffRepository extends JpaRepository<DeliveringStaff, Long> {
@@ -13,5 +12,4 @@ public interface DeliveringStaffRepository extends JpaRepository<DeliveringStaff
     boolean existsByPhoneNumber(String phoneNumber);
 
     Optional<DeliveringStaff> findByPhoneNumber(String phoneNumber);
-
 }

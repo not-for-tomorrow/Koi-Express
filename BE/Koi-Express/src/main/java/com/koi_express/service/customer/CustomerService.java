@@ -1,7 +1,9 @@
 package com.koi_express.service.customer;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import com.koi_express.JWT.JwtUtil;
-import com.koi_express.dto.request.LoginRequest;
 import com.koi_express.dto.request.RegisterRequest;
 import com.koi_express.dto.request.UpdateRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -16,16 +18,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
 @Service
 public class CustomerService {
 
     private final CustomersRepository customersRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-
 
     @Autowired
     public CustomerService(CustomersRepository customersRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
@@ -39,7 +37,7 @@ public class CustomerService {
         if (customersRepository.existsByPhoneNumber(registerRequest.getPhoneNumber()))
             throw new AppException(ErrorCode.USER_EXISTED);
 
-        if(registerRequest.getEmail() != null && customersRepository.existsByEmail(registerRequest.getEmail())) {
+        if (registerRequest.getEmail() != null && customersRepository.existsByEmail(registerRequest.getEmail())) {
             throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
@@ -57,17 +55,17 @@ public class CustomerService {
 
         customersRepository.save(customer);
         return new ApiResponse<>(HttpStatus.OK.value(), "User registration successfully", customer);
-
     }
 
     public Customers getCustomerDetails(String phoneNumber) {
-        return customersRepository.findByPhoneNumber(phoneNumber)
+        return customersRepository
+                .findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
     }
 
     public ApiResponse<Customers> updateCustomer(Long id, UpdateRequest updateRequest) {
-        Customers customer = customersRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+        Customers customer =
+                customersRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
 
         customer.setFullName(updateRequest.getFullName());
         customer.setAddress(updateRequest.getAddress());
@@ -80,7 +78,7 @@ public class CustomerService {
 
         Optional<Customers> customersOptional = customersRepository.findByPhoneNumber(phoneNumber);
 
-        if(customersOptional.isPresent()) {
+        if (customersOptional.isPresent()) {
             Customers customers = customersOptional.get();
             customers.setActivated(true);
             customersRepository.save(customers);

@@ -1,12 +1,12 @@
 package com.koi_express.service.verification;
 
-import com.koi_express.dto.request.RegisterRequest;
-import com.twilio.Twilio;
-import org.springframework.stereotype.Service;
-
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.koi_express.dto.request.RegisterRequest;
+import com.twilio.Twilio;
+import org.springframework.stereotype.Service;
 
 @Service
 public class OtpService {
@@ -29,12 +29,11 @@ public class OtpService {
 
     public void sendOtp(String phoneNumber, String otp) {
         com.twilio.rest.api.v2010.account.Message.creator(
-                new com.twilio.type.PhoneNumber(phoneNumber),
-                new com.twilio.type.PhoneNumber(FROM_PHONE),
-                "Your OTP is: " + otp
-        ).create();
+                        new com.twilio.type.PhoneNumber(phoneNumber),
+                        new com.twilio.type.PhoneNumber(FROM_PHONE),
+                        "Your OTP is: " + otp)
+                .create();
     }
-
 
     public boolean validateOtp(String phoneNumber, String otp) {
         String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
@@ -61,5 +60,4 @@ public class OtpService {
     public RegisterRequest getTempRegisterRequest(String phoneNumber) {
         return tempRegisterData.get(phoneNumber);
     }
-
 }

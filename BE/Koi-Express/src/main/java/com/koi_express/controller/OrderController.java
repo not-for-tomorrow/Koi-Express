@@ -26,7 +26,8 @@ public class OrderController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/create")
-    public ApiResponse<Orders> createOrder(@RequestBody OrderRequest orderRequest, HttpServletRequest httpServletRequest ) {
+    public ApiResponse<Orders> createOrder(
+            @RequestBody OrderRequest orderRequest, HttpServletRequest httpServletRequest) {
         String token = httpServletRequest.getHeader("Authorization").substring(7);
 
         return orderService.createOrder(orderRequest, token);
@@ -44,7 +45,7 @@ public class OrderController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-//    ử dụng jwt có role cúa managerể tuy cập vào api này
+    //    ử dụng jwt có role cúa managerể tuy cập vào api này
     @PreAuthorize("hasRole('MANAGER')")
     @GetMapping(value = "/all", produces = "application/json")
     public ResponseEntity<Page<Orders>> getAllOrders(
@@ -58,7 +59,5 @@ public class OrderController {
         Pageable paging = PageRequest.of(page, size);
         Page<Orders> ordersPage = orderService.getAllOrders(paging);
         return new ResponseEntity<>(ordersPage, HttpStatus.OK);
-
     }
-
 }

@@ -1,13 +1,13 @@
 package com.koi_express.entity.account;
 
+import java.time.LocalDateTime;
+
 import com.koi_express.entity.customer.User;
 import com.koi_express.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -74,5 +74,4 @@ public class SystemAccount implements User {
     public Role getRole() {
         return role;
     }
-
 }

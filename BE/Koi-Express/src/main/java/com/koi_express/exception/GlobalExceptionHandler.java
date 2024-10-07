@@ -1,5 +1,8 @@
 package com.koi_express.exception;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.koi_express.dto.response.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -9,25 +12,21 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = RuntimeException.class)
-    ResponseEntity<ApiResponse> handlingRuntimeException (RuntimeException exception) {
+    ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception) {
         ApiResponse response = new ApiResponse();
 
         response.setCode(1001);
         response.setMessage(exception.getMessage());
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-
     }
 
     @ExceptionHandler(value = AppException.class)
-    ResponseEntity<ApiResponse> handlingAppException (AppException exception) {
+    ResponseEntity<ApiResponse> handlingAppException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();
         ApiResponse response = new ApiResponse();
 
@@ -61,5 +60,4 @@ public class GlobalExceptionHandler {
         response.setMessage("Resource not found");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
-
 }

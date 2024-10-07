@@ -1,6 +1,5 @@
 package com.koi_express.dto.request;
 
-import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;

@@ -14,6 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -27,46 +30,44 @@ public class SecurityConfig {
 
     private final CustomerDetailsService customerDetailsService;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomerDetailsService customerDetailsService) {
+    public SecurityConfig(
+            CustomOAuth2UserService customOAuth2UserService, CustomerDetailsService customerDetailsService) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customerDetailsService = customerDetailsService;
     }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-                                .requestMatchers("/",
-                                        "/login",
-                                        "/oauth2/**",
-                                        "/api/auth/**",
-                                        "/api/customers/**",
-                                        "/api/customers/update/**",
-                                        "/api/customers/delete/**").permitAll()
-                                .requestMatchers("/api/manager/**", "/api/manager/id/**").hasAnyAuthority("ROLE_MANAGER")
-                                .requestMatchers("/api/orders/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_MANAGER")
-                                .anyRequest().authenticated()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo ->
-                                userInfo.userService(customOAuth2UserService) // Sử dụng CustomOAuth2UserService
-                        )
+        http.csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                        .requestMatchers(
+                                "/",
+                                "/login",
+                                "/oauth2/**",
+                                "/api/auth/**",
+                                "/api/customers/**",
+                                "/api/customers/update/**",
+                                "/api/customers/delete/**")
+                        .permitAll()
+                        .requestMatchers("/api/manager/**", "/api/manager/id/**")
+                        .hasAnyAuthority("ROLE_MANAGER")
+                        .requestMatchers("/api/orders/**")
+                        .hasAnyAuthority("ROLE_CUSTOMER", "ROLE_MANAGER")
+                        .anyRequest()
+                        .authenticated())
+                .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(
+                                userInfo ->
+                                        userInfo.userService(customOAuth2UserService) // Sử dụng CustomOAuth2UserService
+                                )
                         .defaultSuccessUrl("http://localhost:5173/apphomepage", true)
-                        .failureUrl("/login?error=true")
-                )
-                .logout(logout -> logout
-                        .logoutSuccessUrl("/login")
-                )
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((request, response, authException) -> {
+                        .failureUrl("/login?error=true"))
+                .logout(logout -> logout.logoutSuccessUrl("/login"))
+                .exceptionHandling(
+                        exception -> exception.authenticationEntryPoint((request, response, authException) -> {
                             response.setContentType("application/json");
                             response.setCharacterEncoding("UTF-8");
                             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-                        })
-                )
-
+                        }))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -77,4 +78,18 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+
+        corsConfiguration.addAllowedOrigin("http://localhost:5173");
+        corsConfiguration.addAllowedMethod("*");
+        corsConfiguration.addAllowedHeader("*");
+        corsConfiguration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfiguration);
+
+        return new CorsFilter(source);
+    }
 }

@@ -1,5 +1,7 @@
 package com.koi_express.service.saleStaff;
 
+import java.util.Optional;
+
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
@@ -15,13 +17,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class SalesStaffService {
 
     private static final Logger logger = LoggerFactory.getLogger(SalesStaffService.class);
-
 
     @Autowired
     private SalesStaffRepository salesStaffRepository;
@@ -49,7 +48,8 @@ public class SalesStaffService {
         // Ensure the order is in PENDING status before accepting
         if (order.getStatus() != OrderStatus.PENDING) {
             logger.error("Order with ID {} is not in PENDING status, current status: {}", orderId, order.getStatus());
-            throw new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order cannot be accepted as it is not in PENDING status");
+            throw new AppException(
+                    ErrorCode.ORDER_ALREADY_PROCESSED, "Order cannot be accepted as it is not in PENDING status");
         }
 
         // Update the order status to ACCEPTED
@@ -59,6 +59,4 @@ public class SalesStaffService {
         logger.info("Order with ID {} has been accepted successfully", orderId);
         return new ApiResponse<>(HttpStatus.OK.value(), "Order accepted successfully", null);
     }
-
-
 }

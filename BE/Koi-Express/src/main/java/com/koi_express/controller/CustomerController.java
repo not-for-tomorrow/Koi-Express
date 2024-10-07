@@ -23,7 +23,8 @@ public class CustomerController {
     private final CustomersRepository customersRepository;
 
     @Autowired
-    public CustomerController(CustomerService customerService, JwtUtil jwtUtil, CustomersRepository customersRepository) {
+    public CustomerController(
+            CustomerService customerService, JwtUtil jwtUtil, CustomersRepository customersRepository) {
         this.customerService = customerService;
         this.jwtUtil = jwtUtil;
         this.customersRepository = customersRepository;
@@ -31,13 +32,14 @@ public class CustomerController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse<Customers>> updateCustomer(
-            @PathVariable Long id,
-            @RequestBody @Valid UpdateRequest updateRequest,
-            BindingResult bindingResult) {
+            @PathVariable Long id, @RequestBody @Valid UpdateRequest updateRequest, BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getFieldError()!=null? bindingResult.getFieldError().getDefaultMessage() : "Validation failed";
-            return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
+            String errorMessage = bindingResult.getFieldError() != null
+                    ? bindingResult.getFieldError().getDefaultMessage()
+                    : "Validation failed";
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
         }
 
         ApiResponse<Customers> response = customerService.updateCustomer(id, updateRequest);
@@ -50,11 +52,14 @@ public class CustomerController {
         String phoneNumber = jwtUtil.extractPhoneNumber(jwt);
 
         Customers customers = customerService.getCustomerDetails(phoneNumber);
-        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "User details retrieved successfully", customers), HttpStatus.OK);
+        return new ResponseEntity<>(
+                new ApiResponse<>(HttpStatus.OK.value(), "User details retrieved successfully", customers),
+                HttpStatus.OK);
     }
 
     @GetMapping("/basic-info")
-    public ResponseEntity<ApiResponse<BasicInfoResponse>> getCustomerBasicInfo(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse<BasicInfoResponse>> getCustomerBasicInfo(
+            @RequestHeader("Authorization") String token) {
         // Trích xuất JWT token từ chuỗi "Authorization"
         String jwt = token.substring(7);
 
@@ -65,11 +70,12 @@ public class CustomerController {
         Customers customer = customerService.getCustomerDetails(phoneNumber);
 
         // Tạo đối tượng chứa thông tin cần lấy ra
-        BasicInfoResponse basicInfo = new BasicInfoResponse(customer.getFullName(), customer.getPhoneNumber(), customer.getEmail());
+        BasicInfoResponse basicInfo =
+                new BasicInfoResponse(customer.getFullName(), customer.getPhoneNumber(), customer.getEmail());
 
-        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Customer basic information retrieved successfully", basicInfo), HttpStatus.OK);
+        return new ResponseEntity<>(
+                new ApiResponse<>(
+                        HttpStatus.OK.value(), "Customer basic information retrieved successfully", basicInfo),
+                HttpStatus.OK);
     }
-
-
 }
-

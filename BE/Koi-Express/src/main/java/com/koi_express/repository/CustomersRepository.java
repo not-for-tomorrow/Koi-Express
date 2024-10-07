@@ -1,5 +1,8 @@
 package com.koi_express.repository;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.AuthProvider;
 import org.springframework.data.domain.Page;
@@ -7,9 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface CustomersRepository extends JpaRepository<Customers, Long> {
@@ -20,7 +20,7 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
 
     Optional<Customers> findByPhoneNumber(String phoneNumber);
 
-    boolean existsByEmail(String email);  // For validation purposes
+    boolean existsByEmail(String email); // For validation purposes
 
     boolean existsByPhoneNumber(String phoneNumber);
 
@@ -29,5 +29,4 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
     Page<Customers> findAll(Pageable pageable);
 
     List<Customers> findAll(Sort sort);
-
 }

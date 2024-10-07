@@ -42,7 +42,6 @@ public class OrderBuilder {
                 .healthCheck(orderRequest.isHealthCheck())
                 .build();
 
-
         orders.setOrderDetail(orderDetail);
         return orders;
     }
