@@ -1,11 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
 import { IoReorderThreeOutline } from "react-icons/io5";
 import { navItems } from "./IconsData";
+import jwt_decode from "jwt-decode";
 
 const Sidebar = ({ setActivePage }) => {
   const [click, setClick] = useState(false); // Toggle sidebar open/closed
   const [activeItem, setActiveItem] = useState(1); // Track the active item (default: first item)
+  const [userInfo, setUserInfo] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+  });
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+  
+    if (token) {
+      try {
+        // Giải mã token
+        const decoded = jwt_decode(token);
+
+        console.log("Decoded token:", decoded);
+        // Lưu thông tin người dùng
+        setUserInfo({
+          fullName: decoded.fullName || "Unknown User",
+          email: decoded.email || "No Email",
+          phone: decoded.sub || "No Phone",
+        });
+      } catch (error) {
+        console.error("Invalid token:", error);
+      }
+    } else {
+      console.error("Token not found in localStorage.");
+    }
+  }, []);
+  
 
   const handleItemClick = (item) => {
     setActiveItem(item.id);
@@ -29,7 +59,7 @@ const Sidebar = ({ setActivePage }) => {
             </div>
           )}
         </div>
-
+  
         {!click ? (
           <div className="relative p-4 mb-5 text-white rounded-lg bg-gradient-to-r from-blue-400 to-blue-600">
             <button
@@ -41,10 +71,10 @@ const Sidebar = ({ setActivePage }) => {
             <p className="absolute text-lg font-bold text-white top-2 left-4">
               Koi Express
             </p>
-
+  
             <div
               className="p-3 mt-8 mb-6 bg-blue-300 rounded-lg cursor-pointer"
-              onClick={() => {setActivePage("Profile")}}
+              onClick={() => setActivePage("Profile")}
             >
               <div className="flex items-center gap-4">
                 <img
@@ -54,16 +84,16 @@ const Sidebar = ({ setActivePage }) => {
                 />
                 <div>
                   <p className="text-lg font-semibold text-gray-800 whitespace-nowrap">
-                    Nguyễn Nhất Huy
+                    {userInfo.fullName || "Unknown User"}
                   </p>
-                  <p className="text-sm text-gray-600">Đồ điện gia dụng_L012</p>
-                  <p className="text-sm text-gray-600">+84 909984643</p>
+                  <p className="text-sm text-gray-600">{userInfo.email || "No Email"}</p>
+                  <p className="text-sm text-gray-600">{userInfo.phone || "No Phone"}</p>
                 </div>
               </div>
             </div>
           </div>
         ) : null}
-
+  
         <ul className="flex flex-col p-0 m-0">
           {navItems.map((item) => (
             <li
@@ -74,8 +104,8 @@ const Sidebar = ({ setActivePage }) => {
                   : "text-gray-500"
               } hover:border hover:border-gray-300 hover:bg-gray-200 p-[1px] rounded-lg ${
                 click
-                  ? "justify-center w-[58px] mr-[1px] mb-10" // Add spacing between icons when collapsed
-                  : "justify-start mb-7" // Add different spacing when expanded
+                  ? "justify-center w-[58px] mr-[1px] mb-10"
+                  : "justify-start mb-7"
               }`}
               onClick={() => handleItemClick(item)}
             >
@@ -98,6 +128,7 @@ const Sidebar = ({ setActivePage }) => {
       </div>
     </div>
   );
+  
 };
 
 export default Sidebar;
