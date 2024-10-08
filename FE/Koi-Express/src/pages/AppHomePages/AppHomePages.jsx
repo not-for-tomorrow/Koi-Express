@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import OrderPage from "../OrderPage/OrderPage";
 import OrderHistory from "../OrderHistory/OrderHistory";
+import Profile from "../Profile/Profile";
 
 const AppHomePages = () => {
   const [activePage, setActivePage] = useState("Đơn hàng mới");
 
   const renderContent = () => {
     switch (activePage) {
+      case "Profile":
+        return <Profile />;
       case "Đơn hàng mới":
         return <OrderPage />;
       case "Lịch sử đơn hàng":
