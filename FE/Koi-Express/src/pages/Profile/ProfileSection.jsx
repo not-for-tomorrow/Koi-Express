@@ -15,7 +15,7 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-8 mt-4 md:mt-0 w-full max-w-auto mx-auto flex flex-col items-center justify-between">
+    <div className="flex flex-col items-center justify-between w-full p-8 mx-auto mt-4 bg-white rounded-lg shadow-md md:mt-0 max-w-auto">
       <img
         src={profileImageUrl || "https://via.placeholder.com/150"}
         alt="Profile"
