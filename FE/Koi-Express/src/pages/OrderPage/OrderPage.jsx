@@ -8,22 +8,39 @@ import FitBoundsButton from "./FitBoundsButton";
 const OrderPage = () => {
   const [pickupAddress, setPickupAddress] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [recipientName, setRecipientName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [additionalInfo, setAdditionalInfo] = useState("");
   const [pickupLocation, setPickupLocation] = useState(null);
   const [deliveryLocation, setDeliveryLocation] = useState(null);
   const [pickupSuggestions, setPickupSuggestions] = useState([]);
   const [deliverySuggestions, setDeliverySuggestions] = useState([]);
   const [distance, setDistance] = useState(0);
-
   const [gpsLocation, setGpsLocation] = useState(null);
+
+  // Function to reverse geocode lat/lng to an address
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const response = await axios.get(
+        "https://us1.locationiq.com/v1/reverse.php", // Example: using LocationIQ's reverse geocode API
+        {
+          params: {
+            key: "pk.57eb525ef1bdb7826a61cf49564f8a86", // Replace with your API key
+            lat: lat,
+            lon: lng,
+            format: "json",
+          },
+        }
+      );
+      return response.data.display_name; // Extract the address from the response
+    } catch (error) {
+      console.error("Error reverse geocoding:", error);
+      return "";
+    }
+  };
 
   useEffect(() => {
     // Get the current GPS location of the user's device
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const currentLocation = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
@@ -31,7 +48,13 @@ const OrderPage = () => {
           // Set initial GPS location
           setGpsLocation(currentLocation);
           setPickupLocation(currentLocation);
-          setDeliveryLocation(currentLocation);
+
+          // Reverse geocode the GPS location to get the address
+          const address = await reverseGeocode(
+            currentLocation.lat,
+            currentLocation.lng
+          );
+          setPickupAddress(address); // Set the pickup address to the reverse geocoded address
         },
         (error) => {
           console.error("Error getting current GPS location:", error);
@@ -42,13 +65,14 @@ const OrderPage = () => {
     }
   }, []);
 
+  // Fetch suggestions for addresses (already implemented)
   const fetchSuggestions = async (inputAddress, setSuggestions) => {
     try {
       const response = await axios.get(
         "https://us1.locationiq.com/v1/search.php",
         {
           params: {
-            key: "pk.57eb525ef1bdb7826a61cf49564f8a86", // Replace with your API Key
+            key: "pk.57eb525ef1bdb7826a61cf49564f8a86",
             q: inputAddress,
             format: "json",
             limit: 5,
@@ -101,19 +125,13 @@ const OrderPage = () => {
   };
 
   return (
-    <div className="flex h-screen ">
+    <div className="flex h-screen">
       {/* Sidebar Order Form Section */}
       <OrderForm
         pickupAddress={pickupAddress}
         setPickupAddress={setPickupAddress}
         deliveryAddress={deliveryAddress}
         setDeliveryAddress={setDeliveryAddress}
-        recipientName={recipientName}
-        setRecipientName={setRecipientName}
-        phoneNumber={phoneNumber}
-        setPhoneNumber={setPhoneNumber}
-        additionalInfo={additionalInfo}
-        setAdditionalInfo={setAdditionalInfo}
         pickupSuggestions={pickupSuggestions}
         deliverySuggestions={deliverySuggestions}
         handleAddressChange={handleAddressChange}
@@ -133,20 +151,17 @@ const OrderPage = () => {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-            {/* Render GPS marker only if it has not been replaced */}
             {gpsLocation && <Marker position={gpsLocation} />}
-            {/* Render pickup marker only if pickupLocation is set and different from GPS */}
             {pickupLocation && !gpsLocation && (
               <Marker position={pickupLocation} />
             )}
-            {/* Render delivery marker only if deliveryLocation is set and different from GPS */}
             {deliveryLocation && !gpsLocation && (
               <Marker position={deliveryLocation} />
             )}
             <RoutingControl
               pickupLocation={pickupLocation}
               deliveryLocation={deliveryLocation}
-              setDistance={setDistance} // Pass setDistance to RoutingControl to update distance
+              setDistance={setDistance}
             />
             <FitBoundsButton
               pickupLocation={pickupLocation}
