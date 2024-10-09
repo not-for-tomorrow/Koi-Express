@@ -20,14 +20,12 @@ public class CustomerController {
 
     private final CustomerService customerService;
     private final JwtUtil jwtUtil;
-    private final CustomersRepository customersRepository;
 
     @Autowired
     public CustomerController(
-            CustomerService customerService, JwtUtil jwtUtil, CustomersRepository customersRepository) {
+            CustomerService customerService, JwtUtil jwtUtil) {
         this.customerService = customerService;
         this.jwtUtil = jwtUtil;
-        this.customersRepository = customersRepository;
     }
 
     @PutMapping("/update/{id}")
@@ -60,16 +58,13 @@ public class CustomerController {
     @GetMapping("/basic-info")
     public ResponseEntity<ApiResponse<BasicInfoResponse>> getCustomerBasicInfo(
             @RequestHeader("Authorization") String token) {
-        // Trích xuất JWT token từ chuỗi "Authorization"
+
         String jwt = token.substring(7);
 
-        // Lấy số điện thoại từ token
         String phoneNumber = jwtUtil.extractPhoneNumber(jwt);
 
-        // Lấy thông tin khách hàng
         Customers customer = customerService.getCustomerDetails(phoneNumber);
 
-        // Tạo đối tượng chứa thông tin cần lấy ra
         BasicInfoResponse basicInfo =
                 new BasicInfoResponse(customer.getFullName(), customer.getPhoneNumber(), customer.getEmail());
 

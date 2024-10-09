@@ -68,7 +68,7 @@ public class CustomerService {
                 customersRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
 
         customer.setFullName(updateRequest.getFullName());
-        customer.setAddress(updateRequest.getAddress());
+        customer.setEmail(updateRequest.getEmail());
 
         customersRepository.save(customer);
         return new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully", customer);
