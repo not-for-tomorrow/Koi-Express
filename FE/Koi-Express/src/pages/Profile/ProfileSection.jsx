@@ -11,6 +11,8 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
 
   const [nameErrorMessage, setNameErrorMessage] = useState(""); // Lỗi tên
   const [emailErrorMessage, setEmailErrorMessage] = useState(""); // Lỗi email
+  const [updateSuccessMessage, setUpdateSuccessMessage] = useState(""); // Success message
+  const [updateErrorMessage, setUpdateErrorMessage] = useState(""); // API error message
 
   useEffect(() => {
     setUpdatedFullName(fullName);
@@ -33,6 +35,7 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
     setUpdatedEmail(email);
     setNameErrorMessage(""); // Reset lỗi khi hủy
     setEmailErrorMessage("");
+    setUpdateSuccessMessage(""); // Clear any success message
   };
 
   const validateName = (name) => {
@@ -46,18 +49,43 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@gmail\.com$/;
     if (!emailRegex.test(email)) {
-      setEmailErrorMessage("Địa chỉ email không hợp lệ'");
+      setEmailErrorMessage("Địa chỉ email không hợp lệ");
     } else {
       setEmailErrorMessage("");
     }
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!nameErrorMessage && !emailErrorMessage) {
-      // Code để cập nhật dữ liệu profile (API call)
-      setIsEditing(false);
+      try {
+        const token = localStorage.getItem("token"); // Get JWT from localStorage
+        const response = await fetch('http://localhost:8080/api/customers/update', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            fullName: updatedFullName,
+            email: updatedEmail
+          })
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          setIsEditing(false);
+          setUpdateSuccessMessage("Cập nhật thông tin thành công!");
+          // Optionally, update profile details based on response
+        } else {
+          const errorData = await response.json();
+          setUpdateErrorMessage(errorData.message || "Có lỗi xảy ra khi cập nhật.");
+        }
+      } catch (error) {
+        setUpdateErrorMessage("Lỗi kết nối tới máy chủ.");
+      }
     }
   };
+  
 
   return (
     <div className="flex flex-col items-center w-full p-8 mx-auto mt-4 bg-white rounded-lg shadow-md md:mt-0 max-w-auto">
@@ -119,6 +147,14 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
       </div>
 
       <div className="w-full h-[1.5px] bg-gray-200 rounded-md my-4"></div>
+
+      {updateSuccessMessage && (
+        <p className="text-sm text-green-500">{updateSuccessMessage}</p>
+      )}
+
+      {updateErrorMessage && (
+        <p className="text-sm text-red-500">{updateErrorMessage}</p>
+      )}
 
       <div className="flex flex-col w-full space-y-4">
         {isEditing ? (

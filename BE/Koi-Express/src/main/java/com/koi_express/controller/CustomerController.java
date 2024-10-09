@@ -28,9 +28,11 @@ public class CustomerController {
         this.jwtUtil = jwtUtil;
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/update")
     public ResponseEntity<ApiResponse<Customers>> updateCustomer(
-            @PathVariable Long id, @RequestBody @Valid UpdateRequest updateRequest, BindingResult bindingResult) {
+            @RequestHeader("Authorization") String token,
+            @RequestBody @Valid UpdateRequest updateRequest,
+            BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getFieldError() != null
@@ -40,8 +42,19 @@ public class CustomerController {
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
         }
 
-        ApiResponse<Customers> response = customerService.updateCustomer(id, updateRequest);
-        return ResponseEntity.ok(response);
+        String jwt = token.substring(7);
+        String customerId = jwtUtil.extractCustomerId(jwt);
+
+        System.out.println("Extracted customerId: " + customerId);
+
+        try {
+            Long parsedCustomerId = Long.parseLong(customerId);
+            ApiResponse<Customers> response = customerService.updateCustomer(parsedCustomerId, updateRequest);
+            return ResponseEntity.ok(response);
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid customerId", null));
+        }
     }
 
     @GetMapping("me")
