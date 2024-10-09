@@ -92,9 +92,11 @@ public class JwtUtil {
     }
 
     public String extractCustomerId(String token) {
-        Claims claims =
-                Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
-        return (String) claims.get("customerId");
+        Claims claims = Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token)
+                .getBody();
+        return (String) claims.get("customerId"); // Ensure you are getting "customerId"
     }
 
     public Date extractExpiration(String token) {
