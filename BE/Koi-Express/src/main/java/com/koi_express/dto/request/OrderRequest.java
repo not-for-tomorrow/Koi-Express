@@ -45,4 +45,6 @@ public class OrderRequest {
     boolean specialCare = true;
 
     boolean healthCheck = true;
+
+    Double kilometers;
 }

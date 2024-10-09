@@ -35,6 +35,7 @@ public class OrderBuilder {
                 .recipientPhone(orderRequest.getRecipientPhone())
                 .koiType(orderRequest.getKoiType())
                 .koiQuantity(orderRequest.getKoiQuantity())
+                .kilometers(orderRequest.getKilometers() != null ? orderRequest.getKilometers() : 0)
                 .packingMethod(orderRequest.getPackingMethod())
                 .paymentMethod(orderRequest.getPaymentMethod())
                 .insurance(orderRequest.isInsurance())

@@ -1,4 +1,4 @@
-package com.koi_express.controller.controller;
+package com.koi_express.controller;
 
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -32,13 +32,23 @@ public class ManagerController {
         this.manageCustomerService = manageCustomerService;
     }
 
-    @PostMapping("/create-staff")
-    public ResponseEntity<ApiResponse<?>> createsStaff(
+    @PostMapping("/create-sales-staff")
+    public ResponseEntity<ApiResponse<?>> createSalesStaff(
             @RequestBody @Valid CreateStaffRequest createStaffRequest, HttpServletRequest httpServletRequest) {
 
         String token = httpServletRequest.getHeader("Authorization").substring(7);
 
-        ApiResponse<?> response = managerService.createStaffAccount(createStaffRequest);
+        ApiResponse<?> response = managerService.createSalesStaffAccount(createStaffRequest);
+        return ResponseEntity.status(response.getCode()).body(response);
+    }
+
+    @PostMapping("/create-delivering-staff")
+    public ResponseEntity<ApiResponse<?>> createDeliveringStaff(
+            @RequestBody @Valid CreateStaffRequest createDeliveringStaffRequest, HttpServletRequest httpServletRequest) {
+
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
+
+        ApiResponse<?> response = managerService.createDeliveringStaffAccount(createDeliveringStaffRequest);
         return ResponseEntity.status(response.getCode()).body(response);
     }
 

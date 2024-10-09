@@ -49,14 +49,27 @@ public class ManagerService {
         return manageCustomerService.updateCustomer(id, fullName, address);
     }
 
-    public ApiResponse<?> createStaffAccount(CreateStaffRequest createStaffRequest) {
-        if (createStaffRequest.getRole() == Role.SALES_STAFF) {
-            return systemAccountService.createSalesStaffAccount(createStaffRequest);
-        } else if (createStaffRequest.getRole() == Role.DELIVERING_STAFF) {
-            return deliveringStaffService.createDeliveringStaffAccount(createStaffRequest);
-        } else {
-            throw new AppException(ErrorCode.INVALID_ROLE);
+    public ApiResponse<?> createSalesStaffAccount(CreateStaffRequest createStaffRequest) {
+
+        createStaffRequest.setRole(Role.SALES_STAFF);
+
+        if (createStaffRequest.getRole() != Role.SALES_STAFF) {
+            throw new AppException(ErrorCode.INVALID_ROLE, "Invalid role for sales staff: " + createStaffRequest.getRole());
         }
+        return systemAccountService.createSalesStaffAccount(createStaffRequest);
+    }
+
+    // Separate method for creating delivering staff account
+    public ApiResponse<?> createDeliveringStaffAccount(CreateStaffRequest createStaffRequest) {
+
+        logger.info("Role being set for new Delivering Staff: {}", createStaffRequest.getRole());
+
+        createStaffRequest.setRole(Role.DELIVERING_STAFF);
+
+//        if (createStaffRequest.getRole() != Role.DELIVERING_STAFF) {
+//            throw new AppException(ErrorCode.INVALID_ROLE, "Invalid role for delivering staff: " + createStaffRequest.getRole());
+//        }
+        return deliveringStaffService.createDeliveringStaffAccount(createStaffRequest);
     }
 
     public Page<SystemAccount> getAllSalesStaffAccounts(Pageable pageable) {
