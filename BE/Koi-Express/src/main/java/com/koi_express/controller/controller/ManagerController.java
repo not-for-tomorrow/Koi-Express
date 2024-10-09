@@ -4,6 +4,7 @@ import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.manager.ManagerService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -23,9 +24,12 @@ public class ManagerController {
 
     private final ManagerService managerService;
 
+    private final ManageCustomerService manageCustomerService;
+
     @Autowired
-    public ManagerController(ManagerService managerService) {
+    public ManagerController(ManagerService managerService, ManageCustomerService manageCustomerService) {
         this.managerService = managerService;
+        this.manageCustomerService = manageCustomerService;
     }
 
     @PostMapping("/create-staff")
@@ -38,7 +42,7 @@ public class ManagerController {
         return ResponseEntity.status(response.getCode()).body(response);
     }
 
-    @GetMapping(value = "/customers", produces = "application/json")
+    @GetMapping(value = "/customers")
     public ResponseEntity<Page<Customers>> getAllCustomers(
             HttpServletRequest httpServletRequest,
             @RequestParam(defaultValue = "0") int page,
@@ -47,7 +51,7 @@ public class ManagerController {
         String token = httpServletRequest.getHeader("Authorization").substring(7);
 
         Pageable paging = PageRequest.of(page, size);
-        Page<Customers> customersPage = managerService.getAllCustomers(paging, token);
+        Page<Customers> customersPage = manageCustomerService.getAllCustomers(paging);
 
         return new ResponseEntity<>(customersPage, HttpStatus.OK);
     }

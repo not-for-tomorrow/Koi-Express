@@ -3,28 +3,35 @@ package com.koi_express.service.verification;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.koi_express.dto.request.RegisterRequest;
 import com.twilio.Twilio;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OtpService {
 
-    private static final String ACCOUNT_SID = "AC6ebe5c4cf2fb07c85783a6dbee771aae";
-    private static final String AUTH_TOKEN = "c95b6c7f6e9eedf44a9b0d711a8f7909";
-    private static final String FROM_PHONE = "+13182521661";
+    private final String FROM_PHONE;
+    private final Map<String, String> otpData = new ConcurrentHashMap<>();
+    private final SecureRandom random = new SecureRandom();
+    private final Map<String, RegisterRequest> tempRegisterData = new ConcurrentHashMap<>();
+    private final Map<String, Long> otpTimestamps = new ConcurrentHashMap<>();
+    private static final long OTP_EXPIRATION_TIME = 5 * 60 * 1000; // 5 minutes
 
-    private Map<String, String> otpData = new HashMap<>();
-    private SecureRandom random = new SecureRandom();
-    private Map<String, RegisterRequest> tempRegisterData = new HashMap<>();
+    public OtpService(
+            @Value("${spring.twilio.TWILIO_ACCOUNT_SID}") String accountSid,
+            @Value("${spring.twilio.TWILIO_AUTH_TOKEN}") String authToken,
+            @Value("${spring.twilio.TWILIO_FROM_PHONE}") String fromPhone) {
 
-    static {
-        Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
+        Twilio.init(accountSid, authToken);
+        this.FROM_PHONE = fromPhone;
     }
 
     public void saveOtp(String phoneNumber, String otp) {
         otpData.put(phoneNumber, otp);
+        otpTimestamps.put(phoneNumber, System.currentTimeMillis());
     }
 
     public void sendOtp(String phoneNumber, String otp) {
@@ -38,11 +45,19 @@ public class OtpService {
     public boolean validateOtp(String phoneNumber, String otp) {
         String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
         String storedOtp = otpData.get(formattedPhoneNumber);
-        if (otp.equals(storedOtp)) {
+        Long timestamp = otpTimestamps.get(formattedPhoneNumber);
+
+        if (storedOtp != null && otp.equals(storedOtp) && isOtpValid(timestamp)) {
             otpData.remove(formattedPhoneNumber); // Remove OTP once validated
+            otpTimestamps.remove(formattedPhoneNumber);
             return true;
         }
         return false;
+    }
+
+    private boolean isOtpValid(Long timestamp) {
+        long currentTime = System.currentTimeMillis();
+        return (currentTime - timestamp) <= OTP_EXPIRATION_TIME;
     }
 
     public String formatPhoneNumber(String phoneNumber) {
