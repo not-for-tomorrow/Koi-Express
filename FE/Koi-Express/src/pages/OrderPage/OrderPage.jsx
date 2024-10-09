@@ -140,12 +140,17 @@ const OrderPage = () => {
       />
 
       {/* Full-Screen Map Section */}
-      <div className="relative w-2/3 h-screen">
+      <div className="relative w-2/3 h-screen" style={{ zIndex: 1 }}>
         {(pickupLocation || deliveryLocation) && (
           <LeafletMap
             center={pickupLocation || { lat: 10.8231, lng: 106.6297 }}
             zoom={13}
-            style={{ width: "100%", height: "100%" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "relative",
+              zIndex: 1,
+            }}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
