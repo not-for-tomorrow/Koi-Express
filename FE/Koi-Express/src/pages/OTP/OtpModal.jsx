@@ -14,8 +14,8 @@ const OtpModal = ({ phoneNumber, onClose, onVerifySuccess }) => {
     setError("");
     setSuccess("");
 
-    if (otp.length !== 6) {
-      setError("OTP must be 6 digits");
+    if (otp.length !== 4) {
+      setError("OTP must be 4 digits");
       setLoading(false);
       return;
     }
