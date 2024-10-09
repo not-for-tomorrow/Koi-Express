@@ -6,16 +6,13 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Clear the authentication token
     localStorage.removeItem("authToken");
     console.log("Logout button clicked");
-    
-    // Redirect to the login page
     navigate('/login');
   };
 
   return (
-    <div className="flex flex-col items-center justify-between w-full p-8 mx-auto mt-4 bg-white rounded-lg shadow-md md:mt-0 max-w-auto">
+    <div className="flex flex-col items-center w-full p-8 mx-auto mt-4 bg-white rounded-lg shadow-md md:mt-0 max-w-auto">
       <img
         src={profileImageUrl || "https://via.placeholder.com/150"}
         alt="Profile"
@@ -25,27 +22,27 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
         <h2 className="text-2xl font-semibold text-gray-800">
           {fullName || "No Name Available"}
         </h2>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-black">
           {phoneNumber || "No Phone Number Available"}
         </p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-black">
           {email || "No Email Available"}
         </p>
       </div>
 
-      <div className="w-full h-[1.5px] bg-gray-200 rounded-md"></div>
+      <div className="w-full h-[1.5px] bg-gray-200 rounded-md my-4"></div>
 
-      <div className="flex flex-col w-full mt-4 space-y-2">
+      <div className="flex flex-col w-full space-y-4">
         <button
           aria-label="Change Profile"
           className="w-full px-4 py-2 text-sm text-gray-700 transition-all duration-300 ease-in-out bg-gray-200 rounded hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
         >
           Thay đổi
         </button>
-
+        
         <button
           aria-label="Log Out"
-          className="w-full text-sm font-semibold text-red-500 hover:text-red-600"
+          className="w-full px-4 py-2 text-sm text-gray-700 transition-all duration-300 ease-in-out bg-gray-200 rounded hover:bg-red-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-400"
           onClick={handleLogout}
         >
           Đăng xuất

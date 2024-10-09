@@ -26,7 +26,7 @@ export default function useRouteElements() {
       element: <Register />,
     },
     {
-      path: "/apphomepage",
+      path: "/apphomepage/*",
       element: <AppHomePages />,
     },
     {

@@ -3,8 +3,9 @@ import { IoMdClose } from "react-icons/io";
 import { IoReorderThreeOutline } from "react-icons/io5";
 import { navItems } from "./IconsData";
 import jwt_decode from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
-const Sidebar = ({ setActivePage }) => {
+const Sidebar = () => {
   const [click, setClick] = useState(false); // Toggle sidebar open/closed
   const [activeItem, setActiveItem] = useState(1); // Track the active item (default: first item)
   const [userInfo, setUserInfo] = useState({
@@ -13,16 +14,17 @@ const Sidebar = ({ setActivePage }) => {
     phone: "",
   });
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
     if (token) {
       try {
-        // Giải mã token
+        // Decode the token
         const decoded = jwt_decode(token);
 
-        console.log("Decoded token:", decoded);
-        // Lưu thông tin người dùng
+        // Save user info
         setUserInfo({
           fullName: decoded.fullName || "Unknown User",
           email: decoded.email || "No Email",
@@ -37,8 +39,24 @@ const Sidebar = ({ setActivePage }) => {
   }, []);
 
   const handleItemClick = (item) => {
-    setActiveItem(item.id);
-    setActivePage(item.title); // Set active page when a sidebar item is clicked
+    setActiveItem(item.id); // Chỉ thay đổi activeItem cho các mục trong navItems
+    // Điều hướng dựa trên item.title
+    switch (item.title) {
+      case "Đơn hàng mới":
+        navigate("/apphomepage");
+        break;
+      case "Lịch sử đơn hàng":
+        navigate("/apphomepage/history");
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleProfileClick = () => {
+    // Điều hướng đến trang Profile mà không thay đổi trạng thái activeItem
+    setActiveItem(null);
+    navigate("/apphomepage/profile");
   };
 
   return (
@@ -48,6 +66,7 @@ const Sidebar = ({ setActivePage }) => {
           click ? "w-[60px]" : "w-80"
         } overflow-y-auto flex flex-col`}
       >
+        {/* Sidebar header */}
         <div className="flex items-center justify-between">
           {click && (
             <div
@@ -58,7 +77,6 @@ const Sidebar = ({ setActivePage }) => {
             </div>
           )}
         </div>
-
         {!click ? (
           <div className="relative p-4 mb-2 text-white bg-gradient-to-r from-blue-400 to-blue-600">
             <button
@@ -73,7 +91,7 @@ const Sidebar = ({ setActivePage }) => {
 
             <div
               className="p-3 mt-8 bg-blue-300 cursor-pointer"
-              onClick={() => setActivePage("Profile")}
+              onClick={handleProfileClick} // Điều hướng tới Profile khi click vào user info
             >
               <div className="flex items-center gap-4">
                 <img
@@ -82,13 +100,13 @@ const Sidebar = ({ setActivePage }) => {
                   className="w-10 h-10 rounded-full"
                 />
                 <div>
-                  <p className="text-lg font-semibold text-gray-800 whitespace-nowrap">
+                  <p className="text-lg font-semibold text-black whitespace-nowrap">
                     {userInfo.fullName || "Unknown User"}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-black">
                     {userInfo.email || "No Email"}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-black">
                     {userInfo.phone || "No Phone"}
                   </p>
                 </div>
@@ -109,14 +127,8 @@ const Sidebar = ({ setActivePage }) => {
                 click ? "justify-center w-[58px]" : "justify-start"
               }`}
               onClick={() => handleItemClick(item)}
-              style={{ borderRadius: "0px", marginBottom: "0px" }} // Remove rounded corners and remove margin between items
             >
-              <span
-                title={item.title}
-                className={`flex items-center ${
-                  click ? "justify-center w-full" : "mr-3"
-                }`}
-              >
+              <span className={`flex items-center ${click ? "justify-center w-full" : "mr-3"}`}>
                 {item.icons}
               </span>
               {!click && (
