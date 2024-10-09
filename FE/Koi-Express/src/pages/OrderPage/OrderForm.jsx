@@ -300,8 +300,8 @@ const OrderForm = ({
       {/* Modal for Pickup Detail */}
       {showPickupDetail && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="w-1/3 p-6 bg-white rounded-lg shadow-lg">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">
               Chi tiết địa chỉ lấy hàng
             </h2>
             <input
@@ -311,16 +311,16 @@ const OrderForm = ({
               placeholder="Số nhà, hẻm, tòa nhà...."
               className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500"
             />
-            <div className="mt-4 flex justify-end space-x-4">
+            <div className="flex justify-end mt-4 space-x-4">
               <button
                 onClick={() => setShowPickupDetail(false)}
-                className="px-4 py-2 bg-gray-300 rounded-lg text-gray-700"
+                className="px-4 py-2 text-gray-700 bg-gray-300 rounded-lg"
               >
                 Hủy
               </button>
               <button
                 onClick={() => setShowPickupDetail(false)}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                className="px-4 py-2 text-white bg-blue-500 rounded-lg"
               >
                 Xác nhận
               </button>
@@ -332,8 +332,8 @@ const OrderForm = ({
       {/* Modal for Delivery Detail */}
       {showDeliveryDetail && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="w-1/3 p-6 bg-white rounded-lg shadow-lg">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">
               Chi tiết địa chỉ giao hàng
             </h2>
             <input
@@ -343,16 +343,16 @@ const OrderForm = ({
               placeholder="Số nhà, hẻm, tòa nhà...."
               className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500"
             />
-            <div className="mt-4 flex justify-end space-x-4">
+            <div className="flex justify-end mt-4 space-x-4">
               <button
                 onClick={() => setShowDeliveryDetail(false)}
-                className="px-4 py-2 bg-gray-300 rounded-lg text-gray-700"
+                className="px-4 py-2 text-gray-700 bg-gray-300 rounded-lg"
               >
                 Hủy
               </button>
               <button
                 onClick={() => setShowDeliveryDetail(false)}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                className="px-4 py-2 text-white bg-blue-500 rounded-lg"
               >
                 Xác nhận
               </button>

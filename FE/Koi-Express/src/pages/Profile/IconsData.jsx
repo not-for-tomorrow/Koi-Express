@@ -15,7 +15,7 @@ export const iconsData = [
       />
     ) 
   },
-  { 
+  {
     title: 'Tài khoản bán hàng', 
     description: 'Đồ ăn - Đồ ăn nhanh', 
     icon: (
@@ -26,22 +26,9 @@ export const iconsData = [
         alt="plus-math"
         className="min-w-[35px] min-h-[35px] object-cover"
       />
-    ) 
+    )
   },
-  { 
-    title: 'Cài đặt mật khẩu', 
-    description: 'Thay đổi mật khẩu', 
-    icon: (
-      <img
-        width="35"
-        height="35"
-        src="https://img.icons8.com/arcade/64/plus-math.png"
-        alt="plus-math"
-        className="min-w-[35px] min-h-[35px] object-cover"
-      />
-    ) 
-  },
-  { 
+  {
     title: 'Liên kết đối tác', 
     description: 'Liên kết tài khoản với doanh nghiệp đối tác', 
     icon: (
@@ -54,7 +41,7 @@ export const iconsData = [
       />
     ) 
   },
-  { 
+  {
     title: 'Hóa đơn điện tử', 
     description: 'Xem hóa đơn của bạn', 
     icon: (
@@ -65,6 +52,6 @@ export const iconsData = [
         alt="plus-math"
         className="min-w-[35px] min-h-[35px] object-cover"
       />
-    ) 
+    )
   },
 ];
