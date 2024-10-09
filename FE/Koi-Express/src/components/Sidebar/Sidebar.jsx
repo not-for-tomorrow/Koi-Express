@@ -15,7 +15,7 @@ const Sidebar = ({ setActivePage }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-  
+
     if (token) {
       try {
         // Giải mã token
@@ -35,7 +35,6 @@ const Sidebar = ({ setActivePage }) => {
       console.error("Token not found in localStorage.");
     }
   }, []);
-  
 
   const handleItemClick = (item) => {
     setActiveItem(item.id);
@@ -52,16 +51,16 @@ const Sidebar = ({ setActivePage }) => {
         <div className="flex items-center justify-between">
           {click && (
             <div
-              className="flex justify-center items-center w-full h-12 text-blue-600 rounded-lg bg-white p-[4px] transition-all duration-300 cursor-pointer mb-5"
+              className="flex justify-center items-center w-full h-12 text-blue-600 bg-white p-[4px] transition-all duration-300 cursor-pointer mb-2"
               onClick={() => setClick(!click)}
             >
               <IoReorderThreeOutline className="text-[35px]" />
             </div>
           )}
         </div>
-  
+
         {!click ? (
-          <div className="relative p-4 mb-5 text-white rounded-lg bg-gradient-to-r from-blue-400 to-blue-600">
+          <div className="relative p-4 mb-2 text-white bg-gradient-to-r from-blue-400 to-blue-600">
             <button
               onClick={() => setClick(true)}
               className="absolute top-2 right-2 text-gray-200 text-[24px] hover:text-white"
@@ -71,9 +70,9 @@ const Sidebar = ({ setActivePage }) => {
             <p className="absolute text-lg font-bold text-white top-2 left-4">
               Koi Express
             </p>
-  
+
             <div
-              className="p-3 mt-8 mb-6 bg-blue-300 rounded-lg cursor-pointer"
+              className="p-3 mt-8 bg-blue-300 cursor-pointer"
               onClick={() => setActivePage("Profile")}
             >
               <div className="flex items-center gap-4">
@@ -86,14 +85,18 @@ const Sidebar = ({ setActivePage }) => {
                   <p className="text-lg font-semibold text-gray-800 whitespace-nowrap">
                     {userInfo.fullName || "Unknown User"}
                   </p>
-                  <p className="text-sm text-gray-600">{userInfo.email || "No Email"}</p>
-                  <p className="text-sm text-gray-600">{userInfo.phone || "No Phone"}</p>
+                  <p className="text-sm text-gray-600">
+                    {userInfo.email || "No Email"}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {userInfo.phone || "No Phone"}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         ) : null}
-  
+
         <ul className="flex flex-col p-0 m-0">
           {navItems.map((item) => (
             <li
@@ -102,12 +105,11 @@ const Sidebar = ({ setActivePage }) => {
                 activeItem === item.id
                   ? "bg-gray-200 border-gray-300 text-black"
                   : "text-gray-500"
-              } hover:border hover:border-gray-300 hover:bg-gray-200 p-[1px] rounded-lg ${
-                click
-                  ? "justify-center w-[58px] mr-[1px] mb-10"
-                  : "justify-start mb-7"
+              } hover:border hover:border-gray-300 hover:bg-gray-200 p-2 ${
+                click ? "justify-center w-[58px]" : "justify-start"
               }`}
               onClick={() => handleItemClick(item)}
+              style={{ borderRadius: "0px", marginBottom: "0px" }} // Remove rounded corners and remove margin between items
             >
               <span
                 title={item.title}
@@ -128,7 +130,6 @@ const Sidebar = ({ setActivePage }) => {
       </div>
     </div>
   );
-  
 };
 
 export default Sidebar;

@@ -1,5 +1,3 @@
-
-
 export const navItems = [
   {
     id: 1,
@@ -20,19 +18,6 @@ export const navItems = [
       <img
         width="35"
         height="35"
-        src="https://img.icons8.com/cute-clipart/64/globe.png"
-        alt="globe"
-        className="min-w-[35px] min-h-[35px] object-cover"
-      />
-    ),
-    title: "Giao hàng liên tỉnh",
-  },
-  {
-    id: 3,
-    icons: (
-      <img
-        width="35"
-        height="35"
         src="https://img.icons8.com/cute-clipart/64/truck.png"
         alt="truck"
         className="min-w-[35px] min-h-[35px] object-cover"
@@ -41,7 +26,7 @@ export const navItems = [
     title: "Dịch vụ xe tải",
   },
   {
-    id: 4,
+    id: 3,
     icons: (
       <img
         width="35"
@@ -54,7 +39,7 @@ export const navItems = [
     title: "Lịch sử đơn hàng",
   },
   {
-    id: 5,
+    id: 4,
     icons: (
       <img
         width="35"
@@ -67,7 +52,7 @@ export const navItems = [
     title: "Tài khoản của tôi",
   },
   {
-    id: 6,
+    id: 5,
     icons: (
       <img
         width="35"
@@ -80,7 +65,7 @@ export const navItems = [
     title: "Tin mới",
   },
   {
-    id: 7,
+    id: 6,
     icons: (
       <img
         width="35"

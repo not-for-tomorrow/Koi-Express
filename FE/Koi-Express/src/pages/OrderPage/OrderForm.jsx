@@ -125,6 +125,8 @@ const OrderForm = ({
                   </div>
                 ))}
               </div>
+
+              {/* Change this part */}
               {pickupDetail ? (
                 <p
                   className="mt-2 text-sm text-blue-500 cursor-pointer"
@@ -141,6 +143,8 @@ const OrderForm = ({
                   + Chi tiết địa chỉ
                 </p>
               )}
+              {/* End of change */}
+
               <div className="mt-4">
                 <label className="block mb-2 text-sm font-semibold text-gray-700">
                   Tên người gửi và Số điện thoại
@@ -214,6 +218,8 @@ const OrderForm = ({
                   </div>
                 ))}
               </div>
+
+              {/* Change this part */}
               {deliveryDetail ? (
                 <p
                   className="mt-2 text-sm text-blue-500 cursor-pointer"
@@ -230,6 +236,8 @@ const OrderForm = ({
                   + Chi tiết địa chỉ
                 </p>
               )}
+              {/* End of change */}
+
               <div className="mt-4">
                 <label className="block mb-2 text-sm font-semibold text-gray-700">
                   Tên người nhận và Số điện thoại
@@ -288,6 +296,70 @@ const OrderForm = ({
           Tiếp tục
         </button>
       </div>
+
+      {/* Modal for Pickup Detail */}
+      {showPickupDetail && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Chi tiết địa chỉ lấy hàng
+            </h2>
+            <input
+              type="text"
+              value={pickupDetail}
+              onChange={(e) => setPickupDetail(e.target.value)}
+              placeholder="Số nhà, hẻm, tòa nhà...."
+              className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500"
+            />
+            <div className="mt-4 flex justify-end space-x-4">
+              <button
+                onClick={() => setShowPickupDetail(false)}
+                className="px-4 py-2 bg-gray-300 rounded-lg text-gray-700"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => setShowPickupDetail(false)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Delivery Detail */}
+      {showDeliveryDetail && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Chi tiết địa chỉ giao hàng
+            </h2>
+            <input
+              type="text"
+              value={deliveryDetail}
+              onChange={(e) => setDeliveryDetail(e.target.value)}
+              placeholder="Số nhà, hẻm, tòa nhà...."
+              className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500"
+            />
+            <div className="mt-4 flex justify-end space-x-4">
+              <button
+                onClick={() => setShowDeliveryDetail(false)}
+                className="px-4 py-2 bg-gray-300 rounded-lg text-gray-700"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => setShowDeliveryDetail(false)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
