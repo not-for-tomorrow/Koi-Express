@@ -17,16 +17,16 @@ export default function HomePages() {
       <div className="container">
         <AutoScrollSplide src={srcPicture} alt={altPicture} />
         <div className="">
-          <h3 className="mt-40 text-center font-semibold text-4xl">
+          <h3 className="mt-40 text-4xl font-semibold text-center">
             Koi Express là chuyên gia giao hàng của riêng bạn
           </h3>
-          <h1 className="text-center mt-10 text-xl">
+          <h1 className="mt-10 text-xl text-center">
             Mang đến giải pháp hoàn hảo cho mọi nhu cầu giao hàng của bạn nhờ
             công nghệ đột phá — tất cả trong một ứng dụng duy nhất.
           </h1>
         </div>
         {/*  */}
-        <div className="flex mt-28 justify-around">
+        <div className="flex justify-around mt-28">
           <CardInfor
             src={cardIcon}
             alt={cardTitle}
@@ -35,27 +35,25 @@ export default function HomePages() {
           />
         </div>
         {/*  */}
-        <div className="mt-20 flex justify-between">
+        <div className="flex justify-between mt-20">
           <div className="mt-40 ">
             <h3 className="text-left text-[45px]  font-semibold">
-              Luôn chuyển động cùng bạn, dù bạn là ai
+            Luôn chuyển động cùng cá Koi của bạn
             </h3>
-            <h1 className="mt-4 text-left  text-lg">
-              Chúng tôi mang đến cho doanh nghiệp của bạn và khách hàng những
-              trải nghiệm hài lòng nhất về thời gian, chi phí và sự an tâm trên
-              mỗi chuyến hàng.
+            <h1 className="mt-4 text-lg text-left">
+            Chúng tôi cam kết mang đến dịch vụ vận chuyển cá Koi chuyên nghiệp, đảm bảo an toàn và sức khỏe cho từng chú cá của bạn. Với đội ngũ giao hàng tận tâm và phương tiện chuyên dụng, chúng tôi đảm bảo bạn nhận được dịch vụ tốt nhất từ Koi Express, mang lại sự an tâm và tin cậy trên mỗi chuyến hàng.
             </h1>
-            <button className="mt-5 text-left bg-amber-500 border rounded px-8 py-5">
+            <button className="px-8 py-5 mt-5 text-left text-white bg-blue-400 border rounded hover:bg-blue-500">
               <span className="font-semibold">Khám phá thêm</span>
             </button>
           </div>
           <img
             className="ml-6 w-[590px] h-[677px]"
-            src="https://www.ahamove.com/_next/image?url=%2Fstatic%2Fimages%2Fhome%2Fmerchant.webp&w=640&q=75"
+            src="/src/assets/images/Icons/Koi Express 1.webp"
             alt="kk"
           />
         </div>
-        <div className="mt-40 flex justify-between">
+        <div className="flex justify-between mt-40">
           <div className="w-56">
             <h1 className="font-semibold text-[50px] text-blue-500">
               700,000+
@@ -78,7 +76,7 @@ export default function HomePages() {
           </div>
         </div>
         {/*tich hop app  */}
-        <div className="mt-20 flex justify-between">
+        <div className="flex justify-between mt-20">
           <img
             className="mr-6 w-[670px] h-[677] object-contain"
             src="https://mpos.vn/public/media?fpath=MjAyMTAyMjYtQURNSU4tbXBvczoxMDAwLTAtODAweDUwMF8xMV8=.png"
@@ -88,12 +86,12 @@ export default function HomePages() {
             <h3 className="text-left text-[40px]  font-semibold">
               Tích hợp mạnh mẽ để tiến về phía trước
             </h3>
-            <h1 className="mt-4 text-left  text-lg">
+            <h1 className="mt-4 text-lg text-left">
               Tối ưu quy trình hiện hành và đưa doanh nghiệp của bạn lên một tầm
               cao mới. Quá trình tích hợp không thể dễ dàng hơn khi đã có chúng
               tôi hỗ trợ bạn tối đa.
             </h1>
-            <button className="mt-5 text-left bg-amber-500 border rounded px-8 py-5">
+            <button className="px-8 py-5 mt-5 text-left text-white bg-blue-400 border rounded hover:bg-blue-500">
               <span className="font-semibold">Tìm hiểu thêm</span>
             </button>
           </div>
