@@ -26,9 +26,15 @@ const Login = () => {
       });
 
       if (response.status === 200) {
-        setSuccess("Login successful");
-        
-        navigate("/apphomepage");
+        const token = response.data.result; 
+
+        if (token) {
+          localStorage.setItem("token", token); // Store the token in localStorage
+          setSuccess("Login successful");
+          navigate("/apphomepage");
+        } else {
+          setError("No token provided in the response.");
+        }
       }
     } catch (err) {
       if (err.response) {
