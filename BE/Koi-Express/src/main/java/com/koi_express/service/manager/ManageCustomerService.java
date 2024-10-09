@@ -25,10 +25,7 @@ public class ManageCustomerService {
 
     private static final Logger logger = LoggerFactory.getLogger(ManageCustomerService.class);
 
-    public Page<Customers> getAllCustomers(Pageable pageable, String token) {
-
-        String customerId = jwtUtil.extractCustomerId(token);
-        logger.info("Extracted customerId: {}", customerId);
+    public Page<Customers> getAllCustomers(Pageable pageable) {
 
         return managerRepository.findAll(pageable);
     }

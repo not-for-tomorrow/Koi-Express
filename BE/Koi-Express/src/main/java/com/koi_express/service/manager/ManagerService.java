@@ -32,10 +32,6 @@ public class ManagerService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    public Page<Customers> getAllCustomers(Pageable pageable, String token) {
-        String customerId = jwtUtil.extractCustomerId(token);
-        return manageCustomerService.getAllCustomers(pageable, customerId);
-    }
 
     public Customers findByPhoneNumber(String phoneNumber) {
         return manageCustomerService.findByPhoneNumber(phoneNumber);
