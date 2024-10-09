@@ -24,14 +24,15 @@ public class Orders { // Quản lý đơn hàng
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_id")
     Long orderId;
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
     Customers customer;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "delivering_staff_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "delivering_staff_id", nullable = true)
     DeliveringStaff deliveringStaff;
 
     @NotEmpty(message = "Origin location cannot be empty")

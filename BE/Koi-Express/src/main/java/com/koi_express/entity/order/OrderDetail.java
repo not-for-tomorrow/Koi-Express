@@ -71,6 +71,9 @@ public class OrderDetail {
     double tollFee;
     double weightFee;
 
+    @PositiveOrZero(message = "Kilometers must be positive or zero")
+    double kilometers;
+
     @Column(updatable = false)
     @CreationTimestamp
     LocalDateTime createdAt;

@@ -22,6 +22,9 @@ public enum ErrorCode {
     INVALID_ROLE(1018, "Invalid role"),
     ORDER_NOT_FOUND_CUSTOMER(1019, "Order not found for customer"),
     ORDER_ALREADY_PROCESSED_CUSTOMER(1020, "Order already processed for customer"),
+    NO_AVAILABLE_STAFF(1021, "No available staff"),
+    ORDER_ALREADY_ASSIGNED(1022, "Order already assigned"),
+    STAFF_ASSIGNMENT_FAILED(1023, "Staff assignment failed"),
     ;
 
     ErrorCode(int code, String message) {

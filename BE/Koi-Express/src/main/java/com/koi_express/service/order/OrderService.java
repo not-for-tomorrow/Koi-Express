@@ -10,6 +10,7 @@ import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.service.manager.ManagerService;
+import com.koi_express.service.staffAssignment.StaffAssignmentService;
 import com.koi_express.service.verification.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -42,6 +45,9 @@ public class OrderService {
 
     @Autowired
     private OrderBuilder orderBuilder;
+
+    @Autowired
+    private StaffAssignmentService staffAssignmentService;
 
     // Create Order with OrderRequest, order with add into database base on customerId in payload of token
     public ApiResponse<Orders> createOrder(OrderRequest orderRequest, String token) {
@@ -109,7 +115,7 @@ public class OrderService {
         Orders orders =
                 orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        if (orders.getStatus() == OrderStatus.CANCELED || orders.getStatus() == OrderStatus.COMPLETED) {
+        if (orders.getStatus() == OrderStatus.CANCELED || orders.getStatus() == OrderStatus.DELIVERED) {
             throw new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order has already been processed");
         }
 
@@ -125,11 +131,11 @@ public class OrderService {
         Orders orders =
                 orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        if (orders.getStatus() == OrderStatus.CANCELED || orders.getStatus() == OrderStatus.COMPLETED) {
+        if (orders.getStatus() == OrderStatus.CANCELED || orders.getStatus() == OrderStatus.DELIVERED) {
             throw new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order has already been processed");
         }
 
-        orders.setStatus(OrderStatus.COMPLETED);
+        orders.setStatus(OrderStatus.DELIVERED);
         orderRepository.save(orders);
 
         logger.info("Order with ID {} has been delivered", orderId);
@@ -139,5 +145,40 @@ public class OrderService {
     //    Get All Orders
     public Page<Orders> getAllOrders(Pageable pageable) {
         return orderRepository.findAll(pageable);
+    }
+
+    // Accept Order
+    public ApiResponse<String> acceptOrder(Long orderId) {
+        logger.info("Attempting to accept order with ID: {}", orderId);
+
+        Optional<Orders> optionalOrder = orderRepository.findById(orderId);
+        if (!optionalOrder.isPresent()) {
+            logger.error("Order with ID {} not found in the database", orderId);
+            throw new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found");
+        }
+
+        Orders order = optionalOrder.get();
+        logger.info("Order found: {}", order);
+
+        // Kiểm tra trạng thái đơn hàng có đúng là PENDING không
+        if (order.getStatus() != OrderStatus.PENDING) {
+            logger.error("Order with ID {} is not in PENDING status, current status: {}", orderId, order.getStatus());
+            throw new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order is not in PENDING status");
+        }
+
+        order.setStatus(OrderStatus.ACCEPTED);
+        orderRepository.save(order);
+
+        logger.info("Order with ID {} has been accepted", orderId);
+
+        try {
+            String message = staffAssignmentService.assignOrder(order.getOrderId());
+            logger.info(message);
+        } catch (Exception e) {
+            logger.error("Failed to assign staff to order ID: {}", order.getOrderId(), e);
+            throw new AppException(ErrorCode.STAFF_ASSIGNMENT_FAILED, "Staff assignment failed for order ID: " + order.getOrderId());
+        }
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "Order accepted and staff assigned successfully", null);
     }
 }

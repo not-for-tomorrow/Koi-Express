@@ -4,9 +4,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.koi_express.entity.customer.CustomerFeedback;
+import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.customer.User;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.enums.DeliveringStaffLevel;
 import com.koi_express.enums.Role;
+import com.koi_express.enums.StaffStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -23,7 +26,12 @@ public class DeliveringStaff implements User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "staff_id")
     Long staffId;
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    Customers customer;
 
     @Column(nullable = false)
     String fullName;
@@ -52,12 +60,17 @@ public class DeliveringStaff implements User {
     @Column(nullable = false)
     boolean active;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    boolean currentlyDelivering;
+    StaffStatus status;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     Role role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    DeliveringStaffLevel level;
 
     @Column(updatable = false)
     @CreationTimestamp

@@ -9,6 +9,7 @@ import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.repository.SalesStaffRepository;
+import com.koi_express.service.order.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class SalesStaffService {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private OrderService orderService;
+
     public Page<Orders> getPendingOrders(Pageable pageable) {
         return salesStaffRepository.findAllByStatus(OrderStatus.PENDING, pageable);
     }
@@ -35,28 +39,9 @@ public class SalesStaffService {
     public ApiResponse<String> acceptOrder(Long orderId) {
         logger.info("Attempting to accept order with ID: {}", orderId);
 
-        // Find the order by ID without unnecessary joins
-        Optional<Orders> optionalOrder = orderRepository.findById(orderId);
-        if (!optionalOrder.isPresent()) {
-            logger.error("Order with ID {} not found", orderId);
-            throw new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found");
-        }
+        ApiResponse<String> response = orderService.acceptOrder(orderId);
 
-        Orders order = optionalOrder.get();
-        logger.info("Order found: {}", order);
-
-        // Ensure the order is in PENDING status before accepting
-        if (order.getStatus() != OrderStatus.PENDING) {
-            logger.error("Order with ID {} is not in PENDING status, current status: {}", orderId, order.getStatus());
-            throw new AppException(
-                    ErrorCode.ORDER_ALREADY_PROCESSED, "Order cannot be accepted as it is not in PENDING status");
-        }
-
-        // Update the order status to ACCEPTED
-        order.setStatus(OrderStatus.ACCEPTED);
-        orderRepository.save(order);
-
-        logger.info("Order with ID {} has been accepted successfully", orderId);
-        return new ApiResponse<>(HttpStatus.OK.value(), "Order accepted successfully", null);
+        logger.info("Order with ID {} has been accepted", orderId);
+        return response;
     }
 }

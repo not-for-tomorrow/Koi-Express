@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,14 +23,18 @@ public class StaffAssignment { // Phân công nhân viên
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "assignment_id")
     private Long assignmentId;
 
-    @ManyToOne
-    @JoinColumn(name = "staff_id", nullable = false)
-    private Customers staff;
+    @Column(name = "customer_id", nullable = false)
+    private Long customerId;
 
     @ManyToOne
-    @JoinColumn(name = "order_id", nullable = false)
+    @JoinColumn(name = "staff_id", referencedColumnName = "staff_id", nullable = false)
+    private DeliveringStaff staff;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id", referencedColumnName = "order_id", nullable = false)
     private Orders order;
 
     @Enumerated(EnumType.STRING)
