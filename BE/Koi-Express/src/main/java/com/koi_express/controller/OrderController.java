@@ -1,6 +1,7 @@
 package com.koi_express.controller;
 
 import com.koi_express.JWT.JwtUtil;
+import com.koi_express.dto.order_dto.OrdersDTO;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
@@ -59,5 +60,19 @@ public class OrderController {
         Pageable paging = PageRequest.of(page, size);
         Page<Orders> ordersPage = orderService.getAllOrders(paging);
         return new ResponseEntity<>(ordersPage, HttpStatus.OK);
+    }
+    // Lấy thông tin đơn hàng theo ID
+    @GetMapping("/{orderId}")
+    public ResponseEntity<OrdersDTO> getOrderById(@PathVariable Long orderId) {
+        OrdersDTO order = orderService.getOrderById(orderId);
+        return ResponseEntity.ok(order);
+    }
+
+    // Cập nhật đơn hàng
+    @PutMapping("/{orderId}")
+    public ResponseEntity<OrdersDTO> updateOrder(@PathVariable Long orderId, @RequestBody OrdersDTO ordersDTO) {
+        ordersDTO.setOrderId(orderId);
+        orderService.saveOrder(ordersDTO);
+        return ResponseEntity.ok(ordersDTO);
     }
 }

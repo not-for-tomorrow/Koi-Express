@@ -1,6 +1,7 @@
 package com.koi_express.service.order;
 
 import com.koi_express.JWT.JwtUtil;
+import com.koi_express.dto.order_dto.OrdersDTO;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
@@ -8,9 +9,11 @@ import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
+import com.koi_express.mapper.OrderMapper;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.service.manager.ManagerService;
 import com.koi_express.service.verification.EmailService;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +45,8 @@ public class OrderService {
 
     @Autowired
     private OrderBuilder orderBuilder;
+    @Autowired
+    private OrderMapper orderMapper;
 
     // Create Order with OrderRequest, order with add into database base on customerId in payload of token
     public ApiResponse<Orders> createOrder(OrderRequest orderRequest, String token) {
@@ -139,5 +144,15 @@ public class OrderService {
     //    Get All Orders
     public Page<Orders> getAllOrders(Pageable pageable) {
         return orderRepository.findAll(pageable);
+    }
+    public OrdersDTO getOrderById(Long orderId) {
+        Orders order =
+                orderRepository.findById(orderId).orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        return orderMapper.toOrdersDTO(order);
+    }
+
+    public void saveOrder(OrdersDTO ordersDTO) {
+        Orders order = orderMapper.toOrdersEntity(ordersDTO);
+        orderRepository.save(order);
     }
 }
