@@ -7,17 +7,17 @@ export const srcPicture = [
 export const altPicture = ["alt1", "alt2", "alt3"];
 
 export const cardIcon = [
-  "https://www.ahamove.com/static/icons/AhaShip.svg",
-  "https://www.ahamove.com/static/icons/AhaTruck.svg",
-  "https://www.ahamove.com/static/icons/AhaMart.svg",
-  "https://www.ahamove.com/static/icons/AhaSupply.svg",
+  "/src/assets/images/Icons/Icon1.png",
+  "/src/assets/images/Icons/Icon2.png",
+  "/src/assets/images/Icons/Icon3.png",
+  "/src/assets/images/Icons/Icon4.png",
 ];
 
-export const cardTitle = ["Aha Ship", "Aha Truck", "Aha Mart", "Aha Supply"];
+export const cardTitle = ["Koi Ship", "Koi Truck", "Koi Care", "Koi Support"];
 
 export const cardContent = [
-  "Giao hàng nhanh, đảm bảo và giá tốt với dịch vụ phù hợp được tối ưu cho bạn.",
-  "Đa dạng phương tiện vận chuyển dành cho các mặt hàng lớn và cồng kềnh.",
-  "Mua sắm hằng ngày thật đơn giản và tiện lợi. Bạn cần gì chúng tôi giao tận nhà.",
-  "Cung cấp nguồn hàng sỉ nhanh chóng và bảo đảm với mức giá vô cùng cạnh tranh.",
+  "Nhanh chóng và an toàn, dịch vụ vận chuyển koi đến tận nơi, đảm bảo cá khỏe mạnh và đúng thời gian.",
+  "Chuyên vận chuyển số lượng lớn, đường dài với phương tiện chuyên dụng đảm bảo an toàn cho cá koi của bạn.",
+  "Dịch vụ chăm sóc toàn diện cho koi, từ kiểm tra sức khỏe đến đảm bảo chất lượng nước, mang đến sự an tâm cho người nuôi.",
+  "Tư vấn chuyên nghiệp về koi, từ cách chăm sóc, môi trường sống đến hỗ trợ vận chuyển và bảo quản an toàn.",
 ];
