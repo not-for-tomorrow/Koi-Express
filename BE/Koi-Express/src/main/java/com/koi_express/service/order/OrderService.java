@@ -1,5 +1,6 @@
 package com.koi_express.service.order;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -206,4 +207,29 @@ public class OrderService {
             throw new AppException(ErrorCode.ORDER_HISTORY_RETRIEVAL_FAILED);
         }
     }
+
+    @Transactional
+    public ApiResponse<List<Orders>> getOrderHistoryByFilters(String token, String status, String fromDate, String toDate) {
+        try {
+            String customerId = jwtUtil.extractCustomerId(token);
+            logger.info("Customer ID extracted from token: {}", customerId);
+
+            // Parse dates and status
+            LocalDate from = (fromDate != null) ? LocalDate.parse(fromDate) : null;
+            LocalDate to = (toDate != null) ? LocalDate.parse(toDate) : null;
+            OrderStatus orderStatus = (status != null && !status.isEmpty()) ? OrderStatus.valueOf(status.toUpperCase()) : null;
+
+            List<Orders> orders = orderRepository.findOrdersWithFilters(Long.parseLong(customerId), orderStatus, from, to);
+            if (orders.isEmpty()) {
+                logger.info("No orders found for customer with filters");
+                return new ApiResponse<>(HttpStatus.OK.value(), "No orders found", null);
+            }
+            logger.info("Order history retrieved successfully for customer with filters");
+            return new ApiResponse<>(HttpStatus.OK.value(), "Order history retrieved successfully", orders);
+        } catch (Exception e) {
+            logger.error("Error retrieving order history: ", e);
+            throw new AppException(ErrorCode.ORDER_HISTORY_RETRIEVAL_FAILED);
+        }
+    }
+
 }

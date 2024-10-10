@@ -38,13 +38,17 @@ public class OrderController {
 
     @PostMapping("/cancel/{orderId}")
     public ResponseEntity<ApiResponse<String>> cancelOrder(@PathVariable Long orderId) {
+
         ApiResponse<String> response = orderService.cancelOrder(orderId);
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/deliver/{orderId}")
     public ResponseEntity<ApiResponse<String>> deliverOrder(@PathVariable Long orderId) {
+
         ApiResponse<String> response = orderService.deliveredOrder(orderId);
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -58,18 +62,23 @@ public class OrderController {
 
         Pageable paging = PageRequest.of(page, size);
         Page<Orders> ordersPage = orderService.getAllOrders(paging);
+
         return new ResponseEntity<>(ordersPage, HttpStatus.OK);
     }
 
     @GetMapping("/history")
     public ResponseEntity<ApiResponse<List<Orders>>> getOrderHistory(
-            @RequestHeader("Authorization") String authorizationHeader) {
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "fromDate", required = false) String fromDate,
+            @RequestParam(value = "toDate", required = false) String toDate) {
 
         String token = authorizationHeader.substring(7);
+        ApiResponse<List<Orders>> response = orderService.getOrderHistoryByFilters(token, status, fromDate, toDate);
 
-        ApiResponse<List<Orders>> response = orderService.getOrderHistoryByCustomerId(token);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
 
     private String extractToken(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
