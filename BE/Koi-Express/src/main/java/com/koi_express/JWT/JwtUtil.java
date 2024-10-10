@@ -6,13 +6,19 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.exception.AppException;
+import com.koi_express.exception.ErrorCode;
 import io.jsonwebtoken.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JwtUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
     @Value("${jwt.secret-key}")
     private String SECRET_KEY;
@@ -92,11 +98,24 @@ public class JwtUtil {
     }
 
     public String extractCustomerId(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
-        return (String) claims.get("customerId"); // Ensure you are getting "customerId"
+        try {
+            // Sanitize the token by trimming whitespace
+            String sanitizedToken = sanitizeToken(token);
+
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(sanitizedToken)
+                    .getBody();
+            return claims.get("customerId", String.class);
+        } catch (JwtException e) {
+            logger.error("Error parsing JWT: ", e);
+            throw new AppException(ErrorCode.JWT_PARSING_FAILED, "Failed to parse JWT token");
+        }
+    }
+
+    private String sanitizeToken(String token) {
+        return token.trim().replaceAll("[\\r\\n\\s]", "");
     }
 
     public Date extractExpiration(String token) {

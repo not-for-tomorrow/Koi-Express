@@ -3,6 +3,7 @@ package com.koi_express.entity.shipment;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.entity.customer.CustomerFeedback;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.customer.User;
@@ -48,13 +49,15 @@ public class DeliveringStaff implements User {
     @Column(nullable = false)
     String passwordHash;
 
-    @OneToMany(mappedBy = "deliveringStaff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "deliveringStaff", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnore
     List<Orders> ordersReceived;
 
     @Column(nullable = false)
     double averageRating;
 
     @OneToMany(mappedBy = "deliveringStaff", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     List<CustomerFeedback> feedbacks;
 
     @Column(nullable = false)

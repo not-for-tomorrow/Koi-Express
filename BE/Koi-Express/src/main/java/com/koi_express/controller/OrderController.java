@@ -1,5 +1,7 @@
 package com.koi_express.controller;
 
+import java.util.List;
+
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -28,7 +30,8 @@ public class OrderController {
     @PostMapping("/create")
     public ApiResponse<Orders> createOrder(
             @RequestBody OrderRequest orderRequest, HttpServletRequest httpServletRequest) {
-        String token = httpServletRequest.getHeader("Authorization").substring(7);
+
+        String token = extractToken(httpServletRequest);
 
         return orderService.createOrder(orderRequest, token);
     }
@@ -53,11 +56,27 @@ public class OrderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        String token = httpServletRequest.getHeader("Authorization").substring(7);
-        String customerId = jwtUtil.extractCustomerId(token);
-
         Pageable paging = PageRequest.of(page, size);
         Page<Orders> ordersPage = orderService.getAllOrders(paging);
         return new ResponseEntity<>(ordersPage, HttpStatus.OK);
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<ApiResponse<List<Orders>>> getOrderHistory(
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        String token = authorizationHeader.substring(7);
+
+        ApiResponse<List<Orders>> response = orderService.getOrderHistoryByCustomerId(token);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7);
+        } else {
+            throw new IllegalArgumentException("Authorization header must be provided");
+        }
     }
 }

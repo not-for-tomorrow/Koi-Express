@@ -28,7 +28,7 @@ public class Orders { // Quản lý đơn hàng
     Long orderId;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_id", referencedColumnName = "customerId", nullable = false)
     Customers customer;
 
     @ManyToOne
