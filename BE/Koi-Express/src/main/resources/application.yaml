@@ -4,7 +4,7 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/koi_express
+    url: ${DBMS_CONNECTION}
     hikari:
       maximum-pool-size: 10
       connection-timeout: 20000
