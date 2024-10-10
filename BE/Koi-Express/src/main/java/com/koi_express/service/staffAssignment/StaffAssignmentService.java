@@ -1,5 +1,8 @@
 package com.koi_express.service.staffAssignment;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.entity.staff.StaffAssignment;
@@ -15,9 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -37,17 +37,20 @@ public class StaffAssignmentService {
     @Transactional
     public String assignOrder(Long orderId) throws Exception {
 
-        Orders order = orderRepository.findById(orderId)
+        Orders order = orderRepository
+                .findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found with ID: " + orderId));
 
         if (order.getDeliveringStaff() != null) {
-            throw new AppException(ErrorCode.ORDER_ALREADY_ASSIGNED, "Order with ID: " + orderId + " is already assigned.");
+            throw new AppException(
+                    ErrorCode.ORDER_ALREADY_ASSIGNED, "Order with ID: " + orderId + " is already assigned.");
         }
 
         double kilometers = order.getOrderDetail().getKilometers();
         DeliveringStaffLevel level = kilometers < 300 ? DeliveringStaffLevel.LEVEL_1 : DeliveringStaffLevel.LEVEL_2;
 
-        List<DeliveringStaff> availableStaff = deliveringStaffRepository.findByLevelAndStatus(level, StaffStatus.AVAILABLE);
+        List<DeliveringStaff> availableStaff =
+                deliveringStaffRepository.findByLevelAndStatus(level, StaffStatus.AVAILABLE);
         log.info("Available staff count for level {}: {}", level, availableStaff.size());
 
         if (availableStaff.isEmpty()) {
@@ -82,11 +85,13 @@ public class StaffAssignmentService {
 
         lastAssignedStaffId = assignedStaff.getStaffId();
 
-        return "Order with ID " + orderId + " has been assigned to staffId: " + assignedStaff.getStaffId() + " - " + assignedStaff.getFullName();
+        return "Order with ID " + orderId + " has been assigned to staffId: " + assignedStaff.getStaffId() + " - "
+                + assignedStaff.getFullName();
     }
 
     private DeliveringStaff findNextAvailableStaff(List<DeliveringStaff> availableStaff) {
-        if (lastAssignedStaffId == null || availableStaff.stream().noneMatch(staff -> staff.getStaffId().equals(lastAssignedStaffId))) {
+        if (lastAssignedStaffId == null
+                || availableStaff.stream().noneMatch(staff -> staff.getStaffId().equals(lastAssignedStaffId))) {
             log.info("Returning first staff in list as lastAssignedStaffId is invalid or null");
             return availableStaff.get(0);
         }

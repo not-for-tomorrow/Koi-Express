@@ -44,7 +44,8 @@ public class ManagerController {
 
     @PostMapping("/create-delivering-staff")
     public ResponseEntity<ApiResponse<?>> createDeliveringStaff(
-            @RequestBody @Valid CreateStaffRequest createDeliveringStaffRequest, HttpServletRequest httpServletRequest) {
+            @RequestBody @Valid CreateStaffRequest createDeliveringStaffRequest,
+            HttpServletRequest httpServletRequest) {
 
         String token = httpServletRequest.getHeader("Authorization").substring(7);
 

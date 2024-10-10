@@ -19,7 +19,6 @@ public class StaffAssignmentController {
 
         String message = staffAssignmentService.assignOrder(orderId);
         return ResponseEntity.ok(message);
-
     }
 
     public ResponseEntity<ApiResponse<String>> autoAssignOrder(Long orderId) throws Exception {

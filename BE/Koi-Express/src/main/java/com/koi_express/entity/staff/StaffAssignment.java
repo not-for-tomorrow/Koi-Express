@@ -2,7 +2,6 @@ package com.koi_express.entity.staff;
 
 import java.time.LocalDateTime;
 
-import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.Role;

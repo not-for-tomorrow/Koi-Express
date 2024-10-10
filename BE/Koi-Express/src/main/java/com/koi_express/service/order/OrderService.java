@@ -1,5 +1,8 @@
 package com.koi_express.service.order;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -19,8 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OrderService {
@@ -176,9 +178,32 @@ public class OrderService {
             logger.info(message);
         } catch (Exception e) {
             logger.error("Failed to assign staff to order ID: {}", order.getOrderId(), e);
-            throw new AppException(ErrorCode.STAFF_ASSIGNMENT_FAILED, "Staff assignment failed for order ID: " + order.getOrderId());
+            throw new AppException(
+                    ErrorCode.STAFF_ASSIGNMENT_FAILED, "Staff assignment failed for order ID: " + order.getOrderId());
         }
 
         return new ApiResponse<>(HttpStatus.OK.value(), "Order accepted and staff assigned successfully", null);
+    }
+
+    @Transactional
+    public ApiResponse<List<Orders>> getOrderHistoryByCustomerId(String token) {
+
+        try {
+            String customerId = jwtUtil.extractCustomerId(token);
+            logger.info("Customer ID extracted from token: {}", customerId);
+
+            List<Orders> orders = orderRepository.findByCustomerCustomerId(Long.parseLong(customerId));
+
+            if (orders.isEmpty()) {
+                logger.info("No orders found for customer with ID: {}", customerId);
+                return new ApiResponse<>(HttpStatus.OK.value(), "No orders found for the customer", null);
+            }
+
+            logger.info("Order history retrieved successfully for customer with ID: {}", customerId);
+            return new ApiResponse<>(HttpStatus.OK.value(), "Order history retrieved successfully", orders);
+        } catch (Exception e) {
+            logger.error("Error retrieving order history: ", e);
+            throw new AppException(ErrorCode.ORDER_HISTORY_RETRIEVAL_FAILED);
+        }
     }
 }

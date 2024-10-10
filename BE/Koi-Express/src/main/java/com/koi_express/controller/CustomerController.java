@@ -5,7 +5,6 @@ import com.koi_express.dto.request.UpdateRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.dto.response.BasicInfoResponse;
 import com.koi_express.entity.customer.Customers;
-import com.koi_express.repository.CustomersRepository;
 import com.koi_express.service.customer.CustomerService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +21,7 @@ public class CustomerController {
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public CustomerController(
-            CustomerService customerService, JwtUtil jwtUtil) {
+    public CustomerController(CustomerService customerService, JwtUtil jwtUtil) {
         this.customerService = customerService;
         this.jwtUtil = jwtUtil;
     }

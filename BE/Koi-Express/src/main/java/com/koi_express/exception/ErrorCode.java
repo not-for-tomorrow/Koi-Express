@@ -25,6 +25,10 @@ public enum ErrorCode {
     NO_AVAILABLE_STAFF(1021, "No available staff"),
     ORDER_ALREADY_ASSIGNED(1022, "Order already assigned"),
     STAFF_ASSIGNMENT_FAILED(1023, "Staff assignment failed"),
+    ORDER_HISTORY_RETRIEVAL_FAILED(1024, "Order history retrieval failed"),
+    JWT_PARSING_FAILED(1025, "JWT parsing failed"),
+    JWT_UNSUPPORTED(1026, "JWT unsupported"),
+    JWT_EXPIRED(1027, "JWT expired"),
     ;
 
     ErrorCode(int code, String message) {
