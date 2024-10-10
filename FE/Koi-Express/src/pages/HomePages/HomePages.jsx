@@ -38,10 +38,14 @@ export default function HomePages() {
         <div className="flex justify-between mt-20">
           <div className="mt-40 ">
             <h3 className="text-left text-[45px]  font-semibold">
-            Luôn chuyển động cùng cá Koi của bạn
+              Luôn chuyển động cùng cá Koi của bạn
             </h3>
             <h1 className="mt-4 text-lg text-left">
-            Chúng tôi cam kết mang đến dịch vụ vận chuyển cá Koi chuyên nghiệp, đảm bảo an toàn và sức khỏe cho từng chú cá của bạn. Với đội ngũ giao hàng tận tâm và phương tiện chuyên dụng, chúng tôi đảm bảo bạn nhận được dịch vụ tốt nhất từ Koi Express, mang lại sự an tâm và tin cậy trên mỗi chuyến hàng.
+              Chúng tôi cam kết mang đến dịch vụ vận chuyển cá Koi chuyên
+              nghiệp, đảm bảo an toàn và sức khỏe cho từng chú cá của bạn. Với
+              đội ngũ giao hàng tận tâm và phương tiện chuyên dụng, chúng tôi
+              đảm bảo bạn nhận được dịch vụ tốt nhất từ Koi Express, mang lại sự
+              an tâm và tin cậy trên mỗi chuyến hàng.
             </h1>
             <button className="px-8 py-5 mt-5 text-left text-white bg-blue-400 border rounded hover:bg-blue-500">
               <span className="font-semibold">Khám phá thêm</span>
