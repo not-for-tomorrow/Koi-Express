@@ -191,17 +191,7 @@ export default function Footer() {
             <p>VP Đà Nẵng: 66A Lê Đình Lý, Thanh Khê, Đà Nẵng</p>
           </div>
         </div>
-        <div className="mt-5 max-w-screen-md ">
-          <span className="text-xs font-semibold text-wrap">
-            Giấy chứng nhận đăng ký doanh nghiệp số 0313506115 cấp lần đầu ngày
-            26/10/2015 tại Sở Kế hoạch đầu tư Thành phố Hồ Chí Minh, cấp thay
-            đổi lần thứ 09 ngày 15/03/2023. Văn bản xác nhận thông báo hoạt động
-            Bưu chính số 2418/XN-BTTTT do Bộ Thông tin và Truyền thông cấp lần
-            đầu ngày 11/04/2017, cấp điều chỉnh lần thứ 1 ngày 24/7/2019. Địa
-            chỉ ĐKKD: 405/15 Xô Viết Nghệ Tĩnh, Phường 24, Quận Bình Thạnh,
-            Thành phố Hồ Chí Minh, Việt Nam
-          </span>
-        </div>
+       
       </div>
     </>
   );

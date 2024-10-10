@@ -1,6 +1,6 @@
 export const srcPicture = [
-  "https://www.ahamove.com/_next/image?url=https%3A%2F%2Faha-cms-production.s3.ap-southeast-1.amazonaws.com%2FBanner_Homepage3_1920x900_6deacc2839.webp&w=1920&q=75",
-  "https://www.ahamove.com/_next/image?url=https%3A%2F%2Faha-cms-production.s3.ap-southeast-1.amazonaws.com%2Fweb_20b845cb84.png&w=1920&q=75",
+  "/src/assets/images/banner/banner-1.webp",
+  "/src/assets/images/banner/banner-2.webp",
   "https://www.ahamove.com/_next/image?url=https%3A%2F%2Faha-cms-production.s3.ap-southeast-1.amazonaws.com%2FBanner_Homepage1_1920x900_efc0fcb754.webp&w=1920&q=75",
 ];
 
