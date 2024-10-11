@@ -27,10 +27,7 @@ const OrderHistory = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log("Order history response:", response.data);
-
-        setOrders(response.data.result || []); // Cập nhật orders từ API
-        console.log("Orders state after set:", response.data.data);
+        setOrders(response.data.result || []); // Update orders from API response
         setLoading(false);
       } catch (err) {
         setError(err.message || "Failed to fetch orders");
@@ -102,17 +99,19 @@ const OrderHistory = () => {
   };
 
   const filterOrders = () => {
-    let filteredOrders = orders;
-
+    let filteredOrders = Array.isArray(orders) ? orders : [];
+  
+    // Filter by selected tab (status)
     if (selectedTab !== "Tất cả") {
       filteredOrders = filteredOrders.filter(
-        (order) => order.status === selectedTab
+        (order) => getVietnameseStatus(order.status) === selectedTab
       );
     }
-
+  
+    // Filter by selected time filter (today, this week, etc.)
     if (selectedTimeFilter !== "all") {
       filteredOrders = filteredOrders.filter((order) => {
-        const orderDate = new Date(order.date);
+        const orderDate = new Date(order.createdAt);
         if (selectedTimeFilter === "today") {
           const today = new Date();
           return orderDate.toDateString() === today.toDateString();
@@ -139,37 +138,55 @@ const OrderHistory = () => {
         return true;
       });
     }
-
+  
+    // Filter by search query
     if (searchQuery) {
       filteredOrders = filteredOrders.filter((order) => {
+        const orderId = order.orderId ? order.orderId.toString() : ''; // Convert orderId to a string
+        const originLocation = order.originLocation ? order.originLocation.toLowerCase() : '';
+        const destinationLocation = order.destinationLocation ? order.destinationLocation.toLowerCase() : '';
+  
         return (
-          order.id.includes(searchQuery) ||
-          order.pickup.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.delivery.toLowerCase().includes(searchQuery.toLowerCase())
+          orderId.includes(searchQuery) ||
+          originLocation.includes(searchQuery.toLowerCase()) ||
+          destinationLocation.includes(searchQuery.toLowerCase())
         );
       });
     }
+  
+    return filteredOrders;
+  };
+  
 
-    return Array.isArray(filteredOrders) ? filteredOrders : [];
+  const vietnameseStatusMapping = {
+    "PENDING": "Chờ xác nhận",
+    "ACCEPTED": "Đã xác nhận",
+    "ASSIGNED": "Đã phân công",
+    "PICKING_UP": "Chuẩn bị lấy hàng",
+    "IN_TRANSIT": "Đang giao",
+    "DELIVERED": "Hoàn thành",
+    "CANCELED": "Đã hủy"
   };
 
-  // Define color mapping for status buttons
+  const getVietnameseStatus = (status) => vietnameseStatusMapping[status] || status;
+
   const statusColors = {
-    "Tất cả": { background: "#3B82F6", text: "#FFFFFF", darkText: "#1E3A8A" }, // Blue
-    "PENDING": { background: "#FEF08A", text: "#1F2937", darkText: "#854D0E" }, // Yellow
-    "ACCEPTED": { background: "#E9D5FF", text: "#1F2937", darkText: "#5B21B6" }, // Purple
-    "PICKING_UP": { background: "#99F6E4", text: "#1F2937", darkText: "#0D9488" }, // Teal
-    "IN_TRANSIT": { background: "#BFDBFE", text: "#1F2937", darkText: "#1E3A8A" }, // Light Blue
-    "DELIVERED": { background: "#BBF7D0", text: "#1F2937", darkText: "#065F46" }, // Light Green
-    "CANCELED": { background: "#FECACA", text: "#1F2937", darkText: "#991B1B" }, // Light Red
+    "Tất cả": { background: "rgba(59, 130, 246, 0.1)", text: "#1E3A8A" },
+    "Chờ xác nhận": { background: "rgba(254, 240, 138, 0.2)", text: "#854D0E" },
+    "Đã xác nhận": { background: "rgba(233, 213, 255, 0.2)", text: "#2c2c54" },
+    "Đã phân công": { background: "rgba(253, 230, 138, 0.2)", text: "#CA8A04" },
+    "Chuẩn bị lấy hàng": { background: "rgba(153, 246, 228, 0.2)", text: "#0D9488" },
+    "Đang giao": { background: "rgba(191, 219, 254, 0.2)", text: "#1E3A8A" },
+    "Hoàn thành": { background: "rgba(187, 247, 208, 0.2)", text: "#065F46" },
+    "Đã hủy": { background: "rgba(254, 202, 202, 0.2)", text: "#c0392b" },
   };
 
   return (
     <div className="min-h-screen p-8 bg-gradient-to-r from-blue-100 to-blue-50">
       {loading ? (
-        <div className="text-center">Loading...</div> // Hiển thị khi đang tải dữ liệu
+        <div className="text-center">Loading...</div>
       ) : error ? (
-        <div className="text-center text-red-500">{error}</div> // Hiển thị khi có lỗi
+        <div className="text-center text-red-500">{error}</div>
       ) : (
         <div className="p-8 bg-white rounded-lg shadow-lg">
           {/* Header Section */}
@@ -187,28 +204,12 @@ const OrderHistory = () => {
                   key={index}
                   onClick={() => setSelectedTab(tab)}
                   className={`px-5 py-2 rounded-full transition duration-300 ${
-                    selectedTab === tab
-                      ? `${statusColors[tab].background} text-white shadow-md`
-                      : "bg-blue-100 text-blue-700"
+                    selectedTab === tab ? "text-bold shadow-md" : "text-blue-700"
                   }`}
                   style={{
                     backgroundColor: selectedTab === tab ? statusColors[tab].background : "transparent",
-                    color: selectedTab === tab ? statusColors[tab].darkText : "black",
+                    color: selectedTab === tab ? statusColors[tab].text : "black",
                     fontWeight: selectedTab === tab ? "bold" : "normal",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedTab !== tab) {
-                      e.currentTarget.style.backgroundColor = statusColors[tab].background;
-                      e.currentTarget.style.color = statusColors[tab].darkText;
-                      e.currentTarget.style.fontWeight = "bold";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedTab !== tab) {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                      e.currentTarget.style.color = "black";
-                      e.currentTarget.style.fontWeight = "normal";
-                    }
                   }}
                 >
                   {tab}
@@ -226,7 +227,6 @@ const OrderHistory = () => {
                 className="w-full max-w-md p-3 transition duration-300 border border-blue-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
 
-             
               <div className="relative">
                 <button
                   onClick={handleTimeFilterClick}
@@ -316,15 +316,10 @@ const OrderHistory = () => {
 
           {/* Orders Table */}
           <div className="overflow-auto max-h-[63.5vh]">
-            {orders.length === 0 ? (
-              <div className="text-center text-gray-500">
-                Không tìm thấy đơn hàng
-              </div> // Hiển thị khi không có đơn hàng
+            {filterOrders().length === 0 ? (
+              <div className="text-center text-gray-500">Không tìm thấy đơn hàng</div>
             ) : (
-              <table
-                className="w-full text-left border-collapse shadow-md table-auto"
-                style={{ tableLayout: "fixed" }}
-              >
+              <table className="w-full text-left border-collapse shadow-md table-auto">
                 <thead className="sticky top-0 z-10 bg-blue-100">
                   <tr className="text-blue-900 border-b border-blue-200">
                     <th className="p-4 font-semibold w-1/8">Mã đơn hàng</th>
@@ -332,63 +327,24 @@ const OrderHistory = () => {
                     <th className="w-1/3 p-4 font-semibold">Điểm giao hàng</th>
                     <th className="p-4 font-semibold w-1/10">Thời gian tạo</th>
                     <th className="w-1/12 p-4 font-semibold">Tổng COD</th>
-                    <th className="p-4 font-semibold text-center w-1/9">
-                      Trạng thái
-                    </th>
+                    <th className="p-4 font-semibold text-center w-1/9">Trạng thái</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filterOrders().map((order, index) => (
-                    <tr
-                      key={index}
-                      className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
-                    >
-                      <td className="p-4 font-semibold text-blue-600">
-                        {order.orderId}
-                      </td>
+                    <tr key={index} className="transition duration-300 border-b border-gray-200 hover:bg-blue-50">
+                      <td className="p-4 font-semibold text-blue-600">{order.orderId}</td>
                       <td className="p-4 text-sm text-gray-700">{order.originLocation}</td>
                       <td className="p-4 text-sm text-gray-700">{order.destinationLocation}</td>
-                      <td className="p-4 text-sm text-gray-700">
-                        {new Date(order.createdAt).toLocaleString("vi-VN")}
-                      </td>
-                      <td className="p-4 text-sm font-medium text-blue-600">
-                      đ {order.totalFee.toLocaleString("vi-VN")}
-                      </td>
-                      <td className="p-4 text-center whitespace-nowrap">
-                        <span
-                          className="inline-block px-4 py-2 text-sm font-semibold rounded-full"
+                      <td className="p-4 text-sm text-gray-700">{new Date(order.createdAt).toLocaleString("vi-VN")}</td>
+                      <td className="p-4 text-sm font-medium text-blue-600">đ {order.totalFee.toLocaleString("vi-VN")}</td>
+                      <td className="p-4 text-center">
+                        <span className="inline-block px-4 py-2 text-sm font-semibold rounded-full"
                           style={{
-                            backgroundColor:
-                              order.status === "DELIVERED"
-                                ? "#BBF7D0"
-                                : order.status === "CANCELED"
-                                ? "#FECACA"
-                                : order.status === "IN_TRANSIT"
-                                ? "#BFDBFE"
-                                : order.status === "PICKING_UP"
-                                ? "#99F6E4"
-                                : order.status === "PENDING"
-                                ? "#FEF08A"
-                                : order.status === "ACCEPTED"
-                                ? "#E9D5FF"
-                                : "#E5E7EB",
-                            color:
-                              order.status === "DELIVERED"
-                                ? "#065F46"
-                                : order.status === "CANCELED"
-                                ? "#991B1B"
-                                : order.status === "IN_TRANSIT"
-                                ? "#1E3A8A"
-                                : order.status === "PICKING_UP"
-                                ? "#0D9488"
-                                : order.status === "PENDING"
-                                ? "#854D0E"
-                                : order.status === "ACCEPTED"
-                                ? "#5B21B6"
-                                : "#374151",
-                          }}
-                        >
-                          {order.status}
+                            backgroundColor: statusColors[getVietnameseStatus(order.status)].background,
+                            color: statusColors[getVietnameseStatus(order.status)].text,
+                          }}>
+                          {getVietnameseStatus(order.status)}
                         </span>
                       </td>
                     </tr>
