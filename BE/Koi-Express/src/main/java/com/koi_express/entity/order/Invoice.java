@@ -30,6 +30,9 @@ public class Invoice { // thông tin hóa đơn thanh toán của khách hàng
     Customers customer;
 
     @Column(nullable = false)
+    double commitmentFee;
+
+    @Column(nullable = false)
     double totalAmount;
 
     @Column(nullable = false)
