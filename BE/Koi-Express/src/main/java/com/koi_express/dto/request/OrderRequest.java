@@ -24,8 +24,6 @@ public class OrderRequest {
 
     String recipientPhone;
 
-    KoiType koiType;
-
     int koiQuantity;
 
     String originLocation;
@@ -38,11 +36,7 @@ public class OrderRequest {
 
     PaymentMethod paymentMethod;
 
-    boolean insurance = true;
-
-    boolean specialCare = true;
-
-    boolean healthCheck = true;
+    boolean insuranceSelected;
 
     Double kilometers;
 }

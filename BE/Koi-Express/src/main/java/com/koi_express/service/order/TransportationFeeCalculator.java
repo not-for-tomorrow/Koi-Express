@@ -31,4 +31,9 @@ public class TransportationFeeCalculator {
 
         return distanceFee + fuelCost;
     }
+
+    public static double calculateCommitmentFee(double kilometers) {
+        double totalFee = calculateTotalFee(kilometers);
+        return totalFee * 0.30;  // 30% commitment fee
+    }
 }

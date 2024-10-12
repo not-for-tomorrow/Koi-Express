@@ -11,10 +11,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderBuilder {
 
-    @Autowired
-    private OrderFeeCalculator orderFeeCalculator;
-
     public Orders buildOrder(OrderRequest orderRequest, Customers customer) {
+
+        double distanceFee = TransportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
+
+        double commitmentFee = TransportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
 
         Orders orders = Orders.builder()
                 .customer(customer)
@@ -23,7 +24,7 @@ public class OrderBuilder {
                 .destinationLocation(orderRequest.getDestinationLocation())
                 .destinationDetail(orderRequest.getDestinationDetail())
                 .status(OrderStatus.PENDING)
-                .totalFee(orderFeeCalculator.calculateTotalFee(orderRequest))
+                .totalFee(distanceFee)
                 .paymentMethod(orderRequest.getPaymentMethod())
                 .build();
 
@@ -33,12 +34,11 @@ public class OrderBuilder {
                 .senderPhone(orderRequest.getSenderPhone())
                 .recipientName(orderRequest.getRecipientName())
                 .recipientPhone(orderRequest.getRecipientPhone())
-                .koiType(orderRequest.getKoiType())
                 .koiQuantity(orderRequest.getKoiQuantity())
-                .kilometers(orderRequest.getKilometers() != null ? orderRequest.getKilometers() : 0)
+                .distanceFee(distanceFee)
+                .commitmentFee(commitmentFee)
                 .paymentMethod(orderRequest.getPaymentMethod())
-                .insurance(orderRequest.isInsurance())
-                .healthCheck(orderRequest.isHealthCheck())
+                .insurance(orderRequest.isInsuranceSelected())
                 .build();
 
         orders.setOrderDetail(orderDetail);

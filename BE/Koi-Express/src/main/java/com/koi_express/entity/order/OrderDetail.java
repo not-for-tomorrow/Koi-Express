@@ -45,6 +45,7 @@ public class OrderDetail {
     String recipientPhone;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
     KoiType koiType;
 
     @Positive(message = "Koi quantity must be positive")
@@ -76,6 +77,9 @@ public class OrderDetail {
 
     @PositiveOrZero(message = "Kilometers must be positive or zero")
     double kilometers;
+
+    @PositiveOrZero(message = "Commitment fee must be positive or zero")
+    double commitmentFee;
 
     @Column(updatable = false)
     @CreationTimestamp

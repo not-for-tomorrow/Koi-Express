@@ -54,7 +54,14 @@ public class OrderService {
         try {
             String customerId = jwtUtil.extractCustomerId(token);
             Customers customer = managerService.getCustomerById(Long.parseLong(customerId));
+
+            double totalFee = TransportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
+            double commitmentFee = TransportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
+
             Orders orders = orderBuilder.buildOrder(orderRequest, customer);
+            orders.getOrderDetail().setDistanceFee(totalFee); // Set total fee
+            orders.getOrderDetail().setCommitmentFee(commitmentFee); // Set commitment fee
+
             Orders savedOrder = orderRepository.save(orders);
             logger.info("Order created successfully: {}", savedOrder);
 
@@ -65,10 +72,6 @@ public class OrderService {
             logger.error("Error creating order: ", e);
             throw new AppException(ErrorCode.ORDER_CREATION_FAILED);
         }
-    }
-
-    private String extractCustomerIdFromToken(String token) {
-        return jwtUtil.extractCustomerId(token);
     }
 
     //    private double calculateDistance(String originLocation, String destinationLocation) {
