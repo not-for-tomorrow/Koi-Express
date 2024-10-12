@@ -79,7 +79,6 @@ public class OrderController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-
     private String extractToken(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {

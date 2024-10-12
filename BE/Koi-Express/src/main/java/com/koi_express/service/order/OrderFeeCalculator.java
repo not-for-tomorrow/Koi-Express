@@ -1,7 +1,6 @@
 package com.koi_express.service.order;
 
 import com.koi_express.dto.request.OrderRequest;
-import com.koi_express.enums.PackingMethod;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,7 +23,6 @@ public class OrderFeeCalculator {
         boolean isInsurance = orderRequest.isInsurance();
         boolean isSpecialCare = orderRequest.isSpecialCare();
         boolean isHealthCheck = orderRequest.isHealthCheck();
-        PackingMethod packingMethod = orderRequest.getPackingMethod();
 
         double totalFee = 0;
 
@@ -41,12 +39,6 @@ public class OrderFeeCalculator {
 
         if (isHealthCheck) {
             totalFee += HEALTH_CHECK_COST_FER_FISH;
-        }
-
-        if (packingMethod == PackingMethod.NORMAL_PACKAGING) {
-            totalFee += BASIC_PACKAGING_COST_FER_FISH;
-        } else if (packingMethod == PackingMethod.SPECIAL_PACKAGING) {
-            totalFee += SPECIAL_PACKAGING_COST_FER_FISH;
         }
 
         double tax = totalFee * TAX_RATE;
