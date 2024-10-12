@@ -30,10 +30,6 @@ public class OrderService {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
-    //    private static final String GOOGLE_MAPS_API_KEY = "AIzaSyBEtydz_RCAU5lDodbyLDOf4UJcHhAWXgI";
-    //    private static final String GOOGLE_MAPS_DISTANCE_MATRIX_URL =
-    // "https://maps.googleapis.com/maps/api/distancematrix/json";
-
     @Autowired
     private OrderRepository orderRepository;
 
@@ -187,29 +183,8 @@ public class OrderService {
     }
 
     @Transactional
-    public ApiResponse<List<Orders>> getOrderHistoryByCustomerId(String token) {
-
-        try {
-            String customerId = jwtUtil.extractCustomerId(token);
-            logger.info("Customer ID extracted from token: {}", customerId);
-
-            List<Orders> orders = orderRepository.findByCustomerCustomerId(Long.parseLong(customerId));
-
-            if (orders.isEmpty()) {
-                logger.info("No orders found for customer with ID: {}", customerId);
-                return new ApiResponse<>(HttpStatus.OK.value(), "No orders found for the customer", null);
-            }
-
-            logger.info("Order history retrieved successfully for customer with ID: {}", customerId);
-            return new ApiResponse<>(HttpStatus.OK.value(), "Order history retrieved successfully", orders);
-        } catch (Exception e) {
-            logger.error("Error retrieving order history: ", e);
-            throw new AppException(ErrorCode.ORDER_HISTORY_RETRIEVAL_FAILED);
-        }
-    }
-
-    @Transactional
-    public ApiResponse<List<Orders>> getOrderHistoryByFilters(String token, String status, String fromDate, String toDate) {
+    public ApiResponse<List<Orders>> getOrderHistoryByFilters(
+            String token, String status, String fromDate, String toDate) {
         try {
             String customerId = jwtUtil.extractCustomerId(token);
             logger.info("Customer ID extracted from token: {}", customerId);
@@ -217,9 +192,11 @@ public class OrderService {
             // Parse dates and status
             LocalDate from = (fromDate != null) ? LocalDate.parse(fromDate) : null;
             LocalDate to = (toDate != null) ? LocalDate.parse(toDate) : null;
-            OrderStatus orderStatus = (status != null && !status.isEmpty()) ? OrderStatus.valueOf(status.toUpperCase()) : null;
+            OrderStatus orderStatus =
+                    (status != null && !status.isEmpty()) ? OrderStatus.valueOf(status.toUpperCase()) : null;
 
-            List<Orders> orders = orderRepository.findOrdersWithFilters(Long.parseLong(customerId), orderStatus, from, to);
+            List<Orders> orders =
+                    orderRepository.findOrdersWithFilters(Long.parseLong(customerId), orderStatus, from, to);
             if (orders.isEmpty()) {
                 logger.info("No orders found for customer with filters");
                 return new ApiResponse<>(HttpStatus.OK.value(), "No orders found", null);
@@ -231,5 +208,4 @@ public class OrderService {
             throw new AppException(ErrorCode.ORDER_HISTORY_RETRIEVAL_FAILED);
         }
     }
-
 }

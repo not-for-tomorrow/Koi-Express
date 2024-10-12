@@ -3,7 +3,7 @@ package com.koi_express.entity.order;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.koi_express.enums.PackingMethod;
+import com.koi_express.enums.KoiType;
 import com.koi_express.enums.PaymentMethod;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -44,8 +44,8 @@ public class OrderDetail {
     @NotEmpty(message = "Recipient phone cannot be empty")
     String recipientPhone;
 
-    @NotEmpty(message = "Koi type cannot be empty")
-    String koiType;
+    @Enumerated(EnumType.STRING)
+    KoiType koiType;
 
     @Positive(message = "Koi quantity must be positive")
     int koiQuantity;
@@ -57,19 +57,22 @@ public class OrderDetail {
     double koiSize;
 
     @Enumerated(EnumType.STRING)
-    PackingMethod packingMethod;
-
-    @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
 
     boolean insurance;
-    boolean specialCare;
     boolean healthCheck;
 
     double distanceFee;
     double careFee;
     double tollFee;
     double weightFee;
+    double packingFee;
+    double storageFee;
+    double returnFee;
+    double vat;
+
+    double fuelFee;
+    double insuranceFee;
 
     @PositiveOrZero(message = "Kilometers must be positive or zero")
     double kilometers;

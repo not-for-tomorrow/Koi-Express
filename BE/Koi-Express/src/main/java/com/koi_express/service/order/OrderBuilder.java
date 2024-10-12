@@ -36,10 +36,8 @@ public class OrderBuilder {
                 .koiType(orderRequest.getKoiType())
                 .koiQuantity(orderRequest.getKoiQuantity())
                 .kilometers(orderRequest.getKilometers() != null ? orderRequest.getKilometers() : 0)
-                .packingMethod(orderRequest.getPackingMethod())
                 .paymentMethod(orderRequest.getPaymentMethod())
                 .insurance(orderRequest.isInsurance())
-                .specialCare(orderRequest.isSpecialCare())
                 .healthCheck(orderRequest.isHealthCheck())
                 .build();
 

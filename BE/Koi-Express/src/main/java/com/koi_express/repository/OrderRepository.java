@@ -24,10 +24,10 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
 
     List<Orders> findByCustomerCustomerIdAndStatus(Long customerId, OrderStatus status);
 
-    @Query("SELECT o FROM Orders o WHERE o.customer.customerId = :customerId " +
-            "AND (:status IS NULL OR o.status = :status) " +
-            "AND (:fromDate IS NULL OR o.createdAt >= :fromDate) " +
-            "AND (:toDate IS NULL OR o.createdAt <= :toDate)")
+    @Query("SELECT o FROM Orders o WHERE o.customer.customerId = :customerId "
+            + "AND (:status IS NULL OR o.status = :status) "
+            + "AND (:fromDate IS NULL OR o.createdAt >= :fromDate) "
+            + "AND (:toDate IS NULL OR o.createdAt <= :toDate)")
     List<Orders> findOrdersWithFilters(
             @Param("customerId") Long customerId,
             @Param("status") OrderStatus status,

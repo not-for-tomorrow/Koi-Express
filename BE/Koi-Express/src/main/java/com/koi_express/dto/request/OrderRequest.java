@@ -1,7 +1,7 @@
 package com.koi_express.dto.request;
 
 import com.koi_express.entity.customer.Customers;
-import com.koi_express.enums.PackingMethod;
+import com.koi_express.enums.KoiType;
 import com.koi_express.enums.PaymentMethod;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -24,7 +24,7 @@ public class OrderRequest {
 
     String recipientPhone;
 
-    String koiType;
+    KoiType koiType;
 
     int koiQuantity;
 
@@ -35,8 +35,6 @@ public class OrderRequest {
     String originDetail;
 
     String destinationDetail;
-
-    PackingMethod packingMethod;
 
     PaymentMethod paymentMethod;
 
