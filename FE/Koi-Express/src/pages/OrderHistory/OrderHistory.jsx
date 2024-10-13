@@ -22,11 +22,14 @@ const OrderHistory = () => {
           throw new Error("Token not found. Please log in.");
         }
 
-        const response = await axios.get("http://localhost:8080/api/orders/history", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(
+          "http://localhost:8080/api/orders/history",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         setOrders(response.data.result || []); // Update orders from API response
         setLoading(false);
       } catch (err) {
@@ -100,14 +103,14 @@ const OrderHistory = () => {
 
   const filterOrders = () => {
     let filteredOrders = Array.isArray(orders) ? orders : [];
-  
+
     // Filter by selected tab (status)
     if (selectedTab !== "Tất cả") {
       filteredOrders = filteredOrders.filter(
         (order) => getVietnameseStatus(order.status) === selectedTab
       );
     }
-  
+
     // Filter by selected time filter (today, this week, etc.)
     if (selectedTimeFilter !== "all") {
       filteredOrders = filteredOrders.filter((order) => {
@@ -138,14 +141,18 @@ const OrderHistory = () => {
         return true;
       });
     }
-  
+
     // Filter by search query
     if (searchQuery) {
       filteredOrders = filteredOrders.filter((order) => {
-        const orderId = order.orderId ? order.orderId.toString() : ''; // Convert orderId to a string
-        const originLocation = order.originLocation ? order.originLocation.toLowerCase() : '';
-        const destinationLocation = order.destinationLocation ? order.destinationLocation.toLowerCase() : '';
-  
+        const orderId = order.orderId ? order.orderId.toString() : ""; // Convert orderId to a string
+        const originLocation = order.originLocation
+          ? order.originLocation.toLowerCase()
+          : "";
+        const destinationLocation = order.destinationLocation
+          ? order.destinationLocation.toLowerCase()
+          : "";
+
         return (
           orderId.includes(searchQuery) ||
           originLocation.includes(searchQuery.toLowerCase()) ||
@@ -153,29 +160,32 @@ const OrderHistory = () => {
         );
       });
     }
-  
+
     return filteredOrders;
   };
-  
 
   const vietnameseStatusMapping = {
-    "PENDING": "Chờ xác nhận",
-    "ACCEPTED": "Đã xác nhận",
-    "ASSIGNED": "Đã phân công",
-    "PICKING_UP": "Chuẩn bị lấy hàng",
-    "IN_TRANSIT": "Đang giao",
-    "DELIVERED": "Hoàn thành",
-    "CANCELED": "Đã hủy"
+    PENDING: "Chờ xác nhận",
+    ACCEPTED: "Đã xác nhận",
+    ASSIGNED: "Đã phân công",
+    PICKING_UP: "Chuẩn bị lấy hàng",
+    IN_TRANSIT: "Đang giao",
+    DELIVERED: "Hoàn thành",
+    CANCELED: "Đã hủy",
   };
 
-  const getVietnameseStatus = (status) => vietnameseStatusMapping[status] || status;
+  const getVietnameseStatus = (status) =>
+    vietnameseStatusMapping[status] || status;
 
   const statusColors = {
     "Tất cả": { background: "rgba(59, 130, 246, 0.1)", text: "#1E3A8A" },
     "Chờ xác nhận": { background: "rgba(254, 240, 138, 0.2)", text: "#854D0E" },
     "Đã xác nhận": { background: "rgba(233, 213, 255, 0.2)", text: "#2c2c54" },
     "Đã phân công": { background: "rgba(253, 230, 138, 0.2)", text: "#CA8A04" },
-    "Chuẩn bị lấy hàng": { background: "rgba(153, 246, 228, 0.2)", text: "#0D9488" },
+    "Chuẩn bị lấy hàng": {
+      background: "rgba(153, 246, 228, 0.2)",
+      text: "#0D9488",
+    },
     "Đang giao": { background: "rgba(191, 219, 254, 0.2)", text: "#1E3A8A" },
     "Hoàn thành": { background: "rgba(187, 247, 208, 0.2)", text: "#065F46" },
     "Đã hủy": { background: "rgba(254, 202, 202, 0.2)", text: "#c0392b" },
@@ -184,15 +194,15 @@ const OrderHistory = () => {
   return (
     <div className="min-h-screen p-8 bg-gradient-to-r from-blue-100 to-blue-50">
       {loading ? (
-        <div className="text-center">Loading...</div>
+        <div className="text-center text-sm">Loading...</div>
       ) : error ? (
-        <div className="text-center text-red-500">{error}</div>
+        <div className="text-center text-red-500 text-sm">{error}</div>
       ) : (
-        <div className="p-8 bg-white rounded-lg shadow-lg">
+        <div className="p-8 bg-white rounded-lg shadow-lg text-sm">
           {/* Header Section */}
           <div className="sticky top-0 z-20 bg-white">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-3xl font-bold text-gray-800">
+              <h1 className="text-2xl font-bold text-gray-800">
                 Lịch sử đơn hàng
               </h1>
             </div>
@@ -203,13 +213,18 @@ const OrderHistory = () => {
                 <button
                   key={index}
                   onClick={() => setSelectedTab(tab)}
-                  className={`px-5 py-2 rounded-full transition duration-300 ${
-                    selectedTab === tab ? "text-bold shadow-md" : "text-blue-700"
+                  className={`px-4 py-2 rounded-full transition duration-300 text-sm ${
+                    selectedTab === tab
+                      ? "font-bold shadow-md"
+                      : "text-blue-700"
                   }`}
                   style={{
-                    backgroundColor: selectedTab === tab ? statusColors[tab].background : "transparent",
-                    color: selectedTab === tab ? statusColors[tab].text : "black",
-                    fontWeight: selectedTab === tab ? "bold" : "normal",
+                    backgroundColor:
+                      selectedTab === tab
+                        ? statusColors[tab].background
+                        : "transparent",
+                    color:
+                      selectedTab === tab ? statusColors[tab].text : "black",
                   }}
                 >
                   {tab}
@@ -224,13 +239,13 @@ const OrderHistory = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Tìm kiếm đơn hàng..."
-                className="w-full max-w-md p-3 transition duration-300 border border-blue-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full max-w-md p-2 text-sm transition duration-300 border border-blue-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
 
               <div className="relative">
                 <button
                   onClick={handleTimeFilterClick}
-                  className="flex items-center p-3 text-blue-700 transition duration-300 bg-blue-100 rounded-lg shadow-sm hover:bg-blue-200"
+                  className="flex items-center p-2 text-blue-700 text-sm transition duration-300 bg-blue-100 rounded-lg shadow-sm hover:bg-blue-200"
                 >
                   <span>{displayDateRange || "Tất cả"}</span>
                 </button>
@@ -239,7 +254,7 @@ const OrderHistory = () => {
                     {["all", "today", "this-week", "this-month", "custom"].map(
                       (filter) => (
                         <div key={filter} className="mb-2">
-                          <label className="flex items-center">
+                          <label className="flex items-center text-sm">
                             <input
                               type="radio"
                               name="timeFilter"
@@ -264,7 +279,7 @@ const OrderHistory = () => {
                     {tempSelectedTimeFilter === "custom" && (
                       <div className="flex flex-col mt-4 space-y-4">
                         <div className="relative">
-                          <label className="block mb-1 font-medium text-gray-600">
+                          <label className="block mb-1 font-medium text-gray-600 text-sm">
                             Từ ngày:
                           </label>
                           <input
@@ -274,11 +289,11 @@ const OrderHistory = () => {
                             onChange={(e) =>
                               handleCustomDateChange("from", e.target.value)
                             }
-                            className="w-full p-3 transition duration-300 border border-blue-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-2 text-sm transition duration-300 border border-blue-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
                         <div className="relative">
-                          <label className="block mb-1 font-medium text-gray-600">
+                          <label className="block mb-1 font-medium text-gray-600 text-sm">
                             Đến ngày:
                           </label>
                           <input
@@ -289,7 +304,7 @@ const OrderHistory = () => {
                             onChange={(e) =>
                               handleCustomDateChange("to", e.target.value)
                             }
-                            className="w-full p-3 transition duration-300 border border-blue-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-2 text-sm transition duration-300 border border-blue-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
                       </div>
@@ -297,13 +312,13 @@ const OrderHistory = () => {
                     <div className="flex justify-end mt-4 space-x-3">
                       <button
                         onClick={handleCloseFilter}
-                        className="px-4 py-2 text-sm font-semibold text-gray-700 transition duration-300 bg-gray-100 rounded-lg hover:bg-gray-200"
+                        className="px-4 py-2 text-xs font-semibold text-gray-700 transition duration-300 bg-gray-100 rounded-lg hover:bg-gray-200"
                       >
                         Đóng
                       </button>
                       <button
                         onClick={handleApplyFilter}
-                        className="px-4 py-2 text-sm font-semibold text-white transition duration-300 bg-blue-500 rounded-lg hover:bg-blue-600"
+                        className="px-4 py-2 text-xs font-semibold text-white transition duration-300 bg-blue-500 rounded-lg hover:bg-blue-600"
                       >
                         Áp dụng
                       </button>
@@ -315,35 +330,58 @@ const OrderHistory = () => {
           </div>
 
           {/* Orders Table */}
-          <div className="overflow-auto max-h-[63.5vh]">
+          <div className="overflow-auto max-h-[63.5vh] text-sm">
             {filterOrders().length === 0 ? (
-              <div className="text-center text-gray-500">Không tìm thấy đơn hàng</div>
+              <div className="text-center text-gray-500">
+                Không tìm thấy đơn hàng
+              </div>
             ) : (
-              <table className="w-full text-left border-collapse shadow-md table-auto">
+              <table className="w-full text-left border-collapse shadow-md table-auto text-sm">
                 <thead className="sticky top-0 z-10 bg-blue-100">
                   <tr className="text-blue-900 border-b border-blue-200">
-                    <th className="p-4 font-semibold w-1/8">Mã đơn hàng</th>
-                    <th className="w-1/4 p-4 font-semibold">Điểm lấy hàng</th>
-                    <th className="w-1/3 p-4 font-semibold">Điểm giao hàng</th>
-                    <th className="p-4 font-semibold w-1/10">Thời gian tạo</th>
-                    <th className="w-1/12 p-4 font-semibold">Tổng COD</th>
-                    <th className="p-4 font-semibold text-center w-1/9">Trạng thái</th>
+                    <th className="p-2 font-semibold w-1/8">Mã đơn hàng</th>
+                    <th className="w-1/4 p-2 font-semibold">Điểm lấy hàng</th>
+                    <th className="w-1/3 p-2 font-semibold">Điểm giao hàng</th>
+                    <th className="p-2 font-semibold w-1/10">Thời gian tạo</th>
+                    <th className="w-1/12 p-2 font-semibold">Tổng COD</th>
+                    <th className="p-2 font-semibold text-center w-1/9">
+                      Trạng thái
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filterOrders().map((order, index) => (
-                    <tr key={index} className="transition duration-300 border-b border-gray-200 hover:bg-blue-50">
-                      <td className="p-4 font-semibold text-blue-600">{order.orderId}</td>
-                      <td className="p-4 text-sm text-gray-700">{order.originLocation}</td>
-                      <td className="p-4 text-sm text-gray-700">{order.destinationLocation}</td>
-                      <td className="p-4 text-sm text-gray-700">{new Date(order.createdAt).toLocaleString("vi-VN")}</td>
-                      <td className="p-4 text-sm font-medium text-blue-600">đ {order.totalFee.toLocaleString("vi-VN")}</td>
-                      <td className="p-4 text-center">
-                        <span className="inline-block px-4 py-2 text-sm font-semibold rounded-full"
+                    <tr
+                      key={index}
+                      className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
+                    >
+                      <td className="p-2 font-semibold text-blue-600">
+                        {order.orderId}
+                      </td>
+                      <td className="p-2 text-sm text-gray-700">
+                        {order.originLocation}
+                      </td>
+                      <td className="p-2 text-sm text-gray-700">
+                        {order.destinationLocation}
+                      </td>
+                      <td className="p-2 text-sm text-gray-700">
+                        {new Date(order.createdAt).toLocaleString("vi-VN")}
+                      </td>
+                      <td className="p-2 text-sm font-medium text-blue-600">
+                        đ {order.totalFee.toLocaleString("vi-VN")}
+                      </td>
+                      <td className="p-2 text-center">
+                        <span
+                          className="inline-block px-4 py-2 text-xs font-semibold rounded-full"
                           style={{
-                            backgroundColor: statusColors[getVietnameseStatus(order.status)].background,
-                            color: statusColors[getVietnameseStatus(order.status)].text,
-                          }}>
+                            backgroundColor:
+                              statusColors[getVietnameseStatus(order.status)]
+                                .background,
+                            color:
+                              statusColors[getVietnameseStatus(order.status)]
+                                .text,
+                          }}
+                        >
                           {getVietnameseStatus(order.status)}
                         </span>
                       </td>
