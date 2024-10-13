@@ -1,11 +1,13 @@
 package com.koi_express.entity.order;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.enums.KoiType;
 import com.koi_express.enums.PaymentMethod;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -63,23 +65,42 @@ public class OrderDetail {
     boolean insurance;
     boolean healthCheck;
 
-    double distanceFee;
-    double careFee;
-    double tollFee;
-    double weightFee;
-    double packingFee;
-    double storageFee;
-    double returnFee;
-    double vat;
+    // Sử dụng BigDecimal cho các giá trị tiền tệ
+    @Digits(integer = 10, fraction = 2, message = "Distance fee must be a valid monetary amount")
+    BigDecimal distanceFee;
 
-    double fuelFee;
-    double insuranceFee;
+    @Digits(integer = 10, fraction = 2, message = "Care fee must be a valid monetary amount")
+    BigDecimal careFee;
+
+    @Digits(integer = 10, fraction = 2, message = "Toll fee must be a valid monetary amount")
+    BigDecimal tollFee;
+
+    @Digits(integer = 10, fraction = 2, message = "Weight fee must be a valid monetary amount")
+    BigDecimal weightFee;
+
+    @Digits(integer = 10, fraction = 2, message = "Packing fee must be a valid monetary amount")
+    BigDecimal packingFee;
+
+    @Digits(integer = 10, fraction = 2, message = "Storage fee must be a valid monetary amount")
+    BigDecimal storageFee;
+
+    @Digits(integer = 10, fraction = 2, message = "Return fee must be a valid monetary amount")
+    BigDecimal returnFee;
+
+    @Digits(integer = 10, fraction = 2, message = "VAT must be a valid monetary amount")
+    BigDecimal vat;
+
+    @Digits(integer = 10, fraction = 2, message = "Fuel fee must be a valid monetary amount")
+    BigDecimal fuelFee;
+
+    @Digits(integer = 10, fraction = 2, message = "Insurance fee must be a valid monetary amount")
+    BigDecimal insuranceFee;
 
     @PositiveOrZero(message = "Kilometers must be positive or zero")
     double kilometers;
 
-    @PositiveOrZero(message = "Commitment fee must be positive or zero")
-    double commitmentFee;
+    @Digits(integer = 10, fraction = 2, message = "Commitment fee must be a valid monetary amount")
+    BigDecimal commitmentFee;
 
     @Column(updatable = false)
     @CreationTimestamp

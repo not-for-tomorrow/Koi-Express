@@ -1,9 +1,10 @@
 package com.koi_express.enums;
 
 public enum PaymentMethod {
-    CREDIT_CARD,
     MOMO,
+    VN_PAY,
     PAYPAL,
+    ZALO_PAY,
     BANK_TRANSFER,
     CASH
 }
