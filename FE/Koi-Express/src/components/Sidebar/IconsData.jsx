@@ -18,19 +18,6 @@ export const navItems = [
       <img
         width="35"
         height="35"
-        src="https://img.icons8.com/cute-clipart/64/truck.png"
-        alt="truck"
-        className="min-w-[35px] min-h-[35px] object-cover"
-      />
-    ),
-    title: "Dịch vụ xe tải",
-  },
-  {
-    id: 3,
-    icons: (
-      <img
-        width="35"
-        height="35"
         src="https://img.icons8.com/cute-clipart/64/clock.png"
         alt="clock"
         className="min-w-[35px] min-h-[35px] object-cover"
@@ -39,7 +26,7 @@ export const navItems = [
     title: "Lịch sử đơn hàng",
   },
   {
-    id: 4,
+    id: 3,
     icons: (
       <img
         width="35"
@@ -52,7 +39,7 @@ export const navItems = [
     title: "Tài khoản của tôi",
   },
   {
-    id: 5,
+    id: 4,
     icons: (
       <img
         width="35"
@@ -65,7 +52,7 @@ export const navItems = [
     title: "Tin mới",
   },
   {
-    id: 6,
+    id: 5,
     icons: (
       <img
         width="35"

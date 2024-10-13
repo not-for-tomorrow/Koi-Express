@@ -62,7 +62,7 @@ const Sidebar = () => {
   return (
     <div className="flex items-start">
       <div
-        className={`h-screen shadow-2xl bg-white text-gray-400 text-[30px] transition-all duration-300 ${
+        className={`h-screen shadow-2xl bg-white text-gray-400 text-[24px] transition-all duration-300 ${
           click ? "w-[60px]" : "w-80"
         } overflow-y-auto flex flex-col`}
       >
@@ -73,7 +73,7 @@ const Sidebar = () => {
               className="flex justify-center items-center w-full h-12 text-blue-600 bg-white p-[4px] transition-all duration-300 cursor-pointer mb-2"
               onClick={() => setClick(!click)}
             >
-              <IoReorderThreeOutline className="text-[35px]" />
+              <IoReorderThreeOutline className="text-[28px]" />
             </div>
           )}
         </div>
@@ -81,7 +81,7 @@ const Sidebar = () => {
           <div className="relative p-4 mb-2 text-white bg-gradient-to-r from-blue-400 to-blue-600">
             <button
               onClick={() => setClick(true)}
-              className="absolute top-2 right-2 text-gray-200 text-[24px] hover:text-white"
+              className="absolute top-2 right-2 text-gray-200 text-[20px] hover:text-white"
             >
               <IoMdClose />
             </button>
@@ -97,16 +97,16 @@ const Sidebar = () => {
                 <img
                   src="https://via.placeholder.com/40"
                   alt="User Avatar"
-                  className="w-10 h-10 rounded-full"
+                  className="w-8 h-8 rounded-full"
                 />
                 <div>
-                  <p className="text-lg font-semibold text-black whitespace-nowrap">
+                  <p className="text-sm font-semibold text-black whitespace-nowrap">
                     {userInfo.fullName || "Unknown User"}
                   </p>
-                  <p className="text-sm text-black">
+                  <p className="text-xs text-black">
                     {userInfo.email || "No Email"}
                   </p>
-                  <p className="text-sm text-black">
+                  <p className="text-xs text-black">
                     {userInfo.phone || "No Phone"}
                   </p>
                 </div>
@@ -119,7 +119,7 @@ const Sidebar = () => {
           {navItems.map((item) => (
             <li
               key={item.id}
-              className={`flex items-center transition-all duration-300 cursor-pointer ${
+              className={`flex items-center transition-all duration-300 cursor-pointer text-sm ${
                 activeItem === item.id
                   ? "bg-gray-200 border-gray-300 text-black"
                   : "text-gray-500"
@@ -128,11 +128,15 @@ const Sidebar = () => {
               }`}
               onClick={() => handleItemClick(item)}
             >
-              <span className={`flex items-center ${click ? "justify-center w-full" : "mr-3"}`}>
+              <span
+                className={`flex items-center ${
+                  click ? "justify-center w-full" : "mr-3"
+                }`}
+              >
                 {item.icons}
               </span>
               {!click && (
-                <span className="ml-3 text-[19px] hover:text-black transition-colors duration-300">
+                <span className="ml-3 text-[16px] hover:text-black transition-colors duration-300">
                   {item.title}
                 </span>
               )}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import OrderForm from "./OrderForm";
+import OrderForm2 from "./OrderForm2"; // Import OrderForm2
 import { MapContainer as LeafletMap, TileLayer, Marker } from "react-leaflet";
 import RoutingControl from "./RoutingControl";
 import FitBoundsButton from "./FitBoundsButton";
@@ -14,6 +15,8 @@ const OrderPage = () => {
   const [deliverySuggestions, setDeliverySuggestions] = useState([]);
   const [distance, setDistance] = useState(0);
   const [gpsLocation, setGpsLocation] = useState(null);
+  const [currentStep, setCurrentStep] = useState(1); // Track which form to show
+  const [totalPrice, setTotalPrice] = useState(0); // State to store the total price
 
   // Function to reverse geocode lat/lng to an address
   const reverseGeocode = async (lat, lng) => {
@@ -64,6 +67,16 @@ const OrderPage = () => {
       console.error("Geolocation is not supported by this browser.");
     }
   }, []);
+
+  // Function to navigate to the next form (OrderForm2)
+  const handleContinue = (calculatedPrice) => {
+    setTotalPrice(calculatedPrice); // Set the total price based on distance
+    setCurrentStep(2); // Navigate to OrderForm2
+  };
+  
+  const handleBack = () => {
+    setCurrentStep(1); // Go back to OrderForm
+  };
 
   // Fetch suggestions for addresses (already implemented)
   const fetchSuggestions = async (inputAddress, setSuggestions) => {
@@ -127,17 +140,24 @@ const OrderPage = () => {
   return (
     <div className="flex h-screen">
       {/* Sidebar Order Form Section */}
-      <OrderForm
-        pickupAddress={pickupAddress}
-        setPickupAddress={setPickupAddress}
-        deliveryAddress={deliveryAddress}
-        setDeliveryAddress={setDeliveryAddress}
-        pickupSuggestions={pickupSuggestions}
-        deliverySuggestions={deliverySuggestions}
-        handleAddressChange={handleAddressChange}
-        handleSelect={handleSelect}
-        distance={distance}
-      />
+        {currentStep === 1 ? (
+          // Render OrderForm if currentStep is 1
+          <OrderForm
+          pickupAddress={pickupAddress}
+          setPickupAddress={setPickupAddress}
+          deliveryAddress={deliveryAddress}
+          setDeliveryAddress={setDeliveryAddress}
+          pickupSuggestions={pickupSuggestions}
+          deliverySuggestions={deliverySuggestions}
+          handleAddressChange={handleAddressChange}
+          handleSelect={handleSelect}
+          distance={distance}
+          handleContinue={handleContinue} // Correctly pass the handleContinue function
+        />
+      ) : (
+        <OrderForm2 handleBack={handleBack} basePrice={totalPrice || 0} /> // Pass totalPrice as basePrice to OrderForm2
+          
+        )}
 
       {/* Full-Screen Map Section */}
       <div className="relative w-2/3 h-screen" style={{ zIndex: 1 }}>
