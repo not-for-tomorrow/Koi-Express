@@ -2,9 +2,11 @@ package com.koi_express.entity.audit;
 
 import java.time.LocalDateTime;
 
+import com.koi_express.entity.customer.Customers;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Getter
@@ -13,22 +15,26 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AuditLog { // ghi lại hành động của người dùng
+public class AuditLog { // Ghi lại hành động của người dùng (khách hàng)
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(nullable = false)
-    Long userId;
+    // Thay userId thành mối quan hệ với thực thể Customers
+    @ManyToOne
+    @JoinColumn(name = "customer_id", nullable = false)
+    Customers customer;
 
     @Column(nullable = false)
-    String action;
+    String action; // Hành động của người dùng
 
-    @Column(nullable = false)
-    LocalDateTime timestamp;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    LocalDateTime timestamp; // Thời gian thực hiện hành động
 
-    String details;
+    @Lob // Cho phép lưu trữ chuỗi lớn
+    String details; // Thông tin chi tiết về hành động
 
-    String ipAddress;
+    String ipAddress; // Địa chỉ IP từ người dùng thực hiện hành động
 }

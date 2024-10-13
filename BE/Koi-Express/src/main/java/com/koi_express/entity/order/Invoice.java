@@ -1,12 +1,15 @@
 package com.koi_express.entity.order;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.enums.InvoiceStatus; // Enum mới cho trạng thái hóa đơn
 import com.koi_express.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Getter
@@ -15,7 +18,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Invoice { // thông tin hóa đơn thanh toán của khách hàng
+public class Invoice { // Thông tin hóa đơn thanh toán của khách hàng
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,17 +32,19 @@ public class Invoice { // thông tin hóa đơn thanh toán của khách hàng
     @JoinColumn(name = "customer_id", nullable = false)
     Customers customer;
 
-    @Column(nullable = false)
-    double commitmentFee;
+    @Column(nullable = false, precision = 15, scale = 2)
+    BigDecimal commitmentFee; // Dùng BigDecimal cho các giá trị tiền tệ
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    BigDecimal totalAmount;
 
     @Column(nullable = false)
-    double totalAmount;
+    @CreationTimestamp
+    LocalDateTime issuedAt; // Tự động gán thời gian phát hành hóa đơn
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    LocalDateTime issuedAt;
-
-    @Column(nullable = false)
-    String status;
+    InvoiceStatus status; // Sử dụng enum cho trạng thái hóa đơn
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

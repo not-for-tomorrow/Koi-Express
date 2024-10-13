@@ -1,5 +1,6 @@
 package com.koi_express.entity.order;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,7 +46,8 @@ public class Orders { // Quản lý đơn hàng
 
     String destinationDetail;
 
-    double totalFee;
+    @Column(precision = 15, scale = 2)  // Tùy chỉnh độ chính xác của BigDecimal
+    BigDecimal totalFee;
 
     @Enumerated(EnumType.STRING)
     OrderStatus status;
@@ -60,4 +62,9 @@ public class Orders { // Quản lý đơn hàng
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     OrderDetail orderDetail;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }
