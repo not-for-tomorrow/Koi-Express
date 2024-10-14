@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import HeaderOrderForm from "../../components/Header/HeaderOrderForm";
 
 const OrderForm = ({
   pickupAddress,
@@ -68,9 +69,7 @@ const OrderForm = ({
     } catch (error) {
       console.error("Error creating order:", error);
     }
-
   };
-  
 
   const handlePickupToggle = () => {
     setPickupCollapsed(!pickupCollapsed);
@@ -81,19 +80,16 @@ const OrderForm = ({
   };
 
   return (
-    
     <div className="relative z-20 flex flex-col w-1/3 h-full p-10 bg-white border-r border-gray-200 shadow-lg">
-      <div className="mb-2 text-2xl font-bold text-gray-800">Đơn hàng mới</div>
+      <HeaderOrderForm />
       {/* Scrollable Content Section */}
       <div className="flex-grow pr-4 overflow-y-auto">
-
         {/* Display Route Distance */}
         {deliveryCollapsed && distance > 0 && (
           <p className="mt-4 text-sm font-semibold text-gray-700">
             Lộ trình điểm giao: {distance.toFixed(2)} km
           </p>
         )}
-
         {/* Pickup Address Box */}
         <div
           className="p-4 mt-4 border rounded-lg shadow-inner cursor-pointer"
@@ -286,7 +282,6 @@ const OrderForm = ({
         </p>
       )}
 
-
       {/* Modal for Pickup Detail */}
       {showPickupDetail && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
@@ -351,16 +346,16 @@ const OrderForm = ({
         </div>
       )}
       <button
-          className={`w-full p-3 rounded-lg text-base font-semibold transition-all transform ${
-            isFormValid
-              ? "bg-blue-500 text-white hover:bg-blue-600 hover:scale-105"
-              : "bg-gray-300 text-gray-600 cursor-not-allowed"
-          }`}
-          disabled={!isFormValid}
-          onClick={handleContinue}
-        >
-          Tiếp tục
-        </button>
+        className={`w-full p-3 rounded-lg text-base font-semibold transition-all transform ${
+          isFormValid
+            ? "bg-blue-500 text-white hover:bg-blue-600 hover:scale-105"
+            : "bg-gray-300 text-gray-600 cursor-not-allowed"
+        }`}
+        disabled={!isFormValid}
+        onClick={handleContinue}
+      >
+        Tiếp tục
+      </button>
     </div>
   );
 };
