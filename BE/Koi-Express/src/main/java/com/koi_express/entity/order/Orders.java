@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
+import com.koi_express.enums.InvoiceStatus;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.enums.PaymentMethod;
 import jakarta.persistence.*;
@@ -54,6 +55,9 @@ public class Orders { // Quản lý đơn hàng
 
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
+
+    @Enumerated(EnumType.STRING)
+    InvoiceStatus invoiceStatus;
 
     @Column(updatable = false)
     @CreationTimestamp
