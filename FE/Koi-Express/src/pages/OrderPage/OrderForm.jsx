@@ -71,6 +71,10 @@ const OrderForm = ({
     }
   };
 
+  const onContinueClick = () => {
+    handleContinue(roundedCost); // Pass the calculated price to OrderPage
+  };
+
   const handlePickupToggle = () => {
     setPickupCollapsed(!pickupCollapsed);
   };
@@ -352,7 +356,7 @@ const OrderForm = ({
             : "bg-gray-300 text-gray-600 cursor-not-allowed"
         }`}
         disabled={!isFormValid}
-        onClick={handleContinue}
+        onClick={onContinueClick}
       >
         Tiếp tục
       </button>
