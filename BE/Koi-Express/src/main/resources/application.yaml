@@ -41,7 +41,9 @@ spring:
           starttls:
             enable: true
 
-spring.config.import: "classpath:application-secret.yaml"
+  config:
+    import: application-secret.yaml
+
 
 logging:
   level:

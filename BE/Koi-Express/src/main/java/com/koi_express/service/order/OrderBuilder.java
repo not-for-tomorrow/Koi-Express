@@ -8,6 +8,8 @@ import com.koi_express.enums.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
 @Service
 public class OrderBuilder {
 
@@ -24,7 +26,7 @@ public class OrderBuilder {
                 .destinationLocation(orderRequest.getDestinationLocation())
                 .destinationDetail(orderRequest.getDestinationDetail())
                 .status(OrderStatus.PENDING)
-                .totalFee(distanceFee)
+                .totalFee(BigDecimal.valueOf(distanceFee))
                 .paymentMethod(orderRequest.getPaymentMethod())
                 .build();
 
@@ -35,8 +37,8 @@ public class OrderBuilder {
                 .recipientName(orderRequest.getRecipientName())
                 .recipientPhone(orderRequest.getRecipientPhone())
                 .koiQuantity(orderRequest.getKoiQuantity())
-                .distanceFee(distanceFee)
-                .commitmentFee(commitmentFee)
+                .distanceFee(BigDecimal.valueOf(distanceFee))
+                .commitmentFee(BigDecimal.valueOf(commitmentFee))
                 .paymentMethod(orderRequest.getPaymentMethod())
                 .insurance(orderRequest.isInsuranceSelected())
                 .build();

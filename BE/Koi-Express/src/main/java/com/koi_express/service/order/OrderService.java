@@ -1,5 +1,6 @@
 package com.koi_express.service.order;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -59,8 +60,8 @@ public class OrderService {
             double commitmentFee = TransportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
 
             Orders orders = orderBuilder.buildOrder(orderRequest, customer);
-            orders.getOrderDetail().setDistanceFee(totalFee); // Set total fee
-            orders.getOrderDetail().setCommitmentFee(commitmentFee); // Set commitment fee
+            orders.getOrderDetail().setDistanceFee(BigDecimal.valueOf(totalFee)); // Set total fee
+            orders.getOrderDetail().setCommitmentFee(BigDecimal.valueOf(commitmentFee)); // Set commitment fee
 
             Orders savedOrder = orderRepository.save(orders);
             logger.info("Order created successfully: {}", savedOrder);
