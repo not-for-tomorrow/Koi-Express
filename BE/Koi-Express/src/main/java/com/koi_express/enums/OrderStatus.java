@@ -7,7 +7,10 @@ public enum OrderStatus {
     PICKING_UP("Chuẩn bị lấy hàng"), // Nhân viên đang chuẩn bị đến lấy hàng
     IN_TRANSIT("Đang giao"), // Đơn hàng đang trong quá trình vận chuyển
     DELIVERED("Hoàn thành"), // Đơn hàng đã được giao
-    CANCELED("Đã hủy");
+    CANCELED("Đã hủy"),
+
+    COMMIT_FEE_PENDING("Chờ xác nhận phí cam kết"),
+    COMMIT_FEE_PAID("Đã thanh toán phí cam kết");
 
     private final String vietnameseStatus;
 

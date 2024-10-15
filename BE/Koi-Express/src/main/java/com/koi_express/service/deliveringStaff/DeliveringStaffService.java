@@ -1,5 +1,7 @@
 package com.koi_express.service.deliveringStaff;
 
+import java.util.List;
+
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
@@ -10,8 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 public class DeliveringStaffService {
@@ -30,8 +30,7 @@ public class DeliveringStaffService {
 
     @Transactional
     public ApiResponse<String> pickupOrder(Long orderId) {
-        Orders order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        Orders order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         if (order.getStatus() != OrderStatus.ASSIGNED) {
             throw new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order is not in ASSIGNED status");

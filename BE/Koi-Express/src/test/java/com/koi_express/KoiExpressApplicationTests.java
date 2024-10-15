@@ -2,10 +2,12 @@ package com.koi_express;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-class KoiExpressApplicationTests {
+@ActiveProfiles("test")
+public class KoiExpressApplicationTests {
 
     @Test
-    void contextLoads() {}
+    public void contextLoads() {}
 }

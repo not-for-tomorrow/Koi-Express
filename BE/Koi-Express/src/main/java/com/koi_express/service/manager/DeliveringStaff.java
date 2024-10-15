@@ -29,18 +29,19 @@ public class DeliveringStaff {
 
         String encodedPassword = passwordEncoder.encode(createStaffRequest.getPassword());
 
-        com.koi_express.entity.shipment.DeliveringStaff deliveringStaff = com.koi_express.entity.shipment.DeliveringStaff.builder()
-                .fullName(createStaffRequest.getFullName())
-                .phoneNumber(createStaffRequest.getPhoneNumber())
-                .email(createStaffRequest.getEmail())
-                .address(createStaffRequest.getAddress())
-                .passwordHash(encodedPassword)
-                .averageRating(0.0)
-                .active(true)
-                .status(StaffStatus.AVAILABLE)
-                .level(DeliveringStaffLevel.LEVEL_1)
-                .role(Role.DELIVERING_STAFF)
-                .build();
+        com.koi_express.entity.shipment.DeliveringStaff deliveringStaff =
+                com.koi_express.entity.shipment.DeliveringStaff.builder()
+                        .fullName(createStaffRequest.getFullName())
+                        .phoneNumber(createStaffRequest.getPhoneNumber())
+                        .email(createStaffRequest.getEmail())
+                        .address(createStaffRequest.getAddress())
+                        .passwordHash(encodedPassword)
+                        .averageRating(0.0)
+                        .active(true)
+                        .status(StaffStatus.AVAILABLE)
+                        .level(DeliveringStaffLevel.LEVEL_1)
+                        .role(Role.DELIVERING_STAFF)
+                        .build();
 
         deliveringStaffRepository.save(deliveringStaff);
         return new ApiResponse<>(

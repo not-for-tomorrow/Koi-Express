@@ -66,10 +66,7 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(
-                        customer.getProviderId() != null
-                                ? customer.getProviderId()
-                                : customer.getEmail())
+                .setSubject(customer.getProviderId() != null ? customer.getProviderId() : customer.getEmail())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)

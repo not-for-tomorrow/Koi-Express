@@ -115,7 +115,8 @@ public class StaffAssignmentService {
     // lưu đơn hàng vào danh sách đợi khi không có nhân viên nào sẵn sàng
     public ApiResponse<String> savePendingOrder(Orders order) {
         pendingOrderRepository.save(order);
-        return new ApiResponse<>(HttpStatus.OK.value(), "Order is added to pending list due to no available staff", null);
+        return new ApiResponse<>(
+                HttpStatus.OK.value(), "Order is added to pending list due to no available staff", null);
     }
 
     // kiểm tra đơn hàng chờ và gán nhân viên cho đơn hàng

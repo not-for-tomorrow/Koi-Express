@@ -1,6 +1,8 @@
 package com.koi_express.controller;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
@@ -8,6 +10,8 @@ import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.service.order.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/orders")
 public class OrderController {
 
+    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
     @Autowired
     private OrderService orderService;
 
@@ -28,14 +34,19 @@ public class OrderController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/create")
-    public ApiResponse<Orders> createOrder(
+    public ApiResponse<Map<String, Object>> createOrder(
             @RequestBody OrderRequest orderRequest, HttpServletRequest httpServletRequest) {
 
         String token = extractToken(httpServletRequest);
 
-        return orderService.createOrder(orderRequest, token);
+        ApiResponse<Map<String, Object>> response = orderService.createOrder(orderRequest, token);
+
+        logger.info("Response sent to client: {}", response);
+
+        return response;
     }
 
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     @PostMapping("/cancel/{orderId}")
     public ResponseEntity<ApiResponse<String>> cancelOrder(@PathVariable Long orderId) {
 
@@ -87,4 +98,21 @@ public class OrderController {
             throw new IllegalArgumentException("Authorization header must be provided");
         }
     }
+
+    @PostMapping("/payment/commit-fee/callback")
+    public ResponseEntity<ApiResponse<String>> confirmCommitFeePayment(HttpServletRequest request) {
+        // Extract the payment parameters from the request
+        Map<String, String> vnpParams = request.getParameterMap().entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
+
+        // Get the orderId from the VNPay callback parameters
+        long orderId = Long.parseLong(vnpParams.get("vnp_TxnRef"));
+
+        // Confirm the payment using orderId and payment parameters
+        ApiResponse<String> response = orderService.confirmCommitFeePayment(orderId, vnpParams);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
 }

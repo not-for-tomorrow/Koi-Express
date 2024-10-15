@@ -31,6 +31,7 @@ public class AuditLog { // Ghi lại hành động của người dùng (khách 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     LocalDateTime timestamp;
+
     @Lob
     String details;
 
