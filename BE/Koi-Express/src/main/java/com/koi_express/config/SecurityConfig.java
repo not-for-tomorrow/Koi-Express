@@ -48,7 +48,8 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/customers/**",
                                 "/api/customers/update/**",
-                                "/api/customers/delete/**")
+                                "/api/customers/delete/**",
+                                "api/v1/payment/**")
                         .permitAll()
                         .requestMatchers("/api/manager/**", "/api/manager/id/**")
                         .hasAnyAuthority("ROLE_MANAGER")

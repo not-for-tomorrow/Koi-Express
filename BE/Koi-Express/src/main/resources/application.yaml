@@ -41,6 +41,16 @@ spring:
           starttls:
             enable: true
 
+  payment:
+    vnPay:
+      url: ${PAY_URL}
+      tmnCode: ${TMN_CODE}
+      secretKey: ${SECRET_KEY}
+      returnUrl: ${RETURN_URL}
+      version: ${VERSION}
+      command: ${COMMAND}
+      orderType: ${ORDER_TYPE}
+
   config:
     import: application-secret.yaml
 

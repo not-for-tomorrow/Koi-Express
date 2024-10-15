@@ -26,7 +26,6 @@ public class OrderBuilder {
                 .destinationLocation(orderRequest.getDestinationLocation())
                 .destinationDetail(orderRequest.getDestinationDetail())
                 .status(OrderStatus.PENDING)
-                .totalFee(BigDecimal.valueOf(distanceFee))
                 .paymentMethod(orderRequest.getPaymentMethod())
                 .build();
 
