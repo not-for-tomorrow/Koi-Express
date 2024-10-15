@@ -47,10 +47,10 @@ public class CustomerService {
                 .fullName(registerRequest.getFullName())
                 .phoneNumber(registerRequest.getPhoneNumber())
                 .email(registerRequest.getEmail())
-                .passwordHash(encodedPassword) // Sử dụng sdt làm mật khẩu và mã hóa
-                .authProvider(AuthProvider.LOCAL) // Đăng ký bằng số điện thoại nên authProvider là LOCAL
-                .role(Role.CUSTOMER) // Mặc định role là CUSTOMER
-                .createdAt(LocalDateTime.now()) // Lưu thời gian đăng ký
+                .passwordHash(encodedPassword)
+                .authProvider(AuthProvider.LOCAL)
+                .role(Role.CUSTOMER)
+                .createdAt(LocalDateTime.now())
                 .build();
 
         customersRepository.save(customer);

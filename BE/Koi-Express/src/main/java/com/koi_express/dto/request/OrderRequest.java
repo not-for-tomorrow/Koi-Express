@@ -1,7 +1,6 @@
 package com.koi_express.dto.request;
 
 import com.koi_express.entity.customer.Customers;
-import com.koi_express.enums.KoiType;
 import com.koi_express.enums.PaymentMethod;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

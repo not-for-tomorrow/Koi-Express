@@ -75,44 +75,6 @@ public class OrderService {
         }
     }
 
-    //    private double calculateDistance(String originLocation, String destinationLocation) {
-    //
-    //        try {
-    //            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(GOOGLE_MAPS_DISTANCE_MATRIX_URL)
-    //                    .queryParam("origins", originLocation)
-    //                    .queryParam("destinations", destinationLocation)
-    //                    .queryParam("key", GOOGLE_MAPS_API_KEY);
-    //
-    //            String url = builder.toUriString();
-    //            String response = restTemplate.getForObject(url, String.class);
-    //
-    //            logger.info("Response from Google Maps API: {}", response);
-    //
-    //
-    //            // Parse JSON response to get distance
-    //            ObjectMapper objectMapper = new ObjectMapper();
-    //            JsonNode root = objectMapper.readTree(response);
-    //
-    //            if(!root.has("rows") || !root.path("rows").has(0) || !root.path("rows").get(0).has("elements")) {
-    //                throw new AppException(ErrorCode.GOOGLE_MAPS_API_ERROR, "Invalid response from Google Maps API");
-    //            }
-    //
-    //            JsonNode jsonNode = root.path("rows").get(0).path("elements").get(0);
-    //            String elementStatus = jsonNode.path("status").asText();
-    //            if(!elementStatus.equals("OK")) {
-    //                throw new AppException(ErrorCode.GOOGLE_MAPS_API_ERROR, "Invalid response from Google Maps API");
-    //            }
-    //
-    //            double distanceInMeters = jsonNode.path("distance").path("value").asDouble();
-    //
-    ////          chuyển đổi tu m sang km
-    //            return distanceInMeters / 1000.0;
-    //        } catch (Exception e) {
-    //            logger.error("Error calculating distance: ", e);
-    //            throw new AppException(ErrorCode.GOOGLE_MAPS_API_ERROR);
-    //        }
-    //    }
-
     //    Cancel Order
     public ApiResponse<String> cancelOrder(Long orderId) {
         Orders orders =

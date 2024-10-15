@@ -51,23 +51,17 @@ public class AuthController {
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
         }
 
-        // Keep the original number for logging purposes
         String originalPhoneNumber = registerRequest.getPhoneNumber();
 
-        // Format the phone number for internal usage (e.g., storing, sending OTP)
         String formattedPhoneNumber = otpService.formatPhoneNumber(originalPhoneNumber);
 
-        // Generate OTP only once, log the original number for OTP generation
-        String otp = String.format("%04d", new SecureRandom().nextInt(10000)); // Generate OTP
-        otpService.saveOtp(formattedPhoneNumber, otp); // Save the OTP internally for later validation
+        String otp = String.format("%04d", new SecureRandom().nextInt(10000));
+        otpService.saveOtp(formattedPhoneNumber, otp);
 
-        // Log the OTP generation using the original phone number
         System.out.println("Generated OTP for " + originalPhoneNumber + ": " + otp);
 
-        // Send the OTP using the formatted phone number
         otpService.sendOtp(formattedPhoneNumber, otp);
 
-        // Save temporary registration data with the formatted phone number
         registerRequest.setPhoneNumber(originalPhoneNumber);
         otpService.saveTempRegisterRequest(registerRequest);
 
@@ -77,14 +71,14 @@ public class AuthController {
 
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestParam String phoneNumber, @RequestParam String otp) {
-        // No formatting, use original phone number for retrieval
+
         RegisterRequest tempRegisterRequest = otpService.getTempRegisterRequest(phoneNumber);
 
         if (tempRegisterRequest != null) {
-            // Validate the OTP
+
             boolean isValid = otpService.validateOtp(otpService.formatPhoneNumber(phoneNumber), otp);
             if (isValid) {
-                // Create customer account and save it in the database
+
                 ApiResponse<?> response = customerService.registerCustomer(tempRegisterRequest);
                 if (response.getCode() == HttpStatus.OK.value()) {
                     return ResponseEntity.ok(
@@ -132,7 +126,7 @@ public class AuthController {
         customer.setEmail(oAuth2User.getAttribute("email"));
         customer.setFullName(oAuth2User.getAttribute("name"));
         customer.setProviderId(oAuth2User.getAttribute("sub"));
-        customer.setRole(Role.CUSTOMER); // Set the role as per your application needs
+        customer.setRole(Role.CUSTOMER);
         customer.setAuthProvider(AuthProvider.GOOGLE);
 
         String token = jwtUtil.generateTokenOAuth2(customer);
@@ -144,11 +138,11 @@ public class AuthController {
     // Facebook OAuth2 Login Endpoint
     @GetMapping("/facebook")
     public ResponseEntity<ApiResponse<String>> facebookLogin(@AuthenticationPrincipal OAuth2User oAuth2User) {
-        Customers customer = new Customers(); // Replace with actual user fetching logic
+        Customers customer = new Customers();
         customer.setEmail(oAuth2User.getAttribute("email"));
         customer.setFullName(oAuth2User.getAttribute("name"));
         customer.setProviderId(oAuth2User.getAttribute("id"));
-        customer.setRole(Role.CUSTOMER); // Set the role as per your application needs
+        customer.setRole(Role.CUSTOMER);
         customer.setAuthProvider(AuthProvider.FACEBOOK);
 
         String token = jwtUtil.generateTokenOAuth2(customer);

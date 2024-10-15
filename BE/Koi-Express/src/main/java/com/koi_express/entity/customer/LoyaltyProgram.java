@@ -40,7 +40,6 @@ public class LoyaltyProgram { // Chương trình khách hàng thân thiết
         this.lastUpdated = LocalDateTime.now();
     }
 
-    // Cập nhật thời gian khi bản ghi được chỉnh sửa
     @PreUpdate
     protected void onUpdate() {
         this.lastUpdated = LocalDateTime.now();

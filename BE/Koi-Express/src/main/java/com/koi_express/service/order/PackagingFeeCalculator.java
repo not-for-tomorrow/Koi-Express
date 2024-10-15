@@ -9,7 +9,7 @@ public class PackagingFeeCalculator {
     private static final int LARGE_TANK_CAPACITY = 13; // 13 fish per tank for fish > 50 cm
 
     public int calculateTotalPackagingFee(int[] fishSize) {
-        int totalFee =0;
+        int totalFee = 0;
         int smallFishCount = 0;
         int mediumFishCount = 0;
         int largeFishCount = 0;

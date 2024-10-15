@@ -1,8 +1,9 @@
 package com.koi_express.service.order;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.koi_express.enums.KoiType;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 class KoiPriceCalculatorTest {
 

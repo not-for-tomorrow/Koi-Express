@@ -47,7 +47,7 @@ public class Orders { // Quản lý đơn hàng
 
     String destinationDetail;
 
-    @Column(precision = 15, scale = 2)  // Tùy chỉnh độ chính xác của BigDecimal
+    @Column(precision = 15, scale = 2)
     BigDecimal totalFee;
 
     @Enumerated(EnumType.STRING)

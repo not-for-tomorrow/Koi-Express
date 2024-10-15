@@ -30,7 +30,7 @@ public class TransactionLogs { // Nhật ký giao dịch
     Long transactionId;
 
     @Column(unique = true, nullable = false)
-    String transactionCode;  // Mã giao dịch duy nhất
+    String transactionCode;
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
@@ -42,7 +42,7 @@ public class TransactionLogs { // Nhật ký giao dịch
 
     @Positive(message = "Transaction amount must be positive")
     @Digits(integer = 10, fraction = 2, message = "Amount must be a valid monetary value")
-    BigDecimal amount;  // Sử dụng BigDecimal cho giá trị tiền tệ
+    BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;

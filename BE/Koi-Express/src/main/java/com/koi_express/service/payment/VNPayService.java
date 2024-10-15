@@ -1,13 +1,13 @@
 package com.koi_express.service.payment;
 
+import java.util.Map;
+
 import com.koi_express.config.VNPayConfig;
 import com.koi_express.dto.payment.PaymentDTO;
 import com.koi_express.util.VNPayUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Service
 public class VNPayService {
@@ -24,7 +24,7 @@ public class VNPayService {
             vnpParamsMap.put("vnp_BankCode", bankCode);
         }
         vnpParamsMap.put("vnp_IpAddr", VNPayUtil.getIpAddress(request));
-        //build query url
+        // build query url
         String queryUrl = VNPayUtil.getPaymentURL(vnpParamsMap, true);
         String hashData = VNPayUtil.getPaymentURL(vnpParamsMap, false);
         String vnpSecureHash = VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
@@ -33,6 +33,7 @@ public class VNPayService {
         return PaymentDTO.VNPayResponse.builder()
                 .code("ok")
                 .message("success")
-                .paymentUrl(paymentUrl).build();
+                .paymentUrl(paymentUrl)
+                .build();
     }
 }

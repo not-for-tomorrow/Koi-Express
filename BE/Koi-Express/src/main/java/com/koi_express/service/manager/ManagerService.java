@@ -66,10 +66,6 @@ public class ManagerService {
 
         createStaffRequest.setRole(Role.DELIVERING_STAFF);
 
-        //        if (createStaffRequest.getRole() != Role.DELIVERING_STAFF) {
-        //            throw new AppException(ErrorCode.INVALID_ROLE, "Invalid role for delivering staff: " +
-        // createStaffRequest.getRole());
-        //        }
         return deliveringStaffService.createDeliveringStaffAccount(createStaffRequest);
     }
 
