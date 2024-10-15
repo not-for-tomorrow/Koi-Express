@@ -2,7 +2,6 @@ package com.koi_express.service.manager;
 
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.DeliveringStaffLevel;
 import com.koi_express.enums.Role;
 import com.koi_express.enums.StaffStatus;
@@ -15,7 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DeliveringStaffService {
+public class DeliveringStaff {
 
     @Autowired
     private DeliveringStaffRepository deliveringStaffRepository;
@@ -30,7 +29,7 @@ public class DeliveringStaffService {
 
         String encodedPassword = passwordEncoder.encode(createStaffRequest.getPassword());
 
-        DeliveringStaff deliveringStaff = DeliveringStaff.builder()
+        com.koi_express.entity.shipment.DeliveringStaff deliveringStaff = com.koi_express.entity.shipment.DeliveringStaff.builder()
                 .fullName(createStaffRequest.getFullName())
                 .phoneNumber(createStaffRequest.getPhoneNumber())
                 .email(createStaffRequest.getEmail())

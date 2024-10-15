@@ -1,4 +1,3 @@
-<!-- File: order-confirmation-email.html -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,6 +10,7 @@
             0% {
                 opacity: 0;
             }
+
             100% {
                 opacity: 1;
             }
@@ -35,16 +35,24 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #0077b6, #00a8e8);
+            background: linear-gradient(135deg, #0077b6, #00a8e8, #00c8a8);
             color: #ffffff;
             text-align: center;
             padding: 30px 10px;
+            position: relative;
         }
 
         .header h1 {
             margin: 0;
-            font-size: 28px;
+            font-size: 30px;
             font-weight: bold;
+        }
+
+        .header img {
+            width: 80px;
+            position: absolute;
+            top: 15px;
+            right: 20px;
         }
 
         .content {
@@ -80,7 +88,7 @@
 
         .button {
             display: inline-block;
-            background: linear-gradient(135deg, #0077b6, #00a8e8);
+            background: linear-gradient(135deg, #0077b6, #00a8e8, #00c8a8);
             color: #ffffff;
             padding: 15px 30px;
             border-radius: 50px;
@@ -124,46 +132,77 @@
         .order-summary-item p {
             margin: 0;
         }
+
+        /* Icons */
+        .icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .intro {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .thank-you {
+            font-size: 16px;
+            color: #0077b6;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 30px;
+        }
     </style>
 </head>
 
 <body>
 <div class="container">
     <div class="header">
-        <h1>Thank You for Your Order!</h1>
+        <h1>Koi Express - Order Confirmation</h1>
+        <img src="https://image.shutterstock.com/image-vector/fish-logo-vector-symbol-design-260nw-1029931859.jpg"
+             alt="Koi Fish Logo">
     </div>
     <div class="content">
-        <h2>Order Confirmation</h2>
-        <p>Hello <strong>{{CustomerName}}</strong>,</p>
-        <p>Thank you for your order with Koi Express! We are delighted to confirm your order, and our team is already
-            preparing your precious Koi fish for delivery.</p>
+        <h2>Thank You for Your Order!</h2>
+        <p class="intro">Dear <strong>{{CustomerName}}</strong>,</p>
+        <p>Thank you for choosing Koi Express! Your order is confirmed, and we’re excited to deliver your unique Koi
+            fish to your doorstep soon. Our team is preparing everything with care to ensure the best experience.</p>
 
         <div class="order-summary">
             <div class="order-summary-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/634/634134.png" alt="Order ID Icon" class="icon">
                 <p><strong>Order ID:</strong></p>
                 <p>{{OrderID}}</p>
             </div>
             <div class="order-summary-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/2922/2922510.png" alt="Date Icon" class="icon">
                 <p><strong>Date:</strong></p>
                 <p>{{OrderDate}}</p>
             </div>
             <div class="order-summary-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/1231/1231072.png" alt="Address Icon" class="icon">
                 <p><strong>Delivery Address:</strong></p>
                 <p>{{Address}}</p>
             </div>
             <div class="order-summary-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/1170/1170627.png" alt="Total Amount Icon"
+                     class="icon">
                 <p><strong>Total Amount:</strong></p>
                 <p>{{TotalAmount}}</p>
             </div>
         </div>
 
-        <p>Click below to track your order and view the latest updates.</p>
-
+        <p>To track your order and see real-time updates, click the button below.</p>
         <a href="{{TrackOrderLink}}" class="button">Track Your Order</a>
+
+        <p class="thank-you">We appreciate your business! If you have any questions, feel free to contact us anytime.</p>
     </div>
     <div class="footer">
         <p>&copy; 2024 Koi Express. All rights reserved.</p>
-        <p>For any assistance, please <a href="mailto:support@koiexpress.com">contact our support team</a>.</p>
+        <p>Need help? <a href="mailto:support@koiexpress.com">Contact Support</a></p>
     </div>
 </div>
 </body>
