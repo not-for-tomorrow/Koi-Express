@@ -4,6 +4,7 @@ import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.enums.Role;
 import com.koi_express.repository.SystemAccountRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,18 +17,23 @@ public class DefaultAccountConfig {
     private final SystemAccountRepository systemAccountRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${spring.manager.email}")
+    private String managerEmail;
+
+    @Value("${spring.manager.password}")
+    private String managerPassword;
+
     @Bean
     public CommandLineRunner initializeDefaultManagerAccount() {
         return args -> {
-            String email = "manager@koi-express.com";
-            if (!systemAccountRepository.existsByEmail(email)) {
+            if (!systemAccountRepository.existsByEmail(managerEmail)) {
                 SystemAccount managerAccount = SystemAccount.builder()
-                        .accountId(0L) // Setting the ID to 0 as per your requirement
+                        .accountId(0L)
                         .fullName("Koi Express")
-                        .email(email)
+                        .email(managerEmail)
                         .phoneNumber("0000000000")
-                        .passwordHash(passwordEncoder.encode("manager123"))
-                        .role(Role.MANAGER) // Assuming Role.MANAGER is an appropriate role
+                        .passwordHash(passwordEncoder.encode(managerPassword))
+                        .role(Role.MANAGER)
                         .active(true)
                         .build();
                 systemAccountRepository.save(managerAccount);

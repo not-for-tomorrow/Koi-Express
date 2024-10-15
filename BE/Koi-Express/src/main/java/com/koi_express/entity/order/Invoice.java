@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.koi_express.entity.customer.Customers;
-import com.koi_express.enums.InvoiceStatus; // Enum mới cho trạng thái hóa đơn
+import com.koi_express.enums.InvoiceStatus;
 import com.koi_express.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,7 +18,7 @@ import org.hibernate.annotations.CreationTimestamp;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Invoice { // Thông tin hóa đơn thanh toán của khách hàng
+public class Invoice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,18 +33,48 @@ public class Invoice { // Thông tin hóa đơn thanh toán của khách hàng
     Customers customer;
 
     @Column(nullable = false, precision = 15, scale = 2)
-    BigDecimal commitmentFee; // Dùng BigDecimal cho các giá trị tiền tệ
+    BigDecimal commitmentFee; // Phí cam kết
 
     @Column(nullable = false, precision = 15, scale = 2)
-    BigDecimal totalAmount;
+    BigDecimal distanceFee; // Phí khoảng cách
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    BigDecimal careFee; // Phí chăm sóc
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    BigDecimal tollFee; // Phí trạm thu phí
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    BigDecimal weightFee; // Phí trọng lượng
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    BigDecimal packingFee; // Phí đóng gói
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    BigDecimal storageFee; // Phí lưu trữ
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    BigDecimal returnFee; // Phí trả hàng
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    BigDecimal vat; // Thuế VAT
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    BigDecimal fuelFee; // Phí nhiên liệu
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    BigDecimal insuranceFee; // Phí bảo hiểm
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    BigDecimal totalAmount; // Tổng tiền hoá đơn
 
     @Column(nullable = false)
     @CreationTimestamp
-    LocalDateTime issuedAt; // Tự động gán thời gian phát hành hóa đơn
+    LocalDateTime issuedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    InvoiceStatus status; // Sử dụng enum cho trạng thái hóa đơn
+    InvoiceStatus status;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

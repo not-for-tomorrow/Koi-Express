@@ -50,28 +50,28 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(phoneNumber)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // Token có thời hạn 10 giờ
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY) // Sử dụng thuật toán HS256
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
 
     public String generateTokenOAuth2(Customers customer) {
         Map<String, Object> claims = new LinkedHashMap<>();
         claims.put("application", "Koi Express");
-        claims.put("fullName", customer.getFullName()); // Correct full name here
-        claims.put("email", customer.getEmail()); // Correct email here
-        claims.put("customerId", customer.getCustomerId()); // Use customer's unique ID
-        claims.put("role", customer.getRole().name()); // Role, e.g., CUSTOMER
-        claims.put("authProvider", customer.getAuthProvider().name()); // Auth provider, e.g., GOOGLE
+        claims.put("fullName", customer.getFullName());
+        claims.put("email", customer.getEmail());
+        claims.put("customerId", customer.getCustomerId());
+        claims.put("role", customer.getRole().name());
+        claims.put("authProvider", customer.getAuthProvider().name());
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(
                         customer.getProviderId() != null
                                 ? customer.getProviderId()
-                                : customer.getEmail()) // Set subject based on unique identifier
+                                : customer.getEmail())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // Token valid for 10 hours
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }

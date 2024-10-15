@@ -65,7 +65,6 @@ public class OrderDetail {
     boolean insurance;
     boolean healthCheck;
 
-    // Sử dụng BigDecimal cho các giá trị tiền tệ
     @Digits(integer = 10, fraction = 2, message = "Distance fee must be a valid monetary amount")
     BigDecimal distanceFee;
 

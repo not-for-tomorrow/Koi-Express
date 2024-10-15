@@ -1,6 +1,7 @@
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.koi_express.service.order.TransportationFeeCalculator;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class TransportationFeeCalculatorTest {
 

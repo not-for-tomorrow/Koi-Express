@@ -21,20 +21,18 @@ public class AuditLog { // Ghi lại hành động của người dùng (khách 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    // Thay userId thành mối quan hệ với thực thể Customers
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
     Customers customer;
 
     @Column(nullable = false)
-    String action; // Hành động của người dùng
+    String action;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    LocalDateTime timestamp; // Thời gian thực hiện hành động
+    LocalDateTime timestamp;
+    @Lob
+    String details;
 
-    @Lob // Cho phép lưu trữ chuỗi lớn
-    String details; // Thông tin chi tiết về hành động
-
-    String ipAddress; // Địa chỉ IP từ người dùng thực hiện hành động
+    String ipAddress;
 }

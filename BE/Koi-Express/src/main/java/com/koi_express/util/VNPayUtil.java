@@ -1,20 +1,20 @@
 package com.koi_express.util;
 
-import jakarta.servlet.http.HttpServletRequest;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 public class VNPayUtil {
 
     public static String hmacSHA512(final String key, final String data) {
-        try{
-            if(key == null || data == null) {
+        try {
+            if (key == null || data == null) {
                 throw new NullPointerException();
             }
 
@@ -36,9 +36,9 @@ public class VNPayUtil {
 
     public static String getIpAddress(HttpServletRequest request) {
         String ipAdress;
-        try{
+        try {
             ipAdress = request.getHeader("X-Forwarded-For");
-            if(ipAdress == null) {
+            if (ipAdress == null) {
                 ipAdress = request.getRemoteAddr();
             }
         } catch (Exception e) {
@@ -51,7 +51,7 @@ public class VNPayUtil {
         Random rmd = new Random();
         String chars = "0123456789";
         StringBuilder sb = new StringBuilder(len);
-        for(int i=0; i<len; i++) {
+        for (int i = 0; i < len; i++) {
             sb.append(chars.charAt(rmd.nextInt(chars.length())));
         }
         return sb.toString();
@@ -62,8 +62,8 @@ public class VNPayUtil {
                 .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
                 .sorted(Map.Entry.comparingByKey())
                 .map(entry ->
-                        (encodeKey ? URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII) : entry.getKey()) + "=" +
-                        URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII))
+                        (encodeKey ? URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII) : entry.getKey())
+                                + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII))
                 .collect(Collectors.joining("&"));
     }
 }
