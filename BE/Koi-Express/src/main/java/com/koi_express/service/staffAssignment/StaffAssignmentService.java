@@ -3,6 +3,7 @@ package com.koi_express.service.staffAssignment;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.entity.staff.StaffAssignment;
@@ -13,9 +14,12 @@ import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.repository.OrderRepository;
+import com.koi_express.repository.PendingOrderRepository;
 import com.koi_express.repository.StaffAssignmentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +35,9 @@ public class StaffAssignmentService {
 
     @Autowired
     private DeliveringStaffRepository deliveringStaffRepository;
+
+    @Autowired
+    private PendingOrderRepository pendingOrderRepository;
 
     private Long lastAssignedStaffId = null;
 
@@ -103,5 +110,34 @@ public class StaffAssignmentService {
         }
 
         return availableStaff.get(0);
+    }
+
+    // lưu đơn hàng vào danh sách đợi khi không có nhân viên nào sẵn sàng
+    public ApiResponse<String> savePendingOrder(Orders order) {
+        pendingOrderRepository.save(order);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Order is added to pending list due to no available staff", null);
+    }
+
+    // kiểm tra đơn hàng chờ và gán nhân viên cho đơn hàng
+    @Scheduled(fixedRate = 60000)
+    public void assignPendingOrders() {
+        List<DeliveringStaff> availableStaff = deliveringStaffRepository.findByStatus(StaffStatus.AVAILABLE);
+
+        if (!availableStaff.isEmpty()) {
+            List<Orders> pendingOrders = pendingOrderRepository.findAll();
+            for (Orders order : pendingOrders) {
+                DeliveringStaff assignedStaff = availableStaff.remove(0);
+                order.setDeliveringStaff(assignedStaff);
+                order.setStatus(OrderStatus.ASSIGNED);
+                orderRepository.save(order);
+                pendingOrderRepository.delete(order);
+                assignedStaff.setStatus(StaffStatus.DELIVERING);
+                deliveringStaffRepository.save(assignedStaff);
+
+                if (availableStaff.isEmpty()) {
+                    break;
+                }
+            }
+        }
     }
 }
