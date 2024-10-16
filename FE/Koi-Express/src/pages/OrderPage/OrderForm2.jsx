@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import HeaderOrderForm from "../../components/Header/HeaderOrderForm";
+import PaymentModal from "./PaymentModal"; // Import the PaymentModal component
+import { getPaymentMethodIcon } from "./IconsData";
 
 const OrderForm2 = ({ handleBack, basePrice }) => {
   const [koiQuantity, setKoiQuantity] = useState(0);
@@ -8,22 +10,23 @@ const OrderForm2 = ({ handleBack, basePrice }) => {
   const [selectedDate, setSelectedDate] = useState("Giao ngay");
   const [promoCode, setPromoCode] = useState("");
   const [note, setNote] = useState("");
+  const [showPaymentModal, setShowPaymentModal] = useState(false); // Modal state
 
   // Calculate total price, considering insurance
-  const totalPrice = useInsurance ? basePrice * 1.05 : basePrice;
+  const commitmentFee = basePrice * 0.3;
+  const totalPrice = useInsurance ? basePrice * 1.3 * 1.05 : basePrice * 1.3;
 
-  const handleDateChange = () => {
-    const chosenDate = prompt("Chọn ngày: (dd/mm/yyyy)", "01/01/2024");
-    if (chosenDate) {
-      setSelectedDate(chosenDate);
-    }
+  // Function to handle payment method selection
+  const handlePaymentMethodSelect = (method) => {
+    setPaymentMethod(method); // Update payment method
+    setShowPaymentModal(false); // Close modal
   };
+
+  const paymentMethodIcon = getPaymentMethodIcon(paymentMethod);
 
   return (
     <div className="relative z-20 flex flex-col w-1/3 h-full p-6 bg-white border-r border-gray-200 shadow-lg">
-      <div className="p-4">
-        <HeaderOrderForm />
-      </div>
+      <HeaderOrderForm />
       <div className="flex flex-col justify-between flex-grow space-y-4">
         {/* Go back button */}
         <div>
@@ -67,78 +70,43 @@ const OrderForm2 = ({ handleBack, basePrice }) => {
 
         <div className="mb-2 border-b border-gray-300 shadow-sm"></div>
 
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <div className="flex flex-col justify-between">
-            <div className="flex items-center justify-between p-2 transition duration-300 bg-gray-100 rounded-lg shadow-md hover:shadow-lg">
-              <div className="flex flex-col">
-                <label className="block text-xs font-medium text-gray-500">
-                  Thời gian lấy hàng
-                </label>
-                <span className="mt-1 font-semibold text-gray-800">
-                  {selectedDate}
-                </span>
-              </div>
-              <div>
-                <span
-                  className="text-gray-500 cursor-pointer"
-                  onClick={handleDateChange}
-                >
-                  📅
-                </span>
-              </div>
-            </div>
+        <div className="h-[110px]"></div>
 
-            <div className="relative p-2 mt-2 transition duration-300 bg-gray-100 rounded-lg shadow-md hover:shadow-lg">
-              <label className="block text-xs font-medium text-gray-500">
-                Mã khuyến mãi
-              </label>
-              <input
-                type="text"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-                className="w-full mt-1 text-gray-500 bg-gray-100 outline-none"
-                placeholder="Nhập mã"
-              />
-              <div className="absolute text-orange-500 top-6 right-4">🎟️</div>
-            </div>
-          </div>
-
-          <div className="p-2 transition duration-300 bg-gray-100 rounded-lg shadow-md hover:shadow-lg">
-            <label className="block text-xs font-medium text-gray-600">
-              Ghi chú cho tài xế
-            </label>
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="w-full h-12 mt-1 bg-gray-100 outline-none"
-              placeholder="Nhập ghi chú"
-            ></textarea>
-          </div>
-        </div>
-
-        <div className="text-lg font-semibold text-gray-800">
-          Hình thức thanh toán
-        </div>
-
-        <div className="flex flex-col items-center justify-between p-2 transition duration-300 bg-white rounded-lg shadow-md sm:flex-row hover:shadow-lg">
+           {/* Payment section */}
+        <div className="flex items-center justify-between p-2 transition duration-300 bg-white rounded-lg shadow-md hover:shadow-lg">
           <div className="flex-grow sm:pr-4">
-            <div className="p-2 bg-gray-100 rounded-lg">
+            <div
+              className="p-2 bg-gray-100 rounded-lg cursor-pointer"
+              onClick={() => setShowPaymentModal(true)}
+            >
               <label className="block text-xs font-medium text-gray-600">
                 Hình thức thanh toán
               </label>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full p-2 mt-1 transition duration-200 bg-gray-100 rounded-lg outline-none focus:ring focus:ring-orange-300"
-              >
-                <option value="cash">Trả tiền mặt</option>
-                <option value="momo">Momo</option>
-                <option value="vnpay">VN Pay</option>
-              </select>
+              <div className="flex items-center mt-1 text-gray-800">
+                {/* Display the icon if available */}
+                {paymentMethodIcon && (
+                  <img
+                    src={paymentMethodIcon}
+                    alt={paymentMethod}
+                    className="w-[35px] h-[35px] mr-2" // Adjust size as needed
+                  />
+                )}
+                <p>{paymentMethod === "cash" ? "Trả tiền mặt" : paymentMethod}</p>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div className="pl-0 mt-3 text-right sm:pl-4 sm:mt-0">
+       {/* Payment Method Modal */}
+      {showPaymentModal && (
+        <PaymentModal
+          onClose={() => setShowPaymentModal(false)}
+          onSelectPaymentMethod={handlePaymentMethodSelect}
+        />
+      )}
+
+        <div className="flex items-center justify-between p-2 transition duration-300 bg-white rounded-lg shadow-md sm:space-x-10 hover:shadow-lg">
+          <div className="w-1/2 text-center">
             <h2 className="text-lg font-semibold text-gray-800">Tổng tiền</h2>
             <p className="text-2xl font-bold text-orange-500">
               {Number(totalPrice).toLocaleString("vi-VN", {
@@ -147,12 +115,22 @@ const OrderForm2 = ({ handleBack, basePrice }) => {
               })}
             </p>
           </div>
+          <div className="w-1/2 text-center">
+            <h2 className="text-lg font-semibold text-gray-800">Tiền cam kết</h2>
+            <p className="text-2xl font-bold text-orange-500">
+              {Number(commitmentFee).toLocaleString("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              })}
+            </p>
+          </div>
         </div>
       </div>
-
       <button className="w-full p-3 mt-4 text-white bg-blue-500 rounded-lg shadow-lg hover:bg-blue-600">
         Đặt đơn
       </button>
+
+      
     </div>
   );
 };
