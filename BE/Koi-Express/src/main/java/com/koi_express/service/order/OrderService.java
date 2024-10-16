@@ -12,12 +12,16 @@ import java.util.stream.Collectors;
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.entity.audit.TransactionLogs;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
+import com.koi_express.enums.PaymentMethod;
+import com.koi_express.enums.TransactionStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.OrderRepository;
+import com.koi_express.repository.TransactionLogsRepository;
 import com.koi_express.service.manager.ManagerService;
 import com.koi_express.service.payment.VNPayService;
 import com.koi_express.service.staffAssignment.StaffAssignmentService;
@@ -59,6 +63,9 @@ public class OrderService {
     @Autowired
     @Lazy
     private VNPayService vnPayService;
+
+    @Autowired
+    private TransactionLogsRepository transactionLogsRepository;
 
     // Create Order with OrderRequest, order with add into database base on customerId in payload of token
     public ApiResponse<Map<String, Object>>  createOrder(OrderRequest orderRequest, String token) {
@@ -109,6 +116,16 @@ public class OrderService {
 
                 order.setStatus(OrderStatus.PENDING);  // Cập nhật trạng thái thành PENDING
                 orderRepository.save(order);
+
+//                TransactionLogs transactionLogs = TransactionLogs.builder()
+//                        .order(order)
+//                        .customer(order.getCustomer())
+//                        .amount(order.getOrderDetail().getCommitmentFee())
+//                        .paymentMethod(PaymentMethod.VNPAY) // Assuming VNPay is used
+//                        .status(TransactionStatus.PAID) // Assuming success
+//                        .build();
+//
+//                transactionLogsRepository.save(transactionLogs);
 
                 // Gửi email xác nhận thanh toán thành công
                 emailService.sendOrderConfirmationEmail(order.getCustomer().getEmail(), order);
