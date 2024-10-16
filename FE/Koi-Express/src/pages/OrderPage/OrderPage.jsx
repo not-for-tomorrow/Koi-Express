@@ -15,8 +15,17 @@ const OrderPage = () => {
   const [deliverySuggestions, setDeliverySuggestions] = useState([]);
   const [distance, setDistance] = useState(0);
   const [gpsLocation, setGpsLocation] = useState(null);
-  const [currentStep, setCurrentStep] = useState(1); // Track which form to show
-  const [totalPrice, setTotalPrice] = useState(0); // State to store the total price
+  const [currentStep, setCurrentStep] = useState(1);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [pickupDetail, setPickupDetail] = useState("");
+  const [deliveryDetail, setDeliveryDetail] = useState("");
+  const [senderName, setSenderName] = useState("");
+  const [senderPhone, setSenderPhone] = useState("");
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
+  const [isPickupConfirmed, setIsPickupConfirmed] = useState(false);
+  const [isDeliveryConfirmed, setIsDeliveryConfirmed] = useState(false);
+
 
   // Function to reverse geocode lat/lng to an address
   const reverseGeocode = async (lat, lng) => {
@@ -142,7 +151,7 @@ const OrderPage = () => {
       {/* Sidebar Order Form Section */}
       {currentStep === 1 ? (
         <OrderForm
-          pickupAddress={pickupAddress}
+        pickupAddress={pickupAddress}
           setPickupAddress={setPickupAddress}
           deliveryAddress={deliveryAddress}
           setDeliveryAddress={setDeliveryAddress}
@@ -151,7 +160,23 @@ const OrderPage = () => {
           handleAddressChange={handleAddressChange}
           handleSelect={handleSelect}
           distance={distance}
-          handleContinue={handleContinue} // Pass handleContinue to OrderForm
+          handleContinue={handleContinue}
+          pickupDetail={pickupDetail}
+          setPickupDetail={setPickupDetail}
+          deliveryDetail={deliveryDetail}
+          setDeliveryDetail={setDeliveryDetail}
+          senderName={senderName}
+          setSenderName={setSenderName}
+          senderPhone={senderPhone}
+          setSenderPhone={setSenderPhone}
+          recipientName={recipientName}
+          setRecipientName={setRecipientName}
+          recipientPhone={recipientPhone}
+          setRecipientPhone={setRecipientPhone}
+          isPickupConfirmed={isPickupConfirmed}
+          setIsPickupConfirmed={setIsPickupConfirmed}
+          isDeliveryConfirmed={isDeliveryConfirmed}
+          setIsDeliveryConfirmed={setIsDeliveryConfirmed}
         />
       ) : (
         <OrderForm2 handleBack={handleBack} basePrice={totalPrice || 0} /> // Pass totalPrice as basePrice to OrderForm2
