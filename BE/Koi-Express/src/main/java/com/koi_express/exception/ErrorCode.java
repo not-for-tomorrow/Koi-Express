@@ -29,6 +29,7 @@ public enum ErrorCode {
     JWT_PARSING_FAILED(1025, "JWT parsing failed"),
     JWT_UNSUPPORTED(1026, "JWT unsupported"),
     JWT_EXPIRED(1027, "JWT expired"),
+    PAYMENT_URL_GENERATION_FAILED(1028, "Payment URL generation failed"),
     ;
 
     ErrorCode(int code, String message) {

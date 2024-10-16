@@ -17,4 +17,6 @@ public interface DeliveringStaffRepository extends JpaRepository<DeliveringStaff
     Optional<DeliveringStaff> findByPhoneNumber(String phoneNumber);
 
     List<DeliveringStaff> findByLevelAndStatus(DeliveringStaffLevel level, StaffStatus status);
+
+    List<DeliveringStaff> findByStatus(StaffStatus status);
 }

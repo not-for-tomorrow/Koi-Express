@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.koi_express.dto.payment.PaymentData;
 import jakarta.servlet.http.HttpServletRequest;
 
 public class VNPayUtil {
@@ -65,5 +66,18 @@ public class VNPayUtil {
                         (encodeKey ? URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII) : entry.getKey())
                                 + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII))
                 .collect(Collectors.joining("&"));
+    }
+
+    public static PaymentData getPaymentData(Map<String, String> params) {
+
+        return PaymentData.builder()
+                .transactionId(params.get("vnp_TxnRef"))
+                .amount(Long.parseLong(params.get("vnp_Amount")) / 100) // Số tiền đã thanh toán
+                .responseCode(params.get("vnp_ResponseCode"))
+                .bankCode(params.get("vnp_BankCode"))
+                .secureHash(params.get("vnp_SecureHash"))
+                .orderInfo(params.get("vnp_OrderInfo"))
+                .transactionStatus(params.get("vnp_TransactionStatus"))
+                .build();
     }
 }

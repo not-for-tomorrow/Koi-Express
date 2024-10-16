@@ -17,7 +17,7 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
 
     Page<Orders> findAll(Pageable pageable);
 
-    Page<Orders> findByStatus(OrderStatus status, Pageable pageable);
+    List<Orders> findByStatus(OrderStatus status);
 
     // Tìm đơn hàng theo khách hàng
     List<Orders> findByCustomerCustomerId(Long customerId);
@@ -34,7 +34,5 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
             @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate);
 
-    long countByStatus(OrderStatus status);
-
-    long countByCustomerCustomerIdAndStatus(Long customerId, OrderStatus status);
+    List<Orders> findByStatusAndDeliveringStaffId(OrderStatus status, Long deliveringStaffId);
 }

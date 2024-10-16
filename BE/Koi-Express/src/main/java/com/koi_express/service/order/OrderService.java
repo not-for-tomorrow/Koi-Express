@@ -1,9 +1,13 @@
 package com.koi_express.service.order;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
@@ -15,11 +19,14 @@ import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.service.manager.ManagerService;
+import com.koi_express.service.payment.VNPayService;
 import com.koi_express.service.staffAssignment.StaffAssignmentService;
 import com.koi_express.service.verification.EmailService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -49,8 +56,12 @@ public class OrderService {
     @Autowired
     private StaffAssignmentService staffAssignmentService;
 
+    @Autowired
+    @Lazy
+    private VNPayService vnPayService;
+
     // Create Order with OrderRequest, order with add into database base on customerId in payload of token
-    public ApiResponse<Orders> createOrder(OrderRequest orderRequest, String token) {
+    public ApiResponse<Map<String, Object>>  createOrder(OrderRequest orderRequest, String token) {
 
         try {
             String customerId = jwtUtil.extractCustomerId(token);
@@ -63,17 +74,54 @@ public class OrderService {
             orders.getOrderDetail().setDistanceFee(BigDecimal.valueOf(totalFee)); // Set total fee
             orders.getOrderDetail().setCommitmentFee(BigDecimal.valueOf(commitmentFee)); // Set commitment fee
 
+
+            orders.setStatus(OrderStatus.COMMIT_FEE_PENDING);
+
             Orders savedOrder = orderRepository.save(orders);
-            logger.info("Order created successfully: {}", savedOrder);
+            logger.info("Order created successfully with COMMIT_FEE_PENDING status: {}", savedOrder);
 
-            emailService.sendOrderConfirmationEmail(customer.getEmail(), savedOrder);
+            //Gọi VNPayService để tạo URL thanh toán
+            String paymentUrl = vnPayService.createVnPayPayment(savedOrder);
 
-            return new ApiResponse<>(HttpStatus.OK.value(), "Order created successfully", savedOrder);
+            logger.info("Payment URL generated: {}", paymentUrl);
+
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("order", savedOrder);   // Thông tin đơn hàng
+            responseMap.put("paymentUrl", paymentUrl); // URL thanh toán VNPay
+
+            return new ApiResponse<>(HttpStatus.OK.value(), "Order created, awaiting commit fee payment", responseMap);
         } catch (Exception e) {
             logger.error("Error creating order: ", e);
             throw new AppException(ErrorCode.ORDER_CREATION_FAILED);
         }
     }
+
+    @Transactional
+    public ApiResponse<String> confirmCommitFeePayment(long orderId, Map<String, String> vnpParams) {
+        try {
+            // Xác minh thanh toán
+            boolean isPaymentVerified = vnPayService.verifyPayment(vnpParams);
+
+            if (isPaymentVerified) {
+                // Tìm đơn hàng và cập nhật trạng thái
+                Orders order = orderRepository.findById(orderId)
+                        .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found"));
+
+                order.setStatus(OrderStatus.PENDING);  // Cập nhật trạng thái thành PENDING
+                orderRepository.save(order);
+
+                // Gửi email xác nhận thanh toán thành công
+                emailService.sendOrderConfirmationEmail(order.getCustomer().getEmail(), order);
+
+                return new ApiResponse<>(HttpStatus.OK.value(), "Commit fee payment confirmed successfully", null);
+            }
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Payment verification failed.", null);
+        } catch (Exception e) {
+            logger.error("Error during commit fee payment confirmation: ", e);
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Payment processing error.", e.getMessage());
+        }
+    }
+
 
     //    Cancel Order
     public ApiResponse<String> cancelOrder(Long orderId) {
@@ -173,5 +221,10 @@ public class OrderService {
             logger.error("Error retrieving order history: ", e);
             throw new AppException(ErrorCode.ORDER_HISTORY_RETRIEVAL_FAILED);
         }
+    }
+
+    public Orders findOrderById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found"));
     }
 }

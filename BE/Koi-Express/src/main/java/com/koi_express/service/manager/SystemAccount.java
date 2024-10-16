@@ -2,7 +2,6 @@ package com.koi_express.service.manager;
 
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.enums.Role;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
@@ -15,7 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SystemAccountService {
+public class SystemAccount {
 
     @Autowired
     private SystemAccountRepository systemAccountRepository;
@@ -29,7 +28,7 @@ public class SystemAccountService {
         }
 
         String encodedPassword = passwordEncoder.encode(createStaffRequest.getPassword());
-        SystemAccount salesStaff = SystemAccount.builder()
+        com.koi_express.entity.account.SystemAccount salesStaff = com.koi_express.entity.account.SystemAccount.builder()
                 .fullName(createStaffRequest.getFullName())
                 .phoneNumber(createStaffRequest.getPhoneNumber())
                 .email(createStaffRequest.getEmail())
@@ -42,7 +41,7 @@ public class SystemAccountService {
         return new ApiResponse<>(HttpStatus.OK.value(), "Sales staff account created successfully", salesStaff);
     }
 
-    public Page<SystemAccount> getAllAccountsByRole(Role role, Pageable pageable) {
+    public Page<com.koi_express.entity.account.SystemAccount> getAllAccountsByRole(Role role, Pageable pageable) {
         return systemAccountRepository.findAllByRole(role, pageable);
     }
 }
