@@ -71,17 +71,8 @@ public class OrderDetail {
     @Digits(integer = 10, fraction = 2, message = "Care fee must be a valid monetary amount")
     BigDecimal careFee;
 
-    @Digits(integer = 10, fraction = 2, message = "Toll fee must be a valid monetary amount")
-    BigDecimal tollFee;
-
-    @Digits(integer = 10, fraction = 2, message = "Weight fee must be a valid monetary amount")
-    BigDecimal weightFee;
-
     @Digits(integer = 10, fraction = 2, message = "Packing fee must be a valid monetary amount")
     BigDecimal packingFee;
-
-    @Digits(integer = 10, fraction = 2, message = "Storage fee must be a valid monetary amount")
-    BigDecimal storageFee;
 
     @Digits(integer = 10, fraction = 2, message = "Return fee must be a valid monetary amount")
     BigDecimal returnFee;
@@ -89,8 +80,8 @@ public class OrderDetail {
     @Digits(integer = 10, fraction = 2, message = "VAT must be a valid monetary amount")
     BigDecimal vat;
 
-    @Digits(integer = 10, fraction = 2, message = "Fuel fee must be a valid monetary amount")
-    BigDecimal fuelFee;
+    @Digits(integer = 10, fraction = 2, message = "Koi weight fee must be a valid monetary amount")
+    BigDecimal koiFee;
 
     @Digits(integer = 10, fraction = 2, message = "Insurance fee must be a valid monetary amount")
     BigDecimal insuranceFee;

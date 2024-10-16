@@ -21,7 +21,9 @@ public class VNPayService {
     private VNPayConfig vnPayConfig;
 
     public String createVnPayPayment(Orders order) {
-        if (order == null || order.getOrderDetail() == null || order.getOrderDetail().getCommitmentFee() == null) {
+        if (order == null
+                || order.getOrderDetail() == null
+                || order.getOrderDetail().getCommitmentFee() == null) {
             throw new IllegalArgumentException("Invalid order details provided.");
         }
 
@@ -43,7 +45,6 @@ public class VNPayService {
 
         // Return full payment URL
         return fullPaymentUrl;
-
     }
 
     public boolean verifyPayment(Map<String, String> vnpParams) throws IOException {
@@ -54,7 +55,8 @@ public class VNPayService {
         PaymentData paymentData = VNPayUtil.getPaymentData(vnpParams);
 
         // Tính toán lại chữ ký hash để xác minh
-        String calculatedHash = VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), VNPayUtil.getPaymentURL(vnpParams, false));
+        String calculatedHash =
+                VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), VNPayUtil.getPaymentURL(vnpParams, false));
 
         if (!calculatedHash.equals(vnpSecureHash)) {
             logger.error("Payment verification failed for transaction: {}", vnpParams.get("vnp_TxnRef"));
@@ -78,5 +80,4 @@ public class VNPayService {
         vnpParamsMap.put("vnp_IpAddr", "127.0.0.1"); // Can be dynamically set
         return vnpParamsMap;
     }
-
 }

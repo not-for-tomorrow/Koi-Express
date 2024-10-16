@@ -101,18 +101,14 @@ public class OrderController {
 
     @PostMapping("/payment/commit-fee/callback")
     public ResponseEntity<ApiResponse<String>> confirmCommitFeePayment(HttpServletRequest request) {
-        // Extract the payment parameters from the request
+
         Map<String, String> vnpParams = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
 
-        // Get the orderId from the VNPay callback parameters
         long orderId = Long.parseLong(vnpParams.get("vnp_TxnRef"));
 
-        // Confirm the payment using orderId and payment parameters
         ApiResponse<String> response = orderService.confirmCommitFeePayment(orderId, vnpParams);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
-
 }
