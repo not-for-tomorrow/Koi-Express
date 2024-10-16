@@ -7,9 +7,8 @@ import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
-import com.koi_express.exception.AppException;
-import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.OrderRepository;
+import com.koi_express.service.order.price.TransportationFeeCalculator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,5 +50,4 @@ public class OrderBuilder {
         orders.setOrderDetail(orderDetail);
         return orders;
     }
-
 }

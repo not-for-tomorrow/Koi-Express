@@ -1,5 +1,8 @@
 package com.koi_express.controller.payment;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.koi_express.dto.payment.PaymentDTO;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.dto.response.ResponseObject;
@@ -14,10 +17,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/payment")
@@ -61,8 +60,8 @@ public class VNPayController {
         if (response.getCode() == HttpStatus.OK.value()) {
             return new ResponseObject<>(HttpStatus.OK, "Thanh toán thành công", "Payment Success");
         } else {
-            return new ResponseObject<>(HttpStatus.BAD_REQUEST, "Xác minh thanh toán thất bại", "Payment Verification Failed");
+            return new ResponseObject<>(
+                    HttpStatus.BAD_REQUEST, "Xác minh thanh toán thất bại", "Payment Verification Failed");
         }
     }
-
 }

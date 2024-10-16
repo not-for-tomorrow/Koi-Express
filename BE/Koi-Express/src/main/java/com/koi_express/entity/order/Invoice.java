@@ -42,16 +42,7 @@ public class Invoice {
     BigDecimal careFee; // Phí chăm sóc
 
     @Column(nullable = false, precision = 15, scale = 2)
-    BigDecimal tollFee; // Phí trạm thu phí
-
-    @Column(nullable = false, precision = 15, scale = 2)
-    BigDecimal weightFee; // Phí trọng lượng
-
-    @Column(nullable = false, precision = 15, scale = 2)
     BigDecimal packingFee; // Phí đóng gói
-
-    @Column(nullable = false, precision = 15, scale = 2)
-    BigDecimal storageFee; // Phí lưu trữ
 
     @Column(nullable = false, precision = 15, scale = 2)
     BigDecimal returnFee; // Phí trả hàng
@@ -60,13 +51,13 @@ public class Invoice {
     BigDecimal vat; // Thuế VAT
 
     @Column(nullable = false, precision = 15, scale = 2)
-    BigDecimal fuelFee; // Phí nhiên liệu
+    BigDecimal koiFee;
 
     @Column(nullable = false, precision = 15, scale = 2)
     BigDecimal insuranceFee; // Phí bảo hiểm
 
     @Column(nullable = false, precision = 15, scale = 2)
-    BigDecimal totalAmount; // Tổng tiền hoá đơn
+    BigDecimal totalFee; // Tổng tiền hoá đơn
 
     @Column(nullable = false)
     @CreationTimestamp
