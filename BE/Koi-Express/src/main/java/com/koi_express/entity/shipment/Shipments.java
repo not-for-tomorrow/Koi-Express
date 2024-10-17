@@ -1,6 +1,7 @@
 package com.koi_express.entity.shipment;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
@@ -56,4 +57,21 @@ public class Shipments { // quản lý vận chuyển
 
     @UpdateTimestamp
     LocalDateTime updatedAt = LocalDateTime.now();
+
+    @ElementCollection
+    @CollectionTable(name = "shipment_inspection_images", joinColumns = @JoinColumn(name = "shipment_id"))
+    @Column(name = "inspection_image_url")
+    List<String> inspectionImageUrls;
+
+    // Transport images
+    @ElementCollection
+    @CollectionTable(name = "shipment_transport_images", joinColumns = @JoinColumn(name = "shipment_id"))
+    @Column(name = "transport_image_url")
+    List<String> transportImageUrls;
+
+    // Delivery images
+    @ElementCollection
+    @CollectionTable(name = "shipment_delivery_images", joinColumns = @JoinColumn(name = "shipment_id"))
+    @Column(name = "delivery_image_url")
+    List<String> deliveryImageUrls;
 }
