@@ -7,6 +7,7 @@ import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.service.deliveringStaff.DeliveringStaffService;
+import com.koi_express.service.image.ShipmentInspectionImageService;
 import com.koi_express.service.verification.S3Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +27,13 @@ public class DeliveringStaffController {
     private final DeliveringStaffService deliveringStaffService;
     private final S3Service s3Service;
     private final JwtUtil jwtUtil;
+    private final ShipmentInspectionImageService shipmentInspectionImageService;
 
-    public DeliveringStaffController(S3Service s3Service, DeliveringStaffService deliveringStaffService, JwtUtil jwtUtil) {
+    public DeliveringStaffController(S3Service s3Service, DeliveringStaffService deliveringStaffService, JwtUtil jwtUtil, ShipmentInspectionImageService shipmentInspectionImageService) {
         this.s3Service = s3Service;
         this.deliveringStaffService = deliveringStaffService;
         this.jwtUtil = jwtUtil;
+        this.shipmentInspectionImageService = shipmentInspectionImageService;
     }
 
     @GetMapping("/{id}/assigned-orders")
@@ -70,28 +73,49 @@ public class DeliveringStaffController {
     }
 
 
-    @PostMapping("/upload")
-    public ResponseEntity<ApiResponse<String>> uploadImage(@RequestParam("file") MultipartFile file) {
+    @PostMapping("/upload/{staffId}/{orderDate}/{category}")
+    public ResponseEntity<ApiResponse<String>> uploadImage(
+            @RequestParam("file") MultipartFile file,
+            @PathVariable String staffId,  // Changed to staffId for clarity
+            @PathVariable String orderDate,
+            @PathVariable String category
+    ) {
         if (file.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "File is empty", null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "File is empty", null));
         }
 
         try {
+            // Convert MultipartFile to File
             File tempFile = new File(System.getProperty("java.io.tmpdir") + "/" + file.getOriginalFilename());
             file.transferTo(tempFile);
 
-            String fileUrl = s3Service.uploadFile(file.getOriginalFilename(), tempFile);
+            // Upload file to S3 and get URL
+            logger.info("Uploading file to S3...");
+            String fileUrl = s3Service.uploadFile(staffId, orderDate, category, tempFile);
 
+            if (fileUrl == null || fileUrl.isEmpty()) {
+                logger.error("File URL not generated.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "File upload failed", null));
+            }
+
+            logger.info("File uploaded to S3 successfully. URL: {}", fileUrl);
+
+            // Delete temp file after upload
             boolean deleted = tempFile.delete();
             if (!deleted) {
                 logger.warn("Temporary file {} could not be deleted", tempFile.getAbsolutePath());
             }
 
-            logger.info("File uploaded successfully to S3: {}", fileUrl);
+            // Return the file URL as part of the response
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "File uploaded successfully", fileUrl));
+
         } catch (Exception e) {
             logger.error("File upload failed", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "File upload failed", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "File upload failed", e.getMessage()));
         }
     }
+
 }
