@@ -15,10 +15,10 @@ public class PackagingFeeCalculator {
     private static final int SMALL_FISH_THRESHOLD = 30; // fish size < 30 cm
     private static final int MEDIUM_FISH_THRESHOLD = 50; // fish size between 30-50 cm
 
-    public int calculateTotalPackagingFee(int quantity, double length, double weight) {
+    public int calculateTotalPackagingFee(int quantity, double length) {
         int totalFee = 0;
 
-        if (length <= 0 || weight <= 0) {
+        if (length <= 0) {
             logger.warning("Invalid fish dimensions. Length and weight must be greater than 0.");
             throw new IllegalArgumentException("Invalid fish dimensions. Length and weight must be greater than 0.");
         }
@@ -31,7 +31,7 @@ public class PackagingFeeCalculator {
             totalFee += quantity * LARGE_FISH_FEE;
         }
 
-        logger.info(String.format("Quantity: %d, Length: %.2f cm, Weight: %.2f kg", quantity, length, weight));
+        logger.info(String.format("Quantity: %d, Length: %.2f cm, Weight: %.2f kg", quantity, length));
         logger.info("Total packaging fee: " + totalFee + " VND");
 
         return totalFee;

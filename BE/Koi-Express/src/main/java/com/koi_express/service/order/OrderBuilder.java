@@ -1,6 +1,7 @@
 package com.koi_express.service.order;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.entity.customer.Customers;
@@ -42,7 +43,7 @@ public class OrderBuilder {
                 .recipientPhone(orderRequest.getRecipientPhone())
                 .koiQuantity(orderRequest.getKoiQuantity())
                 .distanceFee(BigDecimal.valueOf(distanceFee))
-                .commitmentFee(BigDecimal.valueOf(commitmentFee))
+                .commitmentFee(BigDecimal.valueOf(commitmentFee).setScale(0, RoundingMode.HALF_UP))
                 .paymentMethod(orderRequest.getPaymentMethod())
                 .insurance(orderRequest.isInsuranceSelected())
                 .build();

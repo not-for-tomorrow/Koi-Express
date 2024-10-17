@@ -44,7 +44,6 @@ public class Orders { // Quản lý đơn hàng
     String destinationLocation;
 
     String originDetail;
-
     String destinationDetail;
 
     @Column(precision = 15, scale = 2)

@@ -1,5 +1,6 @@
 package com.koi_express.controller;
 
+import com.koi_express.dto.request.AssignOrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.service.staffAssignment.StaffAssignmentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +16,22 @@ public class StaffAssignmentController {
     private StaffAssignmentService staffAssignmentService;
 
     @PostMapping("/assign")
-    public ResponseEntity<String> assignOrder(@RequestBody Long orderId) throws Exception {
-
-        String message = staffAssignmentService.assignOrder(orderId);
-        return ResponseEntity.ok(message);
+    public ResponseEntity<ApiResponse<String>> assignOrder(@RequestBody AssignOrderRequest request) {
+        try {
+            String message = staffAssignmentService.assignOrder(request.getOrderId());
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), message), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to assign order", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    public ResponseEntity<ApiResponse<String>> autoAssignOrder(Long orderId) throws Exception {
-        String message = staffAssignmentService.assignOrder(orderId);
-        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), message), HttpStatus.OK);
+    @PostMapping("/auto-assign")
+    public ResponseEntity<ApiResponse<String>> autoAssignOrder(@RequestBody AssignOrderRequest request) {
+        try {
+            String message = staffAssignmentService.assignOrder(request.getOrderId());
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), message), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to auto-assign order", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

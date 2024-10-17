@@ -38,6 +38,7 @@ public class OrderController {
             @RequestBody OrderRequest orderRequest, HttpServletRequest httpServletRequest) {
 
         String token = extractToken(httpServletRequest);
+        logger.info("Processing order creation for token: {}", token);
 
         ApiResponse<Map<String, Object>> response = orderService.createOrder(orderRequest, token);
 
@@ -46,9 +47,10 @@ public class OrderController {
         return response;
     }
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('CUSTOMER')")
     @PostMapping("/cancel/{orderId}")
     public ResponseEntity<ApiResponse<String>> cancelOrder(@PathVariable Long orderId) {
+        logger.info("Canceling order with ID: {}", orderId);
 
         ApiResponse<String> response = orderService.cancelOrder(orderId);
 
@@ -57,6 +59,7 @@ public class OrderController {
 
     @PostMapping("/deliver/{orderId}")
     public ResponseEntity<ApiResponse<String>> deliverOrder(@PathVariable Long orderId) {
+        logger.info("Marking order as delivered with ID: {}", orderId);
 
         ApiResponse<String> response = orderService.deliveredOrder(orderId);
 
@@ -71,6 +74,8 @@ public class OrderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
+        logger.info("Fetching all orders with page: {} and size: {}", page, size);
+
         Pageable paging = PageRequest.of(page, size);
         Page<Orders> ordersPage = orderService.getAllOrders(paging);
 
@@ -83,6 +88,8 @@ public class OrderController {
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "fromDate", required = false) String fromDate,
             @RequestParam(value = "toDate", required = false) String toDate) {
+
+        logger.info("Fetching order history with status: {}, fromDate: {}, toDate: {}", status, fromDate, toDate);
 
         String token = authorizationHeader.substring(7);
         ApiResponse<List<Orders>> response = orderService.getOrderHistoryByFilters(token, status, fromDate, toDate);
@@ -106,6 +113,8 @@ public class OrderController {
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
 
         long orderId = Long.parseLong(vnpParams.get("vnp_TxnRef"));
+
+        logger.info("Processing commit fee payment callback for order ID: {}", orderId);
 
         ApiResponse<String> response = orderService.confirmCommitFeePayment(orderId, vnpParams);
 

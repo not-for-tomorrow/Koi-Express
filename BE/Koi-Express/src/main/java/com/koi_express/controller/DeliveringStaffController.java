@@ -3,11 +3,13 @@ package com.koi_express.controller;
 import java.io.File;
 import java.util.List;
 
+import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.service.deliveringStaff.DeliveringStaffService;
 import com.koi_express.service.verification.S3Service;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,32 +21,60 @@ import org.springframework.web.multipart.MultipartFile;
 @PreAuthorize("hasRole('DELIVERING_STAFF')")
 public class DeliveringStaffController {
 
+    private static final Logger logger = LoggerFactory.getLogger(DeliveringStaffController.class);
 
     private final DeliveringStaffService deliveringStaffService;
-
     private final S3Service s3Service;
+    private final JwtUtil jwtUtil;
 
-    public DeliveringStaffController(S3Service s3Service, DeliveringStaffService deliveringStaffService) {
+    public DeliveringStaffController(S3Service s3Service, DeliveringStaffService deliveringStaffService, JwtUtil jwtUtil) {
         this.s3Service = s3Service;
         this.deliveringStaffService = deliveringStaffService;
+        this.jwtUtil = jwtUtil;
     }
 
     @GetMapping("/{id}/assigned-orders")
-    public ResponseEntity<List<Orders>> getAssignedOrdersByDeliveringStaff(@PathVariable Long id) {
-        List<Orders> orders = deliveringStaffService.getAssignedOrdersByDeliveringStaff(id);
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<ApiResponse<List<Orders>>> getAssignedOrdersByDeliveringStaff(@PathVariable Long id) {
+        try {
+            List<Orders> orders = deliveringStaffService.getAssignedOrdersByDeliveringStaff(id);
+            if (orders.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "No assigned orders found", orders));
+            }
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Assigned orders retrieved", orders));
+        } catch (Exception e) {
+            logger.error("Error retrieving assigned orders for delivering staff ID: {}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error retrieving assigned orders", null));
+        }
     }
 
     @PostMapping("/pickup/{orderId}")
-    public ResponseEntity<ApiResponse<String>> pickupOrder(@PathVariable Long orderId) {
+    public ResponseEntity<ApiResponse<String>> pickupOrder(
+            @PathVariable Long orderId,
+            @RequestHeader("Authorization") String token) {
 
-        ApiResponse<String> response = deliveringStaffService.pickupOrder(orderId);
+        try {
+            // Extract the deliveringStaffId from the token or another source
+            String cleanedToken = token.replace("Bearer ", "").trim();
+            String deliveringStaffIdStr  = jwtUtil.extractUserId(cleanedToken, "DELIVERING_STAFF");
 
-        return ResponseEntity.status(response.getCode()).body(response);
+            Long deliveringStaffId = Long.parseLong(deliveringStaffIdStr);
+
+            ApiResponse<String> response = deliveringStaffService.pickupOrder(orderId, deliveringStaffId);
+
+            return ResponseEntity.status(response.getCode()).body(response);
+        } catch (Exception e) {
+            logger.error("Error picking up order ID: {}", orderId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to pick up order", e.getMessage()));
+        }
     }
 
+
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadImage(@RequestParam("file")MultipartFile file) {
+    public ResponseEntity<ApiResponse<String>> uploadImage(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "File is empty", null));
+        }
 
         try {
             File tempFile = new File(System.getProperty("java.io.tmpdir") + "/" + file.getOriginalFilename());
@@ -52,12 +82,16 @@ public class DeliveringStaffController {
 
             String fileUrl = s3Service.uploadFile(file.getOriginalFilename(), tempFile);
 
-            tempFile.delete();
+            boolean deleted = tempFile.delete();
+            if (!deleted) {
+                logger.warn("Temporary file {} could not be deleted", tempFile.getAbsolutePath());
+            }
 
-            return ResponseEntity.ok(fileUrl);
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("File upload failed");
+            logger.info("File uploaded successfully to S3: {}", fileUrl);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "File uploaded successfully", fileUrl));
+        } catch (Exception e) {
+            logger.error("File upload failed", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "File upload failed", e.getMessage()));
         }
     }
 }
