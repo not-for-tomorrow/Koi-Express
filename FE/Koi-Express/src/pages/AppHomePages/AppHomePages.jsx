@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom"; // Only use Routes and Route here
+import { Routes, Route } from "react-router-dom"; 
 import Sidebar from "../../components/Sidebar/Sidebar";
 import OrderPage from "../OrderPage/OrderPage";
 import OrderHistory from "../OrderHistory/OrderHistory";
