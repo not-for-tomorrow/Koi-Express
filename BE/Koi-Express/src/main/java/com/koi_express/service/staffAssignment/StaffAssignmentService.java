@@ -114,9 +114,14 @@ public class StaffAssignmentService {
 
     // lưu đơn hàng vào danh sách đợi khi không có nhân viên nào sẵn sàng
     public ApiResponse<String> savePendingOrder(Orders order) {
+        if (order.getDeliveringStaff() != null || order.getStatus() == OrderStatus.DELIVERED) {
+            log.error("Order ID: {} cannot be added to pending list, it's already assigned or delivered", order.getOrderId());
+            throw new AppException(ErrorCode.ORDER_INVALID, "Order cannot be added to pending list.");
+        }
+
         pendingOrderRepository.save(order);
-        return new ApiResponse<>(
-                HttpStatus.OK.value(), "Order is added to pending list due to no available staff", null);
+        log.info("Order ID: {} has been added to pending list", order.getOrderId());
+        return new ApiResponse<>(HttpStatus.OK.value(), "Order is added to pending list due to no available staff", null);
     }
 
     // kiểm tra đơn hàng chờ và gán nhân viên cho đơn hàng
@@ -128,6 +133,8 @@ public class StaffAssignmentService {
             List<Orders> pendingOrders = pendingOrderRepository.findAll();
             for (Orders order : pendingOrders) {
                 DeliveringStaff assignedStaff = availableStaff.remove(0);
+                log.info("Assigning staff ID: {} to pending order ID: {}", assignedStaff.getStaffId(), order.getOrderId());
+
                 order.setDeliveringStaff(assignedStaff);
                 order.setStatus(OrderStatus.ASSIGNED);
                 orderRepository.save(order);
@@ -139,6 +146,8 @@ public class StaffAssignmentService {
                     break;
                 }
             }
+        } else {
+            log.info("No available staff to assign pending orders.");
         }
     }
 }

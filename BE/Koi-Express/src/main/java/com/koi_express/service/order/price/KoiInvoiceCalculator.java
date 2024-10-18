@@ -29,45 +29,57 @@ public class KoiInvoiceCalculator {
     public KoiInvoiceCalculator(KoiPriceCalculator koiPriceCalculator,
                                 CareFee careFeeCalculator,
                                 PackagingFeeCalculator packagingFeeCalculator,
-                                TransportationFeeCalculator transportationFeeCalculator) {
+                                TransportationFeeCalculator transportationFeeCalculator,
+                                @Value("${invoice.specializedVehicleFee:150000}") int specializedVehicleFee,
+                                @Value("${invoice.vatRate:0.10}") double vatRate,
+                                @Value("${invoice.insuranceRate:0.05}") double insuranceRate) {
         this.koiPriceCalculator = koiPriceCalculator;
         this.careFeeCalculator = careFeeCalculator;
         this.packagingFeeCalculator = packagingFeeCalculator;
         this.transportationFeeCalculator = transportationFeeCalculator;
+        this.specializedVehicleFee = specializedVehicleFee;
+        this.vatRate = vatRate;
+        this.insuranceRate = insuranceRate;
     }
 
-    public double calculateTotalPrice(KoiType koiType, int quantity, double length, double weight, double distance) {
-        validateInputs(quantity, length, weight, distance);
+    public double calculateTotalPrice(KoiType koiType, int quantity, double length, double distance, double commitmentFee) {
+        validateInputs(quantity, length, distance);
 
         CareFee.Size size = convertLengthToSize(length);
-        CareFee.Weight weightEnum = convertWeightToEnum(weight);
 
-        // Phí cá Koi
-        double fishPrice = koiPriceCalculator.calculateTotalPrice(koiType, quantity, length, weight);
+        // 1. Koi price
+        double fishPrice = koiPriceCalculator.calculateTotalPrice(koiType, quantity, length);
 
-        // 1. Tính phí chăm sóc (Care fee)
-        double careFee = careFeeCalculator.calculateCareFee(koiType, size, weightEnum, quantity);
+        // 2. Care fee
+        double careFee = careFeeCalculator.calculateCareFee(koiType, size, quantity);
 
-        // 2. Tính phí đóng gói (Packaging fee)
-        double packagingFee = packagingFeeCalculator.calculateTotalPackagingFee(quantity, length, weight);
+        // 3. Packaging fee
+        double packagingFee = packagingFeeCalculator.calculateTotalPackagingFee(quantity, length);
 
-        // 3. Tính phí vận chuyển (Transportation fee)
+        // 4. Transportation fee
         double transportationFee = transportationFeeCalculator.calculateTotalFee(distance);
 
-        // 4. Tính phí bảo hiểm (Insurance fee)
-        double insuranceFee = calculateInsuranceFee(fishPrice, careFee, packagingFee, transportationFee);
+        // 5.1. Phí vận chuyển còn lại sau khi trừ phí cam kết
+        double remainingTransportationFee = calculateRemainingTransportationFee(transportationFee, commitmentFee);
 
-        // 5. Tính tổng trước VAT (Subtotal before VAT)
-        double subtotal = calculateSubtotal(fishPrice, careFee, packagingFee, transportationFee, insuranceFee);
+        // 6. Insurance fee
+        double insuranceFee = calculateInsuranceFee(fishPrice, careFee, packagingFee, remainingTransportationFee);
 
-        // 6. Tính VAT (10% của tổng trước VAT)
+        // 7. subtotal
+        double subtotal = calculateSubtotal(fishPrice, careFee, packagingFee, remainingTransportationFee, insuranceFee);
+
+        // 8. VAT
         double vat = calculateVAT(subtotal);
 
-        // 7. Tính tổng tiền (Total price)
+        // 9. Total price
         double totalPrice = subtotal + vat;
 
         logger.info(String.format("Total price for %d %s koi: %.2f VND", quantity, koiType.name(), totalPrice));
         return totalPrice;
+    }
+
+    private double calculateRemainingTransportationFee(double transportationFee, double commitmentFee) {
+        return transportationFee - commitmentFee;
     }
 
     private double calculateInsuranceFee(double fishPrice, double careFee, double packagingFee, double transportationFee) {
@@ -82,12 +94,12 @@ public class KoiInvoiceCalculator {
         return subtotal * vatRate;
     }
 
-    private void validateInputs(int quantity, double length, double weight, double distance) {
+    private void validateInputs(int quantity, double length, double distance) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
-        if (length <= 0 || weight <= 0) {
-            throw new IllegalArgumentException("Length and weight must be greater than 0");
+        if (length <= 0) {
+            throw new IllegalArgumentException("Length must be greater than 0");
         }
         if (distance < 0) {
             throw new IllegalArgumentException("Distance cannot be negative");
@@ -104,15 +116,4 @@ public class KoiInvoiceCalculator {
         }
     }
 
-    private CareFee.Weight convertWeightToEnum(double weight) {
-        if (weight < 1.5) {
-            return CareFee.Weight.LESS_THAN_1_5_KG;
-        } else if (weight <= 3) {
-            return CareFee.Weight.LESS_THAN_3_KG;
-        } else if (weight <= 5) {
-            return CareFee.Weight.LESS_THAN_5_KG;
-        } else {
-            return CareFee.Weight.GREATER_THAN_5_KG;
-        }
-    }
 }

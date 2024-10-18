@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
+import com.koi_express.entity.shipment.Shipments;
 import com.koi_express.enums.InvoiceStatus;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.enums.PaymentMethod;
@@ -44,11 +45,13 @@ public class Orders { // Quản lý đơn hàng
     String destinationLocation;
 
     String originDetail;
-
     String destinationDetail;
 
     @Column(precision = 15, scale = 2)
     BigDecimal totalFee;
+
+    @OneToOne(mappedBy = "order")
+    Shipments shipment;
 
     @Enumerated(EnumType.STRING)
     OrderStatus status;
