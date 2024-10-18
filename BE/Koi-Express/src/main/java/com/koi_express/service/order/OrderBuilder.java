@@ -21,9 +21,9 @@ public class OrderBuilder {
 
     public Orders buildOrder(OrderRequest orderRequest, Customers customer) {
 
-        double distanceFee = TransportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
+        BigDecimal distanceFee = TransportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
 
-        double commitmentFee = TransportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
+        BigDecimal commitmentFee = TransportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
 
         Orders orders = Orders.builder()
                 .customer(customer)
@@ -42,8 +42,8 @@ public class OrderBuilder {
                 .recipientName(orderRequest.getRecipientName())
                 .recipientPhone(orderRequest.getRecipientPhone())
                 .koiQuantity(orderRequest.getKoiQuantity())
-                .distanceFee(BigDecimal.valueOf(distanceFee))
-                .commitmentFee(BigDecimal.valueOf(commitmentFee).setScale(0, RoundingMode.HALF_UP))
+                .distanceFee(distanceFee)
+                .commitmentFee(commitmentFee)
                 .paymentMethod(orderRequest.getPaymentMethod())
                 .insurance(orderRequest.isInsuranceSelected())
                 .build();

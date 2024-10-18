@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.koi_express.config.VNPayConfig;
 import com.koi_express.dto.payment.PaymentData;
+import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.util.VNPayUtil;
 import org.slf4j.Logger;
@@ -20,7 +21,7 @@ public class VNPayService {
     @Autowired
     private VNPayConfig vnPayConfig;
 
-    public String createVnPayPayment(Orders order) {
+    public ApiResponse<String> createVnPayPayment(Orders order) {
         if (order == null
                 || order.getOrderDetail() == null
                 || order.getOrderDetail().getCommitmentFee() == null) {
@@ -28,33 +29,33 @@ public class VNPayService {
         }
 
         long amount = order.getOrderDetail().getCommitmentFee().longValue() * 100;
-        String bankCode = "NCB"; // Can be dynamically set based on user selection
+        String bankCode = "NCB";
         String orderId = String.valueOf(order.getOrderId());
 
-        // Build VNPay parameters
         Map<String, String> vnpParamsMap = buildVnPayParams(order, amount, bankCode);
 
-        // Generate query URL and hash
         String queryUrl = VNPayUtil.getPaymentURL(vnpParamsMap, true);
+        logger.info("VNPay query URL before adding hash: {}", queryUrl);
+
         String hashData = VNPayUtil.getPaymentURL(vnpParamsMap, false);
         String vnpSecureHash = VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
+        logger.info("Generated VNPay secure hash: {}", vnpSecureHash);
+
         queryUrl += "&vnp_SecureHash=" + vnpSecureHash;
 
         String fullPaymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + queryUrl;
         logger.info("Generated VNPay payment URL: {}", fullPaymentUrl);
 
         // Return full payment URL
-        return fullPaymentUrl;
+        return new ApiResponse<>(200, "Payment URL generated successfully", fullPaymentUrl);
     }
 
     public boolean verifyPayment(Map<String, String> vnpParams) throws IOException {
         String vnpSecureHash = vnpParams.get("vnp_SecureHash");
-        vnpParams.remove("vnp_SecureHash"); // Loại bỏ SecureHash khỏi danh sách các tham số
+        vnpParams.remove("vnp_SecureHash");
 
-        // Tạo đối tượng PaymentData từ các tham số thanh toán
         PaymentData paymentData = VNPayUtil.getPaymentData(vnpParams);
 
-        // Tính toán lại chữ ký hash để xác minh
         String calculatedHash =
                 VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), VNPayUtil.getPaymentURL(vnpParams, false));
 
@@ -77,7 +78,7 @@ public class VNPayService {
         vnpParamsMap.put("vnp_TxnRef", String.valueOf(order.getOrderId()));
         vnpParamsMap.put("vnp_OrderInfo", "Thanh toan commit fee cho don hang: " + order.getOrderId());
         vnpParamsMap.put("vnp_BankCode", bankCode);
-        vnpParamsMap.put("vnp_IpAddr", "127.0.0.1"); // Can be dynamically set
+        vnpParamsMap.put("vnp_IpAddr", "127.0.0.1");
         return vnpParamsMap;
     }
 }

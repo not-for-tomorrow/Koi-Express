@@ -1,5 +1,6 @@
 package com.koi_express.service.order;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.exception.AppException;
@@ -75,7 +77,8 @@ public class OrderService {
             Orders orders = prepareOrder(orderRequest, customer);
             Orders savedOrder = orderRepository.save(orders);
 
-            String paymentUrl = vnPayService.createVnPayPayment(savedOrder);
+            ApiResponse<String> paymentResponse = vnPayService.createVnPayPayment(savedOrder);
+            String paymentUrl = paymentResponse.getResult();
 
             scheduleOrderCancellation(savedOrder.getOrderId());
 
@@ -92,12 +95,12 @@ public class OrderService {
     }
 
     private Orders prepareOrder(OrderRequest orderRequest, Customers customer) {
-        double totalFee = TransportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
-        double commitmentFee = TransportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
+        BigDecimal totalFee = TransportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
+        BigDecimal commitmentFee = TransportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
 
         Orders orders = orderBuilder.buildOrder(orderRequest, customer);
-        orders.getOrderDetail().setDistanceFee(BigDecimal.valueOf(totalFee));
-        orders.getOrderDetail().setCommitmentFee(BigDecimal.valueOf(commitmentFee));
+        orders.getOrderDetail().setDistanceFee(totalFee);
+        orders.getOrderDetail().setCommitmentFee(commitmentFee);
         orders.setStatus(OrderStatus.COMMIT_FEE_PENDING);
 
         return orders;
@@ -120,7 +123,6 @@ public class OrderService {
             }
         }, 10, TimeUnit.MINUTES);
     }
-
 
     @Transactional
     public ApiResponse<String> confirmCommitFeePayment(long orderId, Map<String, String> vnpParams) {

@@ -1,13 +1,22 @@
 package com.koi_express.controller;
 
 import java.io.File;
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.enums.KoiType;
+import com.koi_express.enums.OrderStatus;
 import com.koi_express.service.deliveringStaff.DeliveringStaffService;
 import com.koi_express.service.image.ShipmentInspectionImageService;
+import com.koi_express.service.order.OrderService;
+import com.koi_express.service.order.price.KoiInvoiceCalculator;
+import com.koi_express.service.payment.VNPayService;
 import com.koi_express.service.verification.S3Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,13 +36,11 @@ public class DeliveringStaffController {
     private final DeliveringStaffService deliveringStaffService;
     private final S3Service s3Service;
     private final JwtUtil jwtUtil;
-    private final ShipmentInspectionImageService shipmentInspectionImageService;
 
-    public DeliveringStaffController(S3Service s3Service, DeliveringStaffService deliveringStaffService, JwtUtil jwtUtil, ShipmentInspectionImageService shipmentInspectionImageService) {
+    public DeliveringStaffController(S3Service s3Service, DeliveringStaffService deliveringStaffService, JwtUtil jwtUtil, ShipmentInspectionImageService shipmentInspectionImageService, KoiInvoiceCalculator koiInvoiceCalculator, VNPayService vnpayService, OrderService orderService) {
         this.s3Service = s3Service;
         this.deliveringStaffService = deliveringStaffService;
         this.jwtUtil = jwtUtil;
-        this.shipmentInspectionImageService = shipmentInspectionImageService;
     }
 
     @GetMapping("/{id}/assigned-orders")
@@ -56,7 +63,6 @@ public class DeliveringStaffController {
             @RequestHeader("Authorization") String token) {
 
         try {
-            // Extract the deliveringStaffId from the token or another source
             String cleanedToken = token.replace("Bearer ", "").trim();
             String deliveringStaffIdStr  = jwtUtil.extractUserId(cleanedToken, "DELIVERING_STAFF");
 
@@ -72,11 +78,10 @@ public class DeliveringStaffController {
         }
     }
 
-
     @PostMapping("/upload/{staffId}/{orderDate}/{category}")
     public ResponseEntity<ApiResponse<String>> uploadImage(
             @RequestParam("file") MultipartFile file,
-            @PathVariable String staffId,  // Changed to staffId for clarity
+            @PathVariable String staffId,
             @PathVariable String orderDate,
             @PathVariable String category
     ) {
@@ -86,11 +91,9 @@ public class DeliveringStaffController {
         }
 
         try {
-            // Convert MultipartFile to File
             File tempFile = new File(System.getProperty("java.io.tmpdir") + "/" + file.getOriginalFilename());
             file.transferTo(tempFile);
 
-            // Upload file to S3 and get URL
             logger.info("Uploading file to S3...");
             String fileUrl = s3Service.uploadFile(staffId, orderDate, category, tempFile);
 
@@ -102,13 +105,11 @@ public class DeliveringStaffController {
 
             logger.info("File uploaded to S3 successfully. URL: {}", fileUrl);
 
-            // Delete temp file after upload
             boolean deleted = tempFile.delete();
             if (!deleted) {
                 logger.warn("Temporary file {} could not be deleted", tempFile.getAbsolutePath());
             }
 
-            // Return the file URL as part of the response
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "File uploaded successfully", fileUrl));
 
         } catch (Exception e) {

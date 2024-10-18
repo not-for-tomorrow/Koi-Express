@@ -35,7 +35,7 @@ public class VNPayController {
             logger.info("Processing payment for order ID: {}", orderId);
 
             Orders order = orderService.findOrderById(orderId);
-            String paymentUrl = vnPayService.createVnPayPayment(order);
+            String paymentUrl = String.valueOf(vnPayService.createVnPayPayment(order));
 
             PaymentDTO.VNPayResponse paymentResponse = PaymentDTO.VNPayResponse.builder()
                     .code("ok")

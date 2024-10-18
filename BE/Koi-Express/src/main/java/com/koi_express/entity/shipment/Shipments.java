@@ -31,6 +31,10 @@ public class Shipments { // quản lý vận chuyển
     Orders order;
 
     @ManyToOne
+    @JoinColumn(name = "customer_id", nullable = false)
+    Customers customer;
+
+    @ManyToOne
     @JoinColumn(name = "delivering_staff_id", nullable = false)
     DeliveringStaff  deliveringStaff;
 

@@ -4,6 +4,8 @@ import com.koi_express.enums.KoiType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.logging.Logger;
 
 @Service
@@ -42,56 +44,60 @@ public class KoiInvoiceCalculator {
         this.insuranceRate = insuranceRate;
     }
 
-    public double calculateTotalPrice(KoiType koiType, int quantity, double length, double distance, double commitmentFee) {
+    public BigDecimal calculateTotalPrice(KoiType koiType, int quantity, double length, double distance, double commitmentFee) {
         validateInputs(quantity, length, distance);
 
         CareFee.Size size = convertLengthToSize(length);
 
         // 1. Koi price
-        double fishPrice = koiPriceCalculator.calculateTotalPrice(koiType, quantity, length);
+        BigDecimal fishPrice = koiPriceCalculator.calculateTotalPrice(koiType, quantity, length);
 
         // 2. Care fee
-        double careFee = careFeeCalculator.calculateCareFee(koiType, size, quantity);
+        BigDecimal careFee = careFeeCalculator.calculateCareFee(koiType, size, quantity);
 
         // 3. Packaging fee
-        double packagingFee = packagingFeeCalculator.calculateTotalPackagingFee(quantity, length);
+        BigDecimal packagingFee = packagingFeeCalculator.calculateTotalPackagingFee(quantity, BigDecimal.valueOf(length));
 
         // 4. Transportation fee
-        double transportationFee = transportationFeeCalculator.calculateTotalFee(distance);
+        BigDecimal transportationFee = transportationFeeCalculator.calculateTotalFee(BigDecimal.valueOf(distance));
 
-        // 5.1. Phí vận chuyển còn lại sau khi trừ phí cam kết
-        double remainingTransportationFee = calculateRemainingTransportationFee(transportationFee, commitmentFee);
+        // 5. Phí vận chuyển còn lại sau khi trừ phí cam kết
+        BigDecimal remainingTransportationFee = calculateRemainingTransportationFee(transportationFee, BigDecimal.valueOf(commitmentFee));
 
         // 6. Insurance fee
-        double insuranceFee = calculateInsuranceFee(fishPrice, careFee, packagingFee, remainingTransportationFee);
+        BigDecimal insuranceFee = calculateInsuranceFee(fishPrice, careFee, packagingFee, remainingTransportationFee);
 
-        // 7. subtotal
-        double subtotal = calculateSubtotal(fishPrice, careFee, packagingFee, remainingTransportationFee, insuranceFee);
+        // 7. Subtotal
+        BigDecimal subtotal = calculateSubtotal(fishPrice, careFee, packagingFee, remainingTransportationFee, insuranceFee);
 
         // 8. VAT
-        double vat = calculateVAT(subtotal);
+        BigDecimal vat = calculateVAT(subtotal);
 
         // 9. Total price
-        double totalPrice = subtotal + vat;
+        BigDecimal totalPrice = subtotal.add(vat);
 
         logger.info(String.format("Total price for %d %s koi: %.2f VND", quantity, koiType.name(), totalPrice));
-        return totalPrice;
+        return totalPrice.setScale(2, RoundingMode.HALF_UP);
     }
 
-    private double calculateRemainingTransportationFee(double transportationFee, double commitmentFee) {
-        return transportationFee - commitmentFee;
+    private BigDecimal calculateRemainingTransportationFee(BigDecimal transportationFee, BigDecimal commitmentFee) {
+        return transportationFee.subtract(commitmentFee);
     }
 
-    private double calculateInsuranceFee(double fishPrice, double careFee, double packagingFee, double transportationFee) {
-        return (fishPrice + careFee + packagingFee + transportationFee) * insuranceRate;
+    private BigDecimal calculateInsuranceFee(BigDecimal fishPrice, BigDecimal careFee, BigDecimal packagingFee, BigDecimal transportationFee) {
+        return fishPrice.add(careFee).add(packagingFee).add(transportationFee).multiply(BigDecimal.valueOf(insuranceRate));
     }
 
-    private double calculateSubtotal(double fishPrice, double careFee, double packagingFee, double transportationFee, double insuranceFee) {
-        return fishPrice + careFee + packagingFee + transportationFee + insuranceFee + specializedVehicleFee;
+    private BigDecimal calculateSubtotal(BigDecimal fishPrice, BigDecimal careFee, BigDecimal packagingFee, BigDecimal transportationFee, BigDecimal insuranceFee) {
+        return fishPrice.add(careFee)
+                .add(packagingFee)
+                .add(transportationFee)
+                .add(insuranceFee)
+                .add(BigDecimal.valueOf(specializedVehicleFee));
     }
 
-    private double calculateVAT(double subtotal) {
-        return subtotal * vatRate;
+    private BigDecimal calculateVAT(BigDecimal subtotal) {
+        return subtotal.multiply(BigDecimal.valueOf(vatRate));
     }
 
     private void validateInputs(int quantity, double length, double distance) {
