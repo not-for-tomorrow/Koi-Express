@@ -172,6 +172,7 @@ const OrderHistory = () => {
     IN_TRANSIT: "Đang giao",
     DELIVERED: "Hoàn thành",
     CANCELED: "Đã hủy",
+    COMMIT_FEE_PENDING: "Chờ thanh toán cam kết",
   };
 
   const getVietnameseStatus = (status) =>
@@ -189,7 +190,13 @@ const OrderHistory = () => {
     "Đang giao": { background: "rgba(191, 219, 254, 0.2)", text: "#1E3A8A" },
     "Hoàn thành": { background: "rgba(187, 247, 208, 0.2)", text: "#065F46" },
     "Đã hủy": { background: "rgba(254, 202, 202, 0.2)", text: "#c0392b" },
+    "Chờ thanh toán cam kết": {
+      background: "rgba(255, 199, 199, 0.2)",
+      text: "#C0392B",
+    },
   };
+
+  const defaultStatusColor = { background: "#f0f0f0", text: "#000" };
 
   return (
     <div className="min-h-screen p-8 bg-gradient-to-r from-blue-100 to-blue-50">
@@ -199,7 +206,6 @@ const OrderHistory = () => {
         <div className="text-center text-red-500 text-sm">{error}</div>
       ) : (
         <div className="p-8 bg-white rounded-lg shadow-lg text-sm">
-          {/* Header Section */}
           <div className="sticky top-0 z-20 bg-white">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-gray-800">
@@ -207,7 +213,6 @@ const OrderHistory = () => {
               </h1>
             </div>
 
-            {/* Tabs Section */}
             <div className="flex mb-6 space-x-4 overflow-x-auto">
               {Object.keys(statusColors).map((tab, index) => (
                 <button
@@ -232,7 +237,6 @@ const OrderHistory = () => {
               ))}
             </div>
 
-            {/* Search and Filter Section */}
             <div className="flex items-center mb-6 space-x-6">
               <input
                 type="text"
@@ -329,7 +333,6 @@ const OrderHistory = () => {
             </div>
           </div>
 
-          {/* Orders Table */}
           <div className="overflow-auto max-h-[63.5vh] text-sm">
             {filterOrders().length === 0 ? (
               <div className="text-center text-gray-500">
@@ -350,43 +353,47 @@ const OrderHistory = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filterOrders().map((order, index) => (
-                    <tr
-                      key={index}
-                      className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
-                    >
-                      <td className="p-2 font-semibold text-blue-600">
-                        {order.orderId}
-                      </td>
-                      <td className="p-2 text-sm text-gray-700">
-                        {order.originLocation}
-                      </td>
-                      <td className="p-2 text-sm text-gray-700">
-                        {order.destinationLocation}
-                      </td>
-                      <td className="p-2 text-sm text-gray-700">
-                        {new Date(order.createdAt).toLocaleString("vi-VN")}
-                      </td>
-                      <td className="p-2 text-sm font-medium text-blue-600">
-                        đ {order.totalFee.toLocaleString("vi-VN")}
-                      </td>
-                      <td className="p-2 text-center">
-                        <span
-                          className="inline-block px-4 py-2 text-xs font-semibold rounded-full"
-                          style={{
-                            backgroundColor:
-                              statusColors[getVietnameseStatus(order.status)]
-                                .background,
-                            color:
-                              statusColors[getVietnameseStatus(order.status)]
-                                .text,
-                          }}
-                        >
-                          {getVietnameseStatus(order.status)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {filterOrders().map((order, index) => {
+                    const statusColor =
+                      statusColors[getVietnameseStatus(order.status)] ||
+                      defaultStatusColor;
+
+                    return (
+                      <tr
+                        key={index}
+                        className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
+                      >
+                        <td className="p-2 font-semibold text-blue-600">
+                          {order.orderId}
+                        </td>
+                        <td className="p-2 text-sm text-gray-700">
+                          {order.originLocation}
+                        </td>
+                        <td className="p-2 text-sm text-gray-700">
+                          {order.destinationLocation}
+                        </td>
+                        <td className="p-2 text-sm text-gray-700">
+                          {new Date(order.createdAt).toLocaleString("vi-VN")}
+                        </td>
+                        <td className="p-2 text-sm font-medium text-blue-600">
+                          {order.totalFee !== null
+                            ? `đ ${order.totalFee.toLocaleString("vi-VN")}`
+                            : "N/A"}
+                        </td>
+                        <td className="p-2 text-center">
+                          <span
+                            className="inline-block px-4 py-2 text-xs font-semibold rounded-full"
+                            style={{
+                              backgroundColor: statusColor.background,
+                              color: statusColor.text,
+                            }}
+                          >
+                            {getVietnameseStatus(order.status)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
