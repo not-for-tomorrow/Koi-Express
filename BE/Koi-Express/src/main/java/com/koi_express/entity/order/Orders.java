@@ -47,6 +47,10 @@ public class Orders { // Quản lý đơn hàng
     String originDetail;
     String destinationDetail;
 
+    boolean isPriceCalculated = false; // Đánh dấu đã tính tiền
+    boolean isImageUploaded = false; // Đánh dấu đã upload ảnh
+    boolean isPaymentConfirmed = false; // Đánh dấu đã xác nhận thanh toán
+
     @Column(precision = 15, scale = 2)
     BigDecimal totalFee;
 
@@ -73,5 +77,17 @@ public class Orders { // Quản lý đơn hàng
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    public void markPriceCalculated() {
+        this.isPriceCalculated = true;
+    }
+
+    public void markImageUploaded() {
+        this.isImageUploaded = true;
+    }
+
+    public void markPaymentConfirmed() {
+        this.isPaymentConfirmed = true;
     }
 }
