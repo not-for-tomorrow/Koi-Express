@@ -1,17 +1,11 @@
 package com.koi_express.controller;
 
 import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
-import com.koi_express.enums.KoiType;
-import com.koi_express.enums.OrderStatus;
 import com.koi_express.service.deliveringStaff.DeliveringStaffService;
 import com.koi_express.service.image.ShipmentInspectionImageService;
 import com.koi_express.service.order.OrderService;
@@ -37,7 +31,14 @@ public class DeliveringStaffController {
     private final S3Service s3Service;
     private final JwtUtil jwtUtil;
 
-    public DeliveringStaffController(S3Service s3Service, DeliveringStaffService deliveringStaffService, JwtUtil jwtUtil, ShipmentInspectionImageService shipmentInspectionImageService, KoiInvoiceCalculator koiInvoiceCalculator, VNPayService vnpayService, OrderService orderService) {
+    public DeliveringStaffController(
+            S3Service s3Service,
+            DeliveringStaffService deliveringStaffService,
+            JwtUtil jwtUtil,
+            ShipmentInspectionImageService shipmentInspectionImageService,
+            KoiInvoiceCalculator koiInvoiceCalculator,
+            VNPayService vnpayService,
+            OrderService orderService) {
         this.s3Service = s3Service;
         this.deliveringStaffService = deliveringStaffService;
         this.jwtUtil = jwtUtil;
@@ -48,23 +49,25 @@ public class DeliveringStaffController {
         try {
             List<Orders> orders = deliveringStaffService.getAssignedOrdersByDeliveringStaff(id);
             if (orders.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "No assigned orders found", orders));
+                return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                        .body(new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "No assigned orders found", orders));
             }
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Assigned orders retrieved", orders));
         } catch (Exception e) {
             logger.error("Error retrieving assigned orders for delivering staff ID: {}", id, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error retrieving assigned orders", null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error retrieving assigned orders", null));
         }
     }
 
     @PostMapping("/pickup/{orderId}")
     public ResponseEntity<ApiResponse<String>> pickupOrder(
-            @PathVariable Long orderId,
-            @RequestHeader("Authorization") String token) {
+            @PathVariable Long orderId, @RequestHeader("Authorization") String token) {
 
         try {
             String cleanedToken = token.replace("Bearer ", "").trim();
-            String deliveringStaffIdStr  = jwtUtil.extractUserId(cleanedToken, "DELIVERING_STAFF");
+            String deliveringStaffIdStr = jwtUtil.extractUserId(cleanedToken, "DELIVERING_STAFF");
 
             Long deliveringStaffId = Long.parseLong(deliveringStaffIdStr);
 
@@ -74,7 +77,8 @@ public class DeliveringStaffController {
         } catch (Exception e) {
             logger.error("Error picking up order ID: {}", orderId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to pick up order", e.getMessage()));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to pick up order", e.getMessage()));
         }
     }
 
@@ -83,8 +87,7 @@ public class DeliveringStaffController {
             @RequestParam("file") MultipartFile file,
             @PathVariable String staffId,
             @PathVariable String orderDate,
-            @PathVariable String category
-    ) {
+            @PathVariable String category) {
         if (file.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "File is empty", null));
@@ -115,8 +118,8 @@ public class DeliveringStaffController {
         } catch (Exception e) {
             logger.error("File upload failed", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "File upload failed", e.getMessage()));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), "File upload failed", e.getMessage()));
         }
     }
-
 }

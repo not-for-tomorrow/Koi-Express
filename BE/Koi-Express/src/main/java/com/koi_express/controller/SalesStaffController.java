@@ -42,7 +42,8 @@ public class SalesStaffController {
 
     @PreAuthorize("hasRole('SALES_STAFF')")
     @PutMapping("/accept/{orderId}")
-    public ResponseEntity<ApiResponse<String>> acceptOrder(@PathVariable Long orderId, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse<String>> acceptOrder(
+            @PathVariable Long orderId, @RequestHeader("Authorization") String token) {
         try {
             logger.info("Processing order acceptance for order ID: {}", orderId);
 
@@ -51,14 +52,16 @@ public class SalesStaffController {
             String role = jwtUtil.extractRole(cleanedToken);
             String userId = jwtUtil.extractUserId(cleanedToken, role);
 
-            logger.info("Sales staff with ID: {} and role: {} attempting to accept order ID: {}", userId, role, orderId);
+            logger.info(
+                    "Sales staff with ID: {} and role: {} attempting to accept order ID: {}", userId, role, orderId);
 
             ApiResponse<String> response = salesStaffService.acceptOrder(orderId);
 
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error processing order acceptance for order ID: {}", orderId, e);
-            ApiResponse<String> errorResponse = new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error accepting order", null);
+            ApiResponse<String> errorResponse =
+                    new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error accepting order", null);
             return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

@@ -1,9 +1,9 @@
 package com.koi_express.service.order.price;
 
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 import java.util.logging.Logger;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class PackagingFeeCalculator {
@@ -11,7 +11,8 @@ public class PackagingFeeCalculator {
     private static final Logger logger = Logger.getLogger(PackagingFeeCalculator.class.getName());
 
     private static final BigDecimal SMALL_FISH_FEE = BigDecimal.valueOf(15000); // VND per fish for fish < 30 cm
-    private static final BigDecimal MEDIUM_FISH_FEE = BigDecimal.valueOf(150000); // VND per fish for fish between 30-50 cm
+    private static final BigDecimal MEDIUM_FISH_FEE =
+            BigDecimal.valueOf(150000); // VND per fish for fish between 30-50 cm
     private static final BigDecimal LARGE_FISH_FEE = BigDecimal.valueOf(250000); // VND per fish for fish > 50 cm
     private static final BigDecimal SMALL_FISH_THRESHOLD = BigDecimal.valueOf(30); // fish size < 30 cm
     private static final BigDecimal MEDIUM_FISH_THRESHOLD = BigDecimal.valueOf(50); // fish size between 30-50 cm

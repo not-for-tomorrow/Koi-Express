@@ -21,7 +21,10 @@ public class StaffAssignmentController {
             String message = staffAssignmentService.assignOrder(request.getOrderId());
             return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), message), HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to assign order", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to assign order", e.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -31,7 +34,10 @@ public class StaffAssignmentController {
             String message = staffAssignmentService.assignOrder(request.getOrderId());
             return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), message), HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to auto-assign order", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to auto-assign order", e.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

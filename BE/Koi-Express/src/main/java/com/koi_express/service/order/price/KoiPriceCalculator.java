@@ -1,10 +1,10 @@
 package com.koi_express.service.order.price;
 
-import com.koi_express.enums.KoiType;
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 import java.util.logging.Logger;
+
+import com.koi_express.enums.KoiType;
+import org.springframework.stereotype.Component;
 
 @Component
 public class KoiPriceCalculator {
@@ -27,17 +27,21 @@ public class KoiPriceCalculator {
     private static BigDecimal getBasePrice(KoiType koiType, double length) {
         switch (koiType) {
             case KOI_NHAT_BAN:
-                return calculateBasePriceForType(length, BigDecimal.valueOf(50_000), BigDecimal.valueOf(150_000), BigDecimal.valueOf(250_000));
+                return calculateBasePriceForType(
+                        length, BigDecimal.valueOf(50_000), BigDecimal.valueOf(150_000), BigDecimal.valueOf(250_000));
             case KOI_VIET_NAM:
-                return calculateBasePriceForType(length, BigDecimal.valueOf(50_000), BigDecimal.valueOf(100_000), BigDecimal.valueOf(150_000));
+                return calculateBasePriceForType(
+                        length, BigDecimal.valueOf(50_000), BigDecimal.valueOf(100_000), BigDecimal.valueOf(150_000));
             case KOI_CHAU_AU:
-                return calculateBasePriceForType(length, BigDecimal.valueOf(120_000), BigDecimal.valueOf(220_000), BigDecimal.valueOf(450_000));
+                return calculateBasePriceForType(
+                        length, BigDecimal.valueOf(120_000), BigDecimal.valueOf(220_000), BigDecimal.valueOf(450_000));
             default:
                 throw new IllegalArgumentException("Invalid Koi Type");
         }
     }
 
-    private static BigDecimal calculateBasePriceForType(double length, BigDecimal priceSmall, BigDecimal priceMedium, BigDecimal priceLarge) {
+    private static BigDecimal calculateBasePriceForType(
+            double length, BigDecimal priceSmall, BigDecimal priceMedium, BigDecimal priceLarge) {
         if (length <= 30) {
             return priceSmall;
         } else if (length > 30 && length <= 50) {

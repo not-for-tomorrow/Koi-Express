@@ -1,5 +1,6 @@
 package com.koi_express.util;
 
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class VNPayUtil {
             }
 
             final Mac hmac512 = Mac.getInstance("HmacSHA512");
-            byte[] keyBytes = key.getBytes();
+            byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
             final SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, "HmacSHA512");
             hmac512.init(secretKeySpec);
             byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
@@ -58,13 +59,12 @@ public class VNPayUtil {
         return sb.toString();
     }
 
-    public static String getPaymentURL(Map<String, String> params, boolean encodeKey) {
+    public static String getPaymentURL(Map<String, String> params) {
         return params.entrySet().stream()
                 .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
-                .sorted(Map.Entry.comparingByKey())
-                .map(entry ->
-                        (encodeKey ? URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII) : entry.getKey())
-                                + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII))
+                .sorted(Map.Entry.comparingByKey()) // Sắp xếp theo thứ tự alphabet
+                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) // Encode theo UTF-8
+                        + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
                 .collect(Collectors.joining("&"));
     }
 
@@ -72,7 +72,7 @@ public class VNPayUtil {
 
         return PaymentData.builder()
                 .transactionId(params.get("vnp_TxnRef"))
-                .amount(Long.parseLong(params.get("vnp_Amount")) / 100) // Số tiền đã thanh toán
+                .amount(new BigDecimal(params.get("vnp_Amount")).divide(BigDecimal.valueOf(100)))
                 .responseCode(params.get("vnp_ResponseCode"))
                 .bankCode(params.get("vnp_BankCode"))
                 .secureHash(params.get("vnp_SecureHash"))

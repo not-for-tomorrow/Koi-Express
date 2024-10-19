@@ -10,6 +10,7 @@ import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.service.order.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,7 @@ public class OrderController {
 
     @PostMapping("/create")
     public ApiResponse<Map<String, Object>> createOrder(
-            @RequestBody OrderRequest orderRequest, HttpServletRequest httpServletRequest) {
+            @Valid @RequestBody OrderRequest orderRequest, HttpServletRequest httpServletRequest) {
 
         String token = extractToken(httpServletRequest);
         logger.info("Processing order creation for token: {}", token);
@@ -111,6 +112,12 @@ public class OrderController {
 
         Map<String, String> vnpParams = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
+
+        if (!vnpParams.containsKey("vnp_TxnRef")) {
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Missing transaction reference", null),
+                    HttpStatus.BAD_REQUEST);
+        }
 
         long orderId = Long.parseLong(vnpParams.get("vnp_TxnRef"));
 
