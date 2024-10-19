@@ -179,7 +179,21 @@ const OrderPage = () => {
           setIsDeliveryConfirmed={setIsDeliveryConfirmed}
         />
       ) : (
-        <OrderForm2 handleBack={handleBack} basePrice={totalPrice || 0} /> // Pass totalPrice as basePrice to OrderForm2
+        <OrderForm2
+        handleBack={handleBack}
+          basePrice={totalPrice}
+          pickupAddress={pickupAddress}
+          deliveryAddress={deliveryAddress}
+          pickupDetail={pickupDetail}
+          deliveryDetail={deliveryDetail}
+          senderName={senderName}
+          senderPhone={senderPhone}
+          recipientName={recipientName}
+          recipientPhone={recipientPhone}
+          isPickupConfirmed={isPickupConfirmed} // Pass it here
+          isDeliveryConfirmed={isDeliveryConfirmed} // Pass it here
+      />
+      
       )}
 
       {/* Full-Screen Map Section */}

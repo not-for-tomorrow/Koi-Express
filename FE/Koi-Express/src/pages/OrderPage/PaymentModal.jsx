@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { paymentMethods, cashPaymentMethods } from "./IconsData"; // Import your icons data
+import { paymentMethods} from "./IconsData"; // Import your icons data
 
 const PaymentModal = ({
   onClose,
@@ -30,7 +30,7 @@ const PaymentModal = ({
       ></div>
 
       {/* Modal content */}
-      <div className="relative z-50 w-[500px] h-max-[660px] bg-white rounded-lg shadow-lg overflow-y-auto">
+      <div className="relative z-50 w-[450px] h-max-[660px] bg-white rounded-lg shadow-lg overflow-y-auto">
         {" "}
         {/* Set exact size */}
         <div className="flex items-center justify-between p-4">
@@ -86,45 +86,8 @@ const PaymentModal = ({
             </div>
           ))}
 
-          <div className="p-4 mt-4 text-lg font-semibold text-gray-900">
-            Thanh toán bằng tiền mặt
-          </div>
 
-          <hr className="w-full border-gray-300" />
-
-          {/* Cash Payment Methods */}
-          {cashPaymentMethods.map((method) => (
-            <div
-              key={method.label}
-              className={`flex items-center justify-between w-full h-[72px] border-b border-gray-300 cursor-pointer hover:bg-gray-100 ${
-                selectedMethod === method.label
-                  ? "border-t border-b border-orange-500"
-                  : ""
-              }`}
-              onClick={() => handlePaymentMethodSelect(method.label)}
-            >
-              <span className="flex items-center pl-4 font-semibold">
-                {method.icon && (
-                  <img
-                    src={method.icon}
-                    alt={method.label}
-                    className="w-[35px] h-[35px] mr-2"
-                  />
-                )}
-                {method.label}
-              </span>
-              <div className="pr-7">
-                <input
-                  type="radio"
-                  name="payment-method"
-                  value={method.label}
-                  checked={selectedMethod === method.label} // Ensure checked is tied to selectedMethod
-                  onChange={() => handlePaymentMethodSelect(method.label)}
-                  className="w-[22px] h-[22px]"
-                />
-              </div>
-            </div>
-          ))}
+          
         </div>
       </div>
     </div>

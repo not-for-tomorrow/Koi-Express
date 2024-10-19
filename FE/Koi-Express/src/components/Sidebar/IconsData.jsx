@@ -31,19 +31,6 @@ export const navItems = [
       <img
         width="35"
         height="35"
-        src="https://img.icons8.com/cute-clipart/64/wallet.png"
-        alt="wallet"
-        className="min-w-[35px] min-h-[35px] object-cover"
-      />
-    ),
-    title: "Tài khoản của tôi",
-  },
-  {
-    id: 4,
-    icons: (
-      <img
-        width="35"
-        height="35"
         src="https://img.icons8.com/arcade/64/news.png"
         alt="news"
         className="min-w-[35px] min-h-[35px] object-cover"
@@ -52,7 +39,7 @@ export const navItems = [
     title: "Tin mới",
   },
   {
-    id: 5,
+    id: 4,
     icons: (
       <img
         width="35"

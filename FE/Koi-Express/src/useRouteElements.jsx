@@ -6,6 +6,7 @@ import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import AppHomePages from "./pages/AppHomePages/AppHomePages";
 import OtpModal from "./pages/OTP/OtpModal";
+import Salepage from "./pages/Salepage/Salepage";
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
@@ -32,6 +33,10 @@ export default function useRouteElements() {
     {
       path: "/verify-otp",
       element: <OtpModal />,
+    },
+    {
+      path: "/salepage/*",
+      element: <Salepage />,
     },
   ]);
   return routeElements;

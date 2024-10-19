@@ -60,32 +60,6 @@ const OrderForm = ({
     isDeliveryConfirmed,
   ]);
 
-  const handleOrder = async () => {
-    const orderData = {
-      pickupAddress,
-      pickupDetail,
-      deliveryAddress,
-      deliveryDetail,
-      senderName,
-      senderPhone,
-      recipientName,
-      recipientPhone,
-      cost: distance * 20000, // Calculate cost based on distance
-    };
-
-    try {
-      const response = await axios.post(
-        "http://localhost:8080/api/orders/create",
-        orderData
-      );
-      if (response.status === 201) {
-        console.log("Order created successfully", response.data);
-      }
-    } catch (error) {
-      console.error("Error creating order:", error);
-    }
-  };
-
   const onContinueClick = () => {
     handleContinue(roundedCost); // Pass the calculated price to OrderPage
   };

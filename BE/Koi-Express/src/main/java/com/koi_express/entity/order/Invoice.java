@@ -50,7 +50,7 @@ public class Invoice {
     @Column(nullable = false, precision = 15, scale = 2)
     BigDecimal vat; // Thuế VAT
 
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(nullable = true, precision = 15, scale = 2)
     BigDecimal koiFee;
 
     @Column(nullable = false, precision = 15, scale = 2)
