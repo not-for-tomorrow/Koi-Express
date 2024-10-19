@@ -81,6 +81,7 @@ public class OrderDetail {
     @Digits(integer = 10, fraction = 2, message = "VAT must be a valid monetary amount")
     BigDecimal vat;
 
+
     @Column(nullable = false)
     @Digits(integer = 10, fraction = 2, message = "Koi weight fee must be a valid monetary amount")
     BigDecimal koiFee;

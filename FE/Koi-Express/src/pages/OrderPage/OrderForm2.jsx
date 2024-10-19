@@ -1,28 +1,131 @@
 import React, { useState } from "react";
 import HeaderOrderForm from "../../components/Header/HeaderOrderForm";
-import PaymentModal from "./PaymentModal"; // Import the PaymentModal component
-import { getPaymentMethodIcon, cashPaymentMethods } from "./IconsData"; // Add this import
+import PaymentModal from "./PaymentModal";
+import PlaceOrderModal from "./PlaceOrderModal";
+import { getPaymentMethodIcon } from "./IconsData";
+import axios from "axios";
 
-const OrderForm2 = ({ handleBack, basePrice }) => {
+// Nhận props bao gồm senderName, senderPhone, recipientName, recipientPhone từ OrderPage
+const OrderForm2 = ({
+  handleBack,
+  basePrice,
+  pickupAddress,
+  deliveryAddress,
+  pickupDetail,
+  deliveryDetail,
+  senderName,
+  senderPhone,
+  recipientName,
+  recipientPhone,
+  isPickupConfirmed,  // Ensure it's received here
+  isDeliveryConfirmed,  // Ensure it's received here
+}) => {
   const [koiQuantity, setKoiQuantity] = useState(0);
   const [useInsurance, setUseInsurance] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [selectedDate, setSelectedDate] = useState("Giao ngay");
-  const [promoCode, setPromoCode] = useState("");
-  const [note, setNote] = useState("");
-  const [showPaymentModal, setShowPaymentModal] = useState(false); // Modal state
+  const [paymentMethod, setPaymentMethod] = useState("VNPAY");
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPlaceOrderModal, setShowPlaceOrderModal] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState("");
 
-  // Calculate total price, considering insurance
   const commitmentFee = basePrice * 0.3;
   const totalPrice = useInsurance ? basePrice * 1.3 * 1.05 : basePrice * 1.3;
 
-  // Function to handle payment method selection
-  const handlePaymentMethodSelect = (method) => {
-    setPaymentMethod(method); // Update payment method
-    setShowPaymentModal(false); // Close modal
+  const handleConfirmOrder = async () => {
+    // Validate required fields before making the API call, but address details are optional
+    if (!senderName || !senderPhone || !recipientName || !recipientPhone || !pickupAddress || !deliveryAddress) {
+      alert("Please fill in all required fields.");
+      return; // Stop execution if any required field is empty
+    }
+  
+    try {
+      // Get the token from localStorage
+      const token = localStorage.getItem("token");
+  
+      // Check if the token exists
+      if (!token) {
+        console.error("No authentication token found. Please login again.");
+        return;
+      }
+  
+      // Prepare order data - mapping the addresses as per your requirement
+      const orderData = {
+        senderName: senderName.trim(),
+        senderPhone: senderPhone.trim(),
+        recipientName: recipientName.trim(),
+        recipientPhone: recipientPhone.trim(),
+        koiQuantity: parseInt(koiQuantity, 10) || 0,
+        originLocation: pickupAddress.trim(), // Pickup address as originLocation
+        destinationLocation: deliveryAddress.trim(), // Delivery address as destinationLocation
+        originDetail: pickupDetail?.trim() || "", // Optional field, defaults to empty string if not provided
+        destinationDetail: deliveryDetail?.trim() || "", // Optional field, defaults to empty string if not provided
+        paymentMethod: paymentMethod || "VNPAY", // default to VNPAY
+        insuranceSelected: !!useInsurance, // Ensure it's a boolean
+        kilometers: basePrice / 20000, // Assuming 20,000 VND/km pricing
+      };
+  
+      console.log("Order Data being sent to API:", orderData); // Debugging to check the payload
+  
+      // Make the API request to create the order
+      const response = await axios.post(
+        "http://localhost:8080/api/orders/create",
+        orderData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add token to Authorization header
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      // Check if the payment URL exists in the response
+      if (response.data && response.data.result && response.data.result.paymentUrl) {
+        setPaymentUrl(response.data.result.paymentUrl);
+      } else {
+        console.error("Payment URL not found in response:", response.data);
+      }
+  
+      // Set the modal to show order confirmation
+      setShowPlaceOrderModal(true);
+      console.log("Order created successfully:", response.data);
+  
+    } catch (error) {
+      if (error.response) {
+        console.error("Error Response:", error.response.data);
+        if (error.response.status === 500) {
+          alert("Server error. Please check the server logs.");
+        } else if (error.response.status === 401) {
+          alert("Unauthorized. Please log in again.");
+        } else {
+          alert(`Error: ${error.response.data.message}`);
+        }
+      } else {
+        console.error("Error:", error.message);
+        alert("There was an error creating your order. Please try again.");
+      }
+    }
   };
+  
+  
+  
 
   const paymentMethodIcon = getPaymentMethodIcon(paymentMethod);
+
+  const handlePaymentMethodSelect = (method) => {
+    const validMethods = [
+      "VNPAY",
+      "PAYPAL",
+      "MOMO",
+      "BANK_TRANSFER",
+      "ZALO_PAY",
+      "CASH",
+    ];
+
+    if (validMethods.includes(method)) {
+      setPaymentMethod(method);
+    } else {
+      alert("Invalid payment method selected.");
+    }
+  };
 
   return (
     <div className="relative z-20 flex flex-col w-1/3 h-full p-6 bg-white border-r border-gray-200 shadow-lg">
@@ -83,24 +186,14 @@ const OrderForm2 = ({ handleBack, basePrice }) => {
                 Hình thức thanh toán
               </label>
               <div className="flex items-center mt-1 font-semibold text-gray-900">
-                {paymentMethodIcon ? (
+                {paymentMethodIcon && (
                   <img
                     src={paymentMethodIcon}
                     alt={paymentMethod}
-                    className="w-[35px] h-[35px] mr-2" // Adjust size as needed
+                    className="w-[35px] h-[35px] mr-2"
                   />
-                ) : paymentMethod === "cash" ? (
-                  <img
-                    src={cashPaymentMethods[0].icon} // Get the icon for "Người gửi trả tiền mặt"
-                    alt={cashPaymentMethods[0].label}
-                    className="w-[35px] h-[35px] mr-2" // Adjust size as needed
-                  />
-                ) : null}
-                <p>
-                  {paymentMethod === "cash"
-                    ? cashPaymentMethods[0].label // Display "Người gửi trả tiền mặt" by default
-                    : paymentMethod}
-                </p>
+                )}
+                <p>{paymentMethod}</p>
               </div>
             </div>
           </div>
@@ -110,8 +203,8 @@ const OrderForm2 = ({ handleBack, basePrice }) => {
         {showPaymentModal && (
           <PaymentModal
             onClose={() => setShowPaymentModal(false)}
-            onSelectPaymentMethod={handlePaymentMethodSelect} // Pass callback to get the value from the popup
-            currentPaymentMethod={paymentMethod} // Pass the current selected payment method
+            onSelectPaymentMethod={handlePaymentMethodSelect}
+            currentPaymentMethod={paymentMethod}
           />
         )}
 
@@ -138,9 +231,22 @@ const OrderForm2 = ({ handleBack, basePrice }) => {
           </div>
         </div>
       </div>
-      <button className="w-full p-3 mt-4 text-white bg-blue-500 rounded-lg shadow-lg hover:bg-blue-600">
-        Đặt đơn
-      </button>
+      <button
+  className="w-full p-3 mt-4 text-white bg-blue-500 rounded-lg shadow-lg hover:bg-blue-600"
+  onClick={handleConfirmOrder}
+  disabled={!isPickupConfirmed || !isDeliveryConfirmed} // Ensure both addresses are confirmed
+>
+  Đặt đơn
+</button>
+
+
+      {showPlaceOrderModal && (
+        <PlaceOrderModal
+          onClose={() => setShowPlaceOrderModal(false)}
+          commitmentFee={commitmentFee}
+          paymentUrl={paymentUrl}
+        />
+      )}
     </div>
   );
 };

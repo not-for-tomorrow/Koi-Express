@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const OrderHistory = () => {
+const Order = () => {
   const [isTimeFilterExpanded, setIsTimeFilterExpanded] = useState(false);
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("all");
   const [tempSelectedTimeFilter, setTempSelectedTimeFilter] = useState("all");
   const [customDateRange, setCustomDateRange] = useState({ from: "", to: "" });
   const [displayDateRange, setDisplayDateRange] = useState("");
-  const [selectedTab, setSelectedTab] = useState("Tất cả");
+  const [selectedTab, setSelectedTab] = useState("Chờ xác nhận");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -209,32 +209,34 @@ const OrderHistory = () => {
           <div className="sticky top-0 z-20 bg-white">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-gray-800">
-                Lịch sử đơn hàng
+                Tổng đơn hàng
               </h1>
             </div>
 
             <div className="flex mb-6 space-x-4 overflow-x-auto">
-              {Object.keys(statusColors).map((tab, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedTab(tab)}
-                  className={`px-4 py-2 rounded-full transition duration-300 text-sm ${
-                    selectedTab === tab
-                      ? "font-bold shadow-md"
-                      : "text-blue-700"
-                  }`}
-                  style={{
-                    backgroundColor:
+              {Object.keys(statusColors)
+                .filter((tab) => tab !== "Tất cả") // Bỏ "Tất cả" khỏi danh sách
+                .map((tab, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedTab(tab)}
+                    className={`px-4 py-2 rounded-full transition duration-300 text-sm ${
                       selectedTab === tab
-                        ? statusColors[tab].background
-                        : "transparent",
-                    color:
-                      selectedTab === tab ? statusColors[tab].text : "black",
-                  }}
-                >
-                  {tab}
-                </button>
-              ))}
+                        ? "font-bold shadow-md"
+                        : "text-blue-700"
+                    }`}
+                    style={{
+                      backgroundColor:
+                        selectedTab === tab
+                          ? statusColors[tab].background
+                          : "transparent",
+                      color:
+                        selectedTab === tab ? statusColors[tab].text : "black",
+                    }}
+                  >
+                    {tab}
+                  </button>
+                ))}
             </div>
 
             <div className="flex items-center mb-6 space-x-6">
@@ -404,4 +406,4 @@ const OrderHistory = () => {
   );
 };
 
-export default OrderHistory;
+export default Order;
