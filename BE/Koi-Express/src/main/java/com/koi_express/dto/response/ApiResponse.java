@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -19,5 +19,11 @@ public class ApiResponse<T> {
     public ApiResponse(int code, String message) {
         this.code = code;
         this.message = message;
+    }
+
+    public ApiResponse(int code, String message, T result) {
+        this.code = code;
+        this.message = message;
+        this.result = result;
     }
 }

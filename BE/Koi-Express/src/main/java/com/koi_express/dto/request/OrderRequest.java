@@ -5,6 +5,8 @@ import com.koi_express.enums.PaymentMethod;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -37,5 +39,5 @@ public class OrderRequest {
 
     boolean insuranceSelected;
 
-    Double kilometers;
+    BigDecimal kilometers;
 }

@@ -28,15 +28,19 @@ public class SalesStaffService {
     private OrderService orderService;
 
     public Page<Orders> getPendingOrders(Pageable pageable) {
+        logger.info("Fetching pending orders for sales staff.");
         return salesStaffRepository.findAllByStatus(OrderStatus.PENDING, pageable);
     }
 
     public ApiResponse<String> acceptOrder(Long orderId) {
-        logger.info("Attempting to accept order with ID: {}", orderId);
-
-        ApiResponse<String> response = orderService.acceptOrder(orderId);
-
-        logger.info("Order with ID {} has been accepted", orderId);
-        return response;
+        try {
+            logger.info("Sales staff attempting to accept order with ID: {}", orderId);
+            ApiResponse<String> response = orderService.acceptOrder(orderId);
+            logger.info("Order with ID {} has been accepted", orderId);
+            return response;
+        } catch (Exception e) {
+            logger.error("Error accepting order with ID: {}", orderId, e);
+            return new ApiResponse<>(500, "Error accepting order: " + e.getMessage(), null);
+        }
     }
 }

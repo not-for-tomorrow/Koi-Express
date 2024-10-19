@@ -1,16 +1,21 @@
 package com.koi_express.service.order;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.exception.AppException;
@@ -62,78 +67,93 @@ public class OrderService {
     @Autowired
     private TransactionLogsRepository transactionLogsRepository;
 
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
     // Create Order with OrderRequest, order with add into database base on customerId in payload of token
     public ApiResponse<Map<String, Object>> createOrder(OrderRequest orderRequest, String token) {
 
         try {
-            String customerId = jwtUtil.extractCustomerId(token);
-            Customers customer = managerService.getCustomerById(Long.parseLong(customerId));
-
-            double totalFee = TransportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
-            double commitmentFee = TransportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
-
-            Orders orders = orderBuilder.buildOrder(orderRequest, customer);
-            orders.getOrderDetail().setDistanceFee(BigDecimal.valueOf(totalFee)); // Set total fee
-            orders.getOrderDetail().setCommitmentFee(BigDecimal.valueOf(commitmentFee)); // Set commitment fee
-
-            orders.setStatus(OrderStatus.COMMIT_FEE_PENDING);
-
+            Customers customer = extractCustomerFromToken(token);
+            Orders orders = prepareOrder(orderRequest, customer);
             Orders savedOrder = orderRepository.save(orders);
-            logger.info("Order created successfully with COMMIT_FEE_PENDING status: {}", savedOrder);
 
-            // Gọi VNPayService để tạo URL thanh toán
-            String paymentUrl = vnPayService.createVnPayPayment(savedOrder);
+            ApiResponse<String> paymentResponse = vnPayService.createVnPayPayment(savedOrder);
+            String paymentUrl = paymentResponse.getResult();
 
-            logger.info("Payment URL generated: {}", paymentUrl);
+            scheduleOrderCancellation(savedOrder.getOrderId());
 
-            Map<String, Object> responseMap = new HashMap<>();
-            responseMap.put("order", savedOrder); // Thông tin đơn hàng
-            responseMap.put("paymentUrl", paymentUrl); // URL thanh toán VNPay
-
-            return new ApiResponse<>(HttpStatus.OK.value(), "Order created, awaiting commit fee payment", responseMap);
+            return prepareSuccessResponse(savedOrder, paymentUrl);
         } catch (Exception e) {
             logger.error("Error creating order: ", e);
             throw new AppException(ErrorCode.ORDER_CREATION_FAILED);
         }
     }
 
+    private Customers extractCustomerFromToken(String token) {
+        String customerId = jwtUtil.extractCustomerId(token);
+        return managerService.getCustomerById(Long.parseLong(customerId));
+    }
+
+    private Orders prepareOrder(OrderRequest orderRequest, Customers customer) {
+        BigDecimal totalFee = TransportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
+        BigDecimal commitmentFee = TransportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
+
+        Orders orders = orderBuilder.buildOrder(orderRequest, customer);
+        orders.getOrderDetail().setDistanceFee(totalFee);
+        orders.getOrderDetail().setCommitmentFee(commitmentFee);
+        orders.setStatus(OrderStatus.COMMIT_FEE_PENDING);
+
+        return orders;
+    }
+
+    private ApiResponse<Map<String, Object>> prepareSuccessResponse(Orders savedOrder, String paymentUrl) {
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("order", savedOrder);
+        responseMap.put("paymentUrl", paymentUrl);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Order created, awaiting commit fee payment", responseMap);
+    }
+
+    private void scheduleOrderCancellation(Long orderId) {
+        scheduler.schedule(() -> {
+            Orders order = orderRepository.findById(orderId).orElse(null);
+            if (order != null && order.getStatus() == OrderStatus.COMMIT_FEE_PENDING) {
+                order.setStatus(OrderStatus.CANCELED);
+                orderRepository.save(order);
+                logger.info("Order ID {} has been canceled due to unpaid commit fee", orderId);
+            }
+        }, 10, TimeUnit.MINUTES);
+    }
+
     @Transactional
     public ApiResponse<String> confirmCommitFeePayment(long orderId, Map<String, String> vnpParams) {
         try {
-            // Xác minh thanh toán
             boolean isPaymentVerified = vnPayService.verifyPayment(vnpParams);
+            String responseCode = vnpParams.get("vnp_ResponseCode");
 
-            if (isPaymentVerified) {
-                // Tìm đơn hàng và cập nhật trạng thái
-                Orders order = orderRepository
-                        .findById(orderId)
-                        .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found"));
+            Orders order = orderRepository
+                    .findById(orderId)
+                    .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found"));
 
-                order.setStatus(OrderStatus.PENDING); // Cập nhật trạng thái thành PENDING
+            if (isPaymentVerified && "00".equals(responseCode)) {
+                order.setStatus(OrderStatus.PENDING);
                 orderRepository.save(order);
-
-                //                TransactionLogs transactionLogs = TransactionLogs.builder()
-                //                        .order(order)
-                //                        .customer(order.getCustomer())
-                //                        .amount(order.getOrderDetail().getCommitmentFee())
-                //                        .paymentMethod(PaymentMethod.VNPAY) // Assuming VNPay is used
-                //                        .status(TransactionStatus.PAID) // Assuming success
-                //                        .build();
-                //
-                //                transactionLogsRepository.save(transactionLogs);
 
                 // Gửi email xác nhận thanh toán thành công
                 emailService.sendOrderConfirmationEmail(order.getCustomer().getEmail(), order);
 
                 return new ApiResponse<>(HttpStatus.OK.value(), "Commit fee payment confirmed successfully", null);
+            } else {
+                order.setStatus(OrderStatus.CANCELED);
+                orderRepository.save(order);
+                logger.info("Payment failed or canceled for order ID: {}", orderId);
+                return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Payment verification failed.", null);
             }
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Payment verification failed.", null);
         } catch (Exception e) {
             logger.error("Error during commit fee payment confirmation: ", e);
-            return new ApiResponse<>(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(), "Payment processing error.", e.getMessage());
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Payment processing error.", e.getMessage());
         }
     }
+
 
     //    Cancel Order
     public ApiResponse<String> cancelOrder(Long orderId) {

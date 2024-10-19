@@ -4,6 +4,8 @@ import com.koi_express.enums.KoiType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.logging.Logger;
 
 @Service
@@ -29,65 +31,81 @@ public class KoiInvoiceCalculator {
     public KoiInvoiceCalculator(KoiPriceCalculator koiPriceCalculator,
                                 CareFee careFeeCalculator,
                                 PackagingFeeCalculator packagingFeeCalculator,
-                                TransportationFeeCalculator transportationFeeCalculator) {
+                                TransportationFeeCalculator transportationFeeCalculator,
+                                @Value("${invoice.specializedVehicleFee:150000}") int specializedVehicleFee,
+                                @Value("${invoice.vatRate:0.10}") double vatRate,
+                                @Value("${invoice.insuranceRate:0.05}") double insuranceRate) {
         this.koiPriceCalculator = koiPriceCalculator;
         this.careFeeCalculator = careFeeCalculator;
         this.packagingFeeCalculator = packagingFeeCalculator;
         this.transportationFeeCalculator = transportationFeeCalculator;
+        this.specializedVehicleFee = specializedVehicleFee;
+        this.vatRate = vatRate;
+        this.insuranceRate = insuranceRate;
     }
 
-    public double calculateTotalPrice(KoiType koiType, int quantity, double length, double weight, double distance) {
-        validateInputs(quantity, length, weight, distance);
+    public BigDecimal calculateTotalPrice(KoiType koiType, int quantity, double length, double distance, double commitmentFee) {
+        validateInputs(quantity, length, distance);
 
         CareFee.Size size = convertLengthToSize(length);
-        CareFee.Weight weightEnum = convertWeightToEnum(weight);
 
-        // Phí cá Koi
-        double fishPrice = koiPriceCalculator.calculateTotalPrice(koiType, quantity, length, weight);
+        // 1. Koi price
+        BigDecimal fishPrice = koiPriceCalculator.calculateTotalPrice(koiType, quantity, length);
 
-        // 1. Tính phí chăm sóc (Care fee)
-        double careFee = careFeeCalculator.calculateCareFee(koiType, size, weightEnum, quantity);
+        // 2. Care fee
+        BigDecimal careFee = careFeeCalculator.calculateCareFee(koiType, size, quantity);
 
-        // 2. Tính phí đóng gói (Packaging fee)
-        double packagingFee = packagingFeeCalculator.calculateTotalPackagingFee(quantity, length, weight);
+        // 3. Packaging fee
+        BigDecimal packagingFee = packagingFeeCalculator.calculateTotalPackagingFee(quantity, BigDecimal.valueOf(length));
 
-        // 3. Tính phí vận chuyển (Transportation fee)
-        double transportationFee = transportationFeeCalculator.calculateTotalFee(distance);
+        // 4. Transportation fee
+        BigDecimal transportationFee = transportationFeeCalculator.calculateTotalFee(BigDecimal.valueOf(distance));
 
-        // 4. Tính phí bảo hiểm (Insurance fee)
-        double insuranceFee = calculateInsuranceFee(fishPrice, careFee, packagingFee, transportationFee);
+        // 5. Phí vận chuyển còn lại sau khi trừ phí cam kết
+        BigDecimal remainingTransportationFee = calculateRemainingTransportationFee(transportationFee, BigDecimal.valueOf(commitmentFee));
 
-        // 5. Tính tổng trước VAT (Subtotal before VAT)
-        double subtotal = calculateSubtotal(fishPrice, careFee, packagingFee, transportationFee, insuranceFee);
+        // 6. Insurance fee
+        BigDecimal insuranceFee = calculateInsuranceFee(fishPrice, careFee, packagingFee, remainingTransportationFee);
 
-        // 6. Tính VAT (10% của tổng trước VAT)
-        double vat = calculateVAT(subtotal);
+        // 7. Subtotal
+        BigDecimal subtotal = calculateSubtotal(fishPrice, careFee, packagingFee, remainingTransportationFee, insuranceFee);
 
-        // 7. Tính tổng tiền (Total price)
-        double totalPrice = subtotal + vat;
+        // 8. VAT
+        BigDecimal vat = calculateVAT(subtotal);
+
+        // 9. Total price
+        BigDecimal totalPrice = subtotal.add(vat);
 
         logger.info(String.format("Total price for %d %s koi: %.2f VND", quantity, koiType.name(), totalPrice));
-        return totalPrice;
+        return totalPrice.setScale(2, RoundingMode.HALF_UP);
     }
 
-    private double calculateInsuranceFee(double fishPrice, double careFee, double packagingFee, double transportationFee) {
-        return (fishPrice + careFee + packagingFee + transportationFee) * insuranceRate;
+    private BigDecimal calculateRemainingTransportationFee(BigDecimal transportationFee, BigDecimal commitmentFee) {
+        return transportationFee.subtract(commitmentFee);
     }
 
-    private double calculateSubtotal(double fishPrice, double careFee, double packagingFee, double transportationFee, double insuranceFee) {
-        return fishPrice + careFee + packagingFee + transportationFee + insuranceFee + specializedVehicleFee;
+    private BigDecimal calculateInsuranceFee(BigDecimal fishPrice, BigDecimal careFee, BigDecimal packagingFee, BigDecimal transportationFee) {
+        return fishPrice.add(careFee).add(packagingFee).add(transportationFee).multiply(BigDecimal.valueOf(insuranceRate));
     }
 
-    private double calculateVAT(double subtotal) {
-        return subtotal * vatRate;
+    private BigDecimal calculateSubtotal(BigDecimal fishPrice, BigDecimal careFee, BigDecimal packagingFee, BigDecimal transportationFee, BigDecimal insuranceFee) {
+        return fishPrice.add(careFee)
+                .add(packagingFee)
+                .add(transportationFee)
+                .add(insuranceFee)
+                .add(BigDecimal.valueOf(specializedVehicleFee));
     }
 
-    private void validateInputs(int quantity, double length, double weight, double distance) {
+    private BigDecimal calculateVAT(BigDecimal subtotal) {
+        return subtotal.multiply(BigDecimal.valueOf(vatRate));
+    }
+
+    private void validateInputs(int quantity, double length, double distance) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
-        if (length <= 0 || weight <= 0) {
-            throw new IllegalArgumentException("Length and weight must be greater than 0");
+        if (length <= 0) {
+            throw new IllegalArgumentException("Length must be greater than 0");
         }
         if (distance < 0) {
             throw new IllegalArgumentException("Distance cannot be negative");
@@ -104,15 +122,4 @@ public class KoiInvoiceCalculator {
         }
     }
 
-    private CareFee.Weight convertWeightToEnum(double weight) {
-        if (weight < 1.5) {
-            return CareFee.Weight.LESS_THAN_1_5_KG;
-        } else if (weight <= 3) {
-            return CareFee.Weight.LESS_THAN_3_KG;
-        } else if (weight <= 5) {
-            return CareFee.Weight.LESS_THAN_5_KG;
-        } else {
-            return CareFee.Weight.GREATER_THAN_5_KG;
-        }
-    }
 }

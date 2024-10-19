@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
+import com.koi_express.entity.shipment.Shipments;
 import com.koi_express.enums.InvoiceStatus;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.enums.PaymentMethod;
@@ -44,11 +45,17 @@ public class Orders { // Quản lý đơn hàng
     String destinationLocation;
 
     String originDetail;
-
     String destinationDetail;
+
+    boolean isPriceCalculated = false; // Đánh dấu đã tính tiền
+    boolean isImageUploaded = false; // Đánh dấu đã upload ảnh
+    boolean isPaymentConfirmed = false; // Đánh dấu đã xác nhận thanh toán
 
     @Column(precision = 15, scale = 2)
     BigDecimal totalFee;
+
+    @OneToOne(mappedBy = "order")
+    Shipments shipment;
 
     @Enumerated(EnumType.STRING)
     OrderStatus status;
@@ -70,5 +77,17 @@ public class Orders { // Quản lý đơn hàng
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    public void markPriceCalculated() {
+        this.isPriceCalculated = true;
+    }
+
+    public void markImageUploaded() {
+        this.isImageUploaded = true;
+    }
+
+    public void markPaymentConfirmed() {
+        this.isPaymentConfirmed = true;
     }
 }

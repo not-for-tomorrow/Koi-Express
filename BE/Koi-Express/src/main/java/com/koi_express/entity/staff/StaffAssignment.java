@@ -8,6 +8,7 @@ import com.koi_express.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
@@ -23,25 +24,26 @@ public class StaffAssignment { // Phân công nhân viên
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "assignment_id")
-    private Long assignmentId;
+    Long assignmentId;
 
     @Column(name = "customer_id", nullable = false)
-    private Long customerId;
+    Long customerId;
 
     @ManyToOne
     @JoinColumn(name = "staff_id", referencedColumnName = "staff_id", nullable = false)
-    private DeliveringStaff staff;
+    DeliveringStaff staff;
 
     @ManyToOne
     @JoinColumn(name = "order_id", referencedColumnName = "order_id", nullable = false)
-    private Orders order;
+    Orders order;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
+    Role role;
 
+    @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    private LocalDateTime assignedAt;
+    LocalDateTime assignedAt;
 
     @PrePersist
     protected void onCreate() {
@@ -49,5 +51,5 @@ public class StaffAssignment { // Phân công nhân viên
     }
 
     @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    LocalDateTime updatedAt;
 }
