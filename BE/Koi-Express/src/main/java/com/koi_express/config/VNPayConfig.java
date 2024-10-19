@@ -18,9 +18,11 @@ public class VNPayConfig {
     @Value("${spring.payment.vnPay.url}")
     private String vnp_PayUrl;
 
+    @Getter
     @Value("${spring.payment.vnPay.returnUrl}")
     private String vnp_ReturnUrl;
 
+    @Getter
     @Value("${spring.payment.vnPay.tmnCode}")
     private String vnp_TmnCode;
 
@@ -28,12 +30,15 @@ public class VNPayConfig {
     @Value("${spring.payment.vnPay.secretKey}")
     private String secretKey;
 
+    @Getter
     @Value("${spring.payment.vnPay.version}")
     private String vnp_Version;
 
+    @Getter
     @Value("${spring.payment.vnPay.command}")
     private String vnp_Command;
 
+    @Getter
     @Value("${spring.payment.vnPay.orderType}")
     private String orderType;
 

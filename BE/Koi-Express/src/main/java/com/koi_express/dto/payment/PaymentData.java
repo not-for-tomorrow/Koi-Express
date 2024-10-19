@@ -3,6 +3,8 @@ package com.koi_express.dto.payment;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -11,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 public class PaymentData {
 
     String transactionId;
-    long amount;
+    BigDecimal amount;
     String responseCode;
     String bankCode;
     String secureHash;

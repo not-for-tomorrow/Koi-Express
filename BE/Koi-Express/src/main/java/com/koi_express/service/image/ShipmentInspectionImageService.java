@@ -1,5 +1,8 @@
 package com.koi_express.service.image;
 
+import java.io.File;
+import java.io.IOException;
+
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.image.ShipmentInspectionImage;
 import com.koi_express.entity.order.Orders;
@@ -13,8 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.File;
-import java.io.IOException;
 
 @Service
 public class ShipmentInspectionImageService {
@@ -25,7 +26,11 @@ public class ShipmentInspectionImageService {
     private final ShipmentsRepository shipmentsRepository;
     private final OrderRepository ordersRepository;
 
-    public ShipmentInspectionImageService(S3Service s3Service, ShipmentInspectionImageRepository imageRepository, ShipmentsRepository shipmentsRepository, OrderRepository ordersRepository) {
+    public ShipmentInspectionImageService(
+            S3Service s3Service,
+            ShipmentInspectionImageRepository imageRepository,
+            ShipmentsRepository shipmentsRepository,
+            OrderRepository ordersRepository) {
         this.s3Service = s3Service;
         this.imageRepository = imageRepository;
         this.shipmentsRepository = shipmentsRepository;
@@ -33,15 +38,17 @@ public class ShipmentInspectionImageService {
     }
 
     public ApiResponse<String> uploadInspectionImage(Long orderId, MultipartFile multipartFile) {
-        Orders order = ordersRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+        Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
 
         File tempFile = null;
         try {
             tempFile = convertMultipartFileToFile(multipartFile);
 
-            String imageUrl = s3Service.uploadFile(order.getCustomer().getId().toString(),
-                    order.getCreatedAt().toString(), "inspection_images", tempFile);
+            String imageUrl = s3Service.uploadFile(
+                    order.getCustomer().getId().toString(),
+                    order.getCreatedAt().toString(),
+                    "inspection_images",
+                    tempFile);
 
             if (tempFile != null && tempFile.exists()) {
                 tempFile.delete();

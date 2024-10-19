@@ -1,5 +1,6 @@
 package com.koi_express.service.staffAssignment;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -53,8 +54,8 @@ public class StaffAssignmentService {
                     ErrorCode.ORDER_ALREADY_ASSIGNED, "Order with ID: " + orderId + " is already assigned.");
         }
 
-        double kilometers = order.getOrderDetail().getKilometers();
-        DeliveringStaffLevel level = kilometers < 300 ? DeliveringStaffLevel.LEVEL_1 : DeliveringStaffLevel.LEVEL_2;
+        BigDecimal kilometers = order.getOrderDetail().getKilometers();
+        DeliveringStaffLevel level = kilometers.compareTo(new BigDecimal(300)) < 0 ? DeliveringStaffLevel.LEVEL_1 : DeliveringStaffLevel.LEVEL_2;
 
         List<DeliveringStaff> availableStaff =
                 deliveringStaffRepository.findByLevelAndStatus(level, StaffStatus.AVAILABLE);
@@ -97,6 +98,12 @@ public class StaffAssignmentService {
     }
 
     private DeliveringStaff findNextAvailableStaff(List<DeliveringStaff> availableStaff) {
+
+        if (availableStaff == null || availableStaff.isEmpty()) {
+            log.info("No available staff found");
+            return null;
+        }
+
         if (lastAssignedStaffId == null
                 || availableStaff.stream().noneMatch(staff -> staff.getStaffId().equals(lastAssignedStaffId))) {
             log.info("Returning first staff in list as lastAssignedStaffId is invalid or null");
@@ -115,13 +122,16 @@ public class StaffAssignmentService {
     // lưu đơn hàng vào danh sách đợi khi không có nhân viên nào sẵn sàng
     public ApiResponse<String> savePendingOrder(Orders order) {
         if (order.getDeliveringStaff() != null || order.getStatus() == OrderStatus.DELIVERED) {
-            log.error("Order ID: {} cannot be added to pending list, it's already assigned or delivered", order.getOrderId());
+            log.error(
+                    "Order ID: {} cannot be added to pending list, it's already assigned or delivered",
+                    order.getOrderId());
             throw new AppException(ErrorCode.ORDER_INVALID, "Order cannot be added to pending list.");
         }
 
         pendingOrderRepository.save(order);
         log.info("Order ID: {} has been added to pending list", order.getOrderId());
-        return new ApiResponse<>(HttpStatus.OK.value(), "Order is added to pending list due to no available staff", null);
+        return new ApiResponse<>(
+                HttpStatus.OK.value(), "Order is added to pending list due to no available staff", null);
     }
 
     // kiểm tra đơn hàng chờ và gán nhân viên cho đơn hàng
@@ -133,7 +143,10 @@ public class StaffAssignmentService {
             List<Orders> pendingOrders = pendingOrderRepository.findAll();
             for (Orders order : pendingOrders) {
                 DeliveringStaff assignedStaff = availableStaff.remove(0);
-                log.info("Assigning staff ID: {} to pending order ID: {}", assignedStaff.getStaffId(), order.getOrderId());
+                log.info(
+                        "Assigning staff ID: {} to pending order ID: {}",
+                        assignedStaff.getStaffId(),
+                        order.getOrderId());
 
                 order.setDeliveringStaff(assignedStaff);
                 order.setStatus(OrderStatus.ASSIGNED);

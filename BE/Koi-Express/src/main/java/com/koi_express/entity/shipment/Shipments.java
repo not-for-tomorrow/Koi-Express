@@ -36,7 +36,7 @@ public class Shipments { // quản lý vận chuyển
 
     @ManyToOne
     @JoinColumn(name = "delivering_staff_id", nullable = false)
-    DeliveringStaff  deliveringStaff;
+    DeliveringStaff deliveringStaff;
 
     LocalDateTime pickupDate;
     LocalDateTime estimatedDeliveryDate;

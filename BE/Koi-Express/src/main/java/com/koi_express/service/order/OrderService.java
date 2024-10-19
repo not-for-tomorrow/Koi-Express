@@ -1,6 +1,5 @@
 package com.koi_express.service.order;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -15,7 +14,6 @@ import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
-import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.exception.AppException;
@@ -114,14 +112,17 @@ public class OrderService {
     }
 
     private void scheduleOrderCancellation(Long orderId) {
-        scheduler.schedule(() -> {
-            Orders order = orderRepository.findById(orderId).orElse(null);
-            if (order != null && order.getStatus() == OrderStatus.COMMIT_FEE_PENDING) {
-                order.setStatus(OrderStatus.CANCELED);
-                orderRepository.save(order);
-                logger.info("Order ID {} has been canceled due to unpaid commit fee", orderId);
-            }
-        }, 10, TimeUnit.MINUTES);
+        scheduler.schedule(
+                () -> {
+                    Orders order = orderRepository.findById(orderId).orElse(null);
+                    if (order != null && order.getStatus() == OrderStatus.COMMIT_FEE_PENDING) {
+                        order.setStatus(OrderStatus.CANCELED);
+                        orderRepository.save(order);
+                        logger.info("Order ID {} has been canceled due to unpaid commit fee", orderId);
+                    }
+                },
+                10,
+                TimeUnit.MINUTES);
     }
 
     @Transactional
@@ -150,10 +151,10 @@ public class OrderService {
             }
         } catch (Exception e) {
             logger.error("Error during commit fee payment confirmation: ", e);
-            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Payment processing error.", e.getMessage());
+            return new ApiResponse<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), "Payment processing error.", e.getMessage());
         }
     }
-
 
     //    Cancel Order
     public ApiResponse<String> cancelOrder(Long orderId) {

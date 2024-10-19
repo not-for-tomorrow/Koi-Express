@@ -32,6 +32,10 @@ public class VNPayController {
     @GetMapping("/vn-pay")
     public ResponseObject<PaymentDTO.VNPayResponse> pay(@RequestParam("orderId") Long orderId) {
         try {
+            if (orderId == null || orderId <= 0) {
+                return new ResponseObject<>(HttpStatus.BAD_REQUEST, "Invalid order ID", null);
+            }
+
             logger.info("Processing payment for order ID: {}", orderId);
 
             Orders order = orderService.findOrderById(orderId);
@@ -56,6 +60,10 @@ public class VNPayController {
         try {
             Map<String, String> vnpParams = request.getParameterMap().entrySet().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
+
+            if (!vnpParams.containsKey("vnp_TxnRef")) {
+                return new ResponseObject<>(HttpStatus.BAD_REQUEST, "Missing transaction reference", null);
+            }
 
             long orderId = Long.parseLong(vnpParams.get("vnp_TxnRef"));
             logger.info("Received payment callback for order ID: {}", orderId);
