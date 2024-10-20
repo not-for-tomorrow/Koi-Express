@@ -12,6 +12,7 @@ const Order = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [orders, setOrders] = useState([]);
+  const [customerNames, setCustomerNames] = useState({}); // To store customer names
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -40,6 +41,43 @@ const Order = () => {
 
     fetchOrders();
   }, []);
+
+  // Fetch customer name for each order
+  useEffect(() => {
+    const fetchCustomerNames = async () => {
+      const token = localStorage.getItem("token");
+      const newCustomerNames = { ...customerNames }; // Copy current state
+
+      for (const order of orders) {
+        if (!newCustomerNames[order.customer.customerId]) {
+          // If the customer name is not already in state
+          try {
+            const response = await axios.get(
+              `http://localhost:8080/api/manager/id/${order.customer.customerId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            newCustomerNames[order.customer.customerId] =
+              response.data.fullName || "N/A"; // Store the customer's full name
+          } catch (err) {
+            console.error(
+              `Failed to fetch customer name for ID ${order.customer.customerId}`,
+              err
+            );
+            newCustomerNames[order.customer.customerId] = "N/A"; // Fallback
+          }
+        }
+      }
+      setCustomerNames(newCustomerNames); // Update the state with new names
+    };
+
+    if (orders.length > 0) {
+      fetchCustomerNames();
+    }
+  }, [orders]);
 
   const handleTimeFilterClick = () => {
     setTempSelectedTimeFilter(selectedTimeFilter);
@@ -345,6 +383,7 @@ const Order = () => {
                 <thead className="sticky top-0 z-10 bg-blue-100">
                   <tr className="text-blue-900 border-b border-blue-200">
                     <th className="p-2 font-semibold w-1/8">Mã đơn hàng</th>
+                    <th className="p-2 font-semibold w-1/8">Tên khách hàng</th> {/* New Column */}
                     <th className="w-1/4 p-2 font-semibold">Điểm lấy hàng</th>
                     <th className="w-1/3 p-2 font-semibold">Điểm giao hàng</th>
                     <th className="p-2 font-semibold w-1/10">Thời gian tạo</th>
@@ -367,6 +406,9 @@ const Order = () => {
                       >
                         <td className="p-2 font-semibold text-blue-600">
                           {order.orderId}
+                        </td>
+                        <td className="p-2 text-sm text-gray-700">
+                          {customerNames[order.customer.customerId] || "N/A"} {/* Display customer name */}
                         </td>
                         <td className="p-2 text-sm text-gray-700">
                           {order.originLocation}
