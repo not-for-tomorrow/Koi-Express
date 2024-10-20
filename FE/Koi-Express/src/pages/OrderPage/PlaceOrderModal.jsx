@@ -1,12 +1,13 @@
 import React from "react";
 
-const PlaceOrderModal = ({ onClose, commitmentFee }) => {
+const PlaceOrderModal = ({ onClose, commitmentFee, paymentUrl }) => {
   const handleConfirm = () => {
-    // Open the payment page in a new tab
-    window.open(
-      "https://sandbox.vnpayment.vn/paymentv2/Payment/Error.html?code=15",
-      "_blank"
-    );
+    // Open the payment URL in a new tab if it's available
+    if (paymentUrl) {
+      window.open(paymentUrl, "_blank");
+    } else {
+      console.error("Payment URL is not available.");
+    }
   };
 
   return (
