@@ -6,6 +6,7 @@ import com.koi_express.enums.Role;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.SystemAccountRepository;
+import com.koi_express.service.verification.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,9 @@ public class SystemAccount {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService;
 
     public ApiResponse<?> createSalesStaffAccount(CreateStaffRequest createStaffRequest) {
         if (systemAccountRepository.existsByEmail(createStaffRequest.getEmail())) {
@@ -38,6 +42,9 @@ public class SystemAccount {
                 .build();
 
         systemAccountRepository.save(salesStaff);
+
+        emailService.sendAccountCreatedEmail(salesStaff, createStaffRequest.getPassword(), false);
+
         return new ApiResponse<>(HttpStatus.OK.value(), "Sales staff account created successfully", salesStaff);
     }
 

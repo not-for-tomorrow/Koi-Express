@@ -8,6 +8,7 @@ import com.koi_express.enums.StaffStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.DeliveringStaffRepository;
+import com.koi_express.service.verification.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +22,9 @@ public class DeliveringStaff {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService;
 
     public ApiResponse<?> createDeliveringStaffAccount(CreateStaffRequest createStaffRequest) {
         if (deliveringStaffRepository.existsByPhoneNumber(createStaffRequest.getPhoneNumber())) {
@@ -44,6 +48,9 @@ public class DeliveringStaff {
                         .build();
 
         deliveringStaffRepository.save(deliveringStaff);
+
+        emailService.sendAccountCreatedEmail(deliveringStaff, createStaffRequest.getPassword(), true);
+
         return new ApiResponse<>(
                 HttpStatus.OK.value(), "Delivering staff account created successfully", deliveringStaff);
     }

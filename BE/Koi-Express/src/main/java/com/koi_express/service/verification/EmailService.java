@@ -8,7 +8,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.entity.shipment.DeliveringStaff;
+import com.koi_express.enums.DeliveringStaffLevel;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import jakarta.mail.internet.MimeMessage;
@@ -59,6 +62,51 @@ public class EmailService {
             throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
         }
     }
+
+    @Async
+    public void sendAccountCreatedEmail(Object account, String rawPassword, boolean isDeliveringStaff) {
+        try {
+            String htmlTemplate = loadEmailTemplate("Account Confirmation.html");
+
+            Map<String, String> placeholders = new HashMap<>();
+            if (isDeliveringStaff) {
+                DeliveringStaff deliveringStaff = (DeliveringStaff) account;
+                placeholders.put("{{FullName}}", deliveringStaff.getFullName());
+                placeholders.put("{{StaffId}}", String.valueOf(deliveringStaff.getId()));
+                placeholders.put("{{Email}}", deliveringStaff.getEmail());
+                placeholders.put("{{PhoneNumber}}", deliveringStaff.getPhoneNumber());
+                placeholders.put("{{Password}}", rawPassword);
+                placeholders.put("{{Role}}", deliveringStaff.getRole().toString());
+                placeholders.put("{{Level}}", deliveringStaff.getLevel().name());
+                placeholders.put("{{CreatedAt}}", deliveringStaff.getCreatedAt().toString());
+            } else {
+                SystemAccount systemAccount = (SystemAccount) account;
+                placeholders.put("{{FullName}}", systemAccount.getFullName());
+                placeholders.put("{{StaffId}}", String.valueOf(systemAccount.getId()));
+                placeholders.put("{{Email}}", systemAccount.getEmail());
+                placeholders.put("{{PhoneNumber}}", systemAccount.getPhoneNumber());
+                placeholders.put("{{Password}}", rawPassword);
+                placeholders.put("{{Role}}", systemAccount.getRole().toString());
+                placeholders.put("{{CreatedAt}}", systemAccount.getCreatedAt().toString());
+            }
+
+            String populatedTemplate = replacePlaceholders(htmlTemplate, placeholders);
+
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(isDeliveringStaff ? ((DeliveringStaff) account).getEmail() : ((SystemAccount) account).getEmail());
+            helper.setSubject("Account Created - Koi Express");
+            helper.setText(populatedTemplate, true);
+
+            javaMailSender.send(message);
+
+            logger.info("Account creation email sent to: {}", isDeliveringStaff ? ((DeliveringStaff) account).getEmail() : ((SystemAccount) account).getEmail());
+        } catch (Exception e) {
+            logger.error("Error sending account creation email: ", e);
+            throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
+        }
+    }
+
 
     private String loadEmailTemplate(String fileName) throws IOException {
 
