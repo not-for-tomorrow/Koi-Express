@@ -5,15 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Confirmation - Koi Express</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         @keyframes fadeIn {
-            0% {
-                opacity: 0;
-            }
-
-            100% {
-                opacity: 1;
-            }
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
 
         body {
@@ -53,6 +50,13 @@
             position: absolute;
             top: 15px;
             right: 20px;
+            animation: bounceIn 1s ease-in-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.9); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         .content {
@@ -79,6 +83,12 @@
             border-radius: 8px;
             border: 1px solid #e5e7eb;
             margin-top: 20px;
+            animation: slideUp 1.5s ease-in;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .order-summary p {
@@ -95,7 +105,6 @@
             text-decoration: none;
             font-weight: bold;
             margin-top: 30px;
-            animation: fadeIn 3.5s ease-in;
             transition: background-color 0.3s, box-shadow 0.3s;
         }
 
@@ -133,12 +142,12 @@
             margin: 0;
         }
 
-        /* Icons */
         .icon {
             width: 18px;
             height: 18px;
             margin-right: 8px;
             vertical-align: middle;
+            animation: fadeIn 1s ease-in-out;
         }
 
         .intro {
@@ -162,7 +171,7 @@
 <div class="container">
     <div class="header">
         <h1>Koi Express - Order Confirmation</h1>
-        <img src="https://image.shutterstock.com/image-vector/fish-logo-vector-symbol-design-260nw-1029931859.jpg"
+        <img src="/assets/images/koi-fish-logo.png"
              alt="Koi Fish Logo">
     </div>
     <div class="content">
@@ -173,23 +182,22 @@
 
         <div class="order-summary">
             <div class="order-summary-item">
-                <img src="https://cdn-icons-png.flaticon.com/512/634/634134.png" alt="Order ID Icon" class="icon">
+                <i class="fas fa-receipt icon"></i>
                 <p><strong>Order ID:</strong></p>
                 <p>{{OrderID}}</p>
             </div>
             <div class="order-summary-item">
-                <img src="https://cdn-icons-png.flaticon.com/512/2922/2922510.png" alt="Date Icon" class="icon">
+                <i class="fas fa-calendar-alt icon"></i>
                 <p><strong>Date:</strong></p>
                 <p>{{OrderDate}}</p>
             </div>
             <div class="order-summary-item">
-                <img src="https://cdn-icons-png.flaticon.com/512/1231/1231072.png" alt="Address Icon" class="icon">
+                <i class="fas fa-map-marker-alt icon"></i>
                 <p><strong>Delivery Address:</strong></p>
                 <p>{{Address}}</p>
             </div>
             <div class="order-summary-item">
-                <img src="https://cdn-icons-png.flaticon.com/512/1170/1170627.png" alt="Total Amount Icon"
-                     class="icon">
+                <i class="fas fa-dollar-sign icon"></i>
                 <p><strong>Total Amount:</strong></p>
                 <p>{{TotalAmount}}</p>
             </div>
@@ -205,6 +213,10 @@
         <p>Need help? <a href="mailto:support@koiexpress.com">Contact Support</a></p>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Created - Koi Express</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0077b6, #00a8e8, #00c8a8);
+            color: #ffffff;
+            text-align: center;
+            padding: 30px 10px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+            font-weight: bold;
+            animation: bounceIn 1s ease-in-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.9); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .content {
+            padding: 40px;
+            line-height: 1.8;
+            color: #333333;
+        }
+
+        .content h2 {
+            color: #0077b6;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .account-summary {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-top: 20px;
+            animation: slideUp 1s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .account-summary p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #777;
+            background-color: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer a {
+            color: #0077b6;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .welcome-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="header">
+        <i class="fas fa-smile-beam welcome-icon"></i>
+        <h1>Welcome to Koi Express!</h1>
+    </div>
+    <div class="content">
+        <h2>Account Creation Success</h2>
+        <p>Dear <strong>{{FullName}}</strong>,</p>
+        <p>We are delighted to inform you that your <strong>{{Role}}</strong> account has been created successfully! Below are the account details:</p>
+
+        <div class="account-summary">
+            <p><i class="fas fa-id-badge"></i> <strong>Staff ID:</strong> {{StaffId}}</p>
+            <p><i class="fas fa-user"></i> <strong>Full Name:</strong> {{FullName}}</p>
+            <p><i class="fas fa-envelope"></i> <strong>Email:</strong> {{Email}}</p>
+            <p><i class="fas fa-phone"></i> <strong>Phone Number:</strong> {{PhoneNumber}}</p>
+            <p><i class="fas fa-lock"></i> <strong>Password:</strong> {{Password}}</p>
+            <p><i class="fas fa-user-tag"></i> <strong>Role:</strong> {{Role}}</p>
+            <p><i class="fas fa-tachometer-alt"></i> <strong>Level:</strong> {{Level}}</p>
+            <p><i class="fas fa-calendar-alt"></i> <strong>Account Created At:</strong> {{CreatedAt}}</p>
+        </div>
+
+        <p>If you have any questions, feel free to reach out to us anytime. We are here to assist you!</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 Koi Express. All rights reserved.</p>
+        <p>Need help? <a href="mailto:support@koiexpress.com">Contact Support</a></p>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
