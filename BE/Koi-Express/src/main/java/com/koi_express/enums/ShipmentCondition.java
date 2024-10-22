@@ -1,6 +1,6 @@
 package com.koi_express.enums;
 
-public enum ShipmentCondition { // tình trạng sức khỏe của cá Koi
+public enum ShipmentCondition {
     HEALTHY,
     STRESSED,
     INJURED,

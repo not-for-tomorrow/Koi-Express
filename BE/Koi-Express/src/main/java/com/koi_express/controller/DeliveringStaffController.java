@@ -5,7 +5,9 @@ import java.util.List;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.exception.AppException;
 import com.koi_express.service.deliveringStaff.DeliveringStaffService;
 import com.koi_express.service.image.ShipmentInspectionImageService;
 import com.koi_express.service.order.OrderService;
@@ -66,7 +68,7 @@ public class DeliveringStaffController {
             @PathVariable Long orderId, @RequestHeader("Authorization") String token) {
 
         try {
-            String cleanedToken = token.replace("Bearer ", "").trim();
+            String cleanedToken = jwtUtil.cleanToken(token);
             String deliveringStaffIdStr = jwtUtil.extractUserId(cleanedToken, "DELIVERING_STAFF");
 
             Long deliveringStaffId = Long.parseLong(deliveringStaffIdStr);

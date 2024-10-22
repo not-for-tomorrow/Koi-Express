@@ -11,10 +11,10 @@ public class TransportationFeeCalculator {
 
     private static final Logger logger = Logger.getLogger(TransportationFeeCalculator.class.getName());
 
-    private static final BigDecimal BASE_FEE_PER_KM = new BigDecimal("5200"); // VND per km
-    private static final BigDecimal FUEL_PRICE = new BigDecimal("19000"); // VND per liter
-    private static final BigDecimal SHORT_DISTANCE_FUEL_CONSUMPTION = new BigDecimal("11.0"); // Liters per 100 km
-    private static final BigDecimal LONG_DISTANCE_FUEL_CONSUMPTION = new BigDecimal("14.0");  // Liters per 100 km
+    private static final BigDecimal BASE_FEE_PER_KM = new BigDecimal("5200");
+    private static final BigDecimal FUEL_PRICE = new BigDecimal("19000");
+    private static final BigDecimal SHORT_DISTANCE_FUEL_CONSUMPTION = new BigDecimal("11.0");
+    private static final BigDecimal LONG_DISTANCE_FUEL_CONSUMPTION = new BigDecimal("14.0");
 
     public static BigDecimal calculateTotalFee(BigDecimal kilometers) {
         if (kilometers.compareTo(BigDecimal.ZERO) < 0) {

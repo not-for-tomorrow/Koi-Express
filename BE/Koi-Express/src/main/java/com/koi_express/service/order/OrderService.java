@@ -25,6 +25,7 @@ import com.koi_express.service.order.price.TransportationFeeCalculator;
 import com.koi_express.service.payment.VNPayService;
 import com.koi_express.service.staffAssignment.StaffAssignmentService;
 import com.koi_express.service.verification.EmailService;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,6 +108,8 @@ public class OrderService {
     private ApiResponse<Map<String, Object>> prepareSuccessResponse(Orders savedOrder, String paymentUrl) {
         Map<String, Object> responseMap = new HashMap<>();
         responseMap.put("order", savedOrder);
+        responseMap.put("distanceFee", savedOrder.getOrderDetail().getDistanceFee());
+        responseMap.put("commitmentFee", savedOrder.getOrderDetail().getCommitmentFee());
         responseMap.put("paymentUrl", paymentUrl);
         return new ApiResponse<>(HttpStatus.OK.value(), "Order created, awaiting commit fee payment", responseMap);
     }
@@ -260,5 +263,10 @@ public class OrderService {
         return orderRepository
                 .findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found"));
+    }
+
+    public Orders getOrderWithDetails(Long orderId) {
+        return orderRepository.findByIdWithDetail(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
     }
 }

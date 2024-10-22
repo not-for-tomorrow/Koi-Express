@@ -2,6 +2,7 @@ package com.koi_express.service.deliveringStaff;
 
 import java.util.List;
 
+import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
@@ -20,6 +21,9 @@ public class DeliveringStaffService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     public List<Orders> getOrdersByStatus(OrderStatus status) {
         log.info("Fetching orders with status: {}", status);
