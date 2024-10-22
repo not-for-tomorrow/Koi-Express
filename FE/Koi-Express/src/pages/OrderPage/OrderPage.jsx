@@ -26,7 +26,6 @@ const OrderPage = () => {
   const [isPickupConfirmed, setIsPickupConfirmed] = useState(false);
   const [isDeliveryConfirmed, setIsDeliveryConfirmed] = useState(false);
 
-
   // Function to reverse geocode lat/lng to an address
   const reverseGeocode = async (lat, lng) => {
     try {
@@ -151,7 +150,7 @@ const OrderPage = () => {
       {/* Sidebar Order Form Section */}
       {currentStep === 1 ? (
         <OrderForm
-        pickupAddress={pickupAddress}
+          pickupAddress={pickupAddress}
           setPickupAddress={setPickupAddress}
           deliveryAddress={deliveryAddress}
           setDeliveryAddress={setDeliveryAddress}
@@ -180,7 +179,7 @@ const OrderPage = () => {
         />
       ) : (
         <OrderForm2
-        handleBack={handleBack}
+          handleBack={handleBack}
           basePrice={totalPrice}
           pickupAddress={pickupAddress}
           deliveryAddress={deliveryAddress}
@@ -192,8 +191,7 @@ const OrderPage = () => {
           recipientPhone={recipientPhone}
           isPickupConfirmed={isPickupConfirmed} // Pass it here
           isDeliveryConfirmed={isDeliveryConfirmed} // Pass it here
-      />
-      
+        />
       )}
 
       {/* Full-Screen Map Section */}
