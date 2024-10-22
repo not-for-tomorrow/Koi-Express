@@ -1,8 +1,9 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom"; 
+import { Routes, Route } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import OrderPage from "../OrderPage/OrderPage";
 import OrderHistory from "../OrderHistory/OrderHistory";
+import OrderDetail from "../OrderPage/OrderDetail";
 import Profile from "../Profile/Profile";
 
 const AppHomePages = () => {
@@ -18,6 +19,11 @@ const AppHomePages = () => {
         <Routes>
           <Route path="/" element={<OrderPage />} />
           <Route path="/history" element={<OrderHistory />} />
+          <Route
+            path="/history/detail/:orderId"
+            element={<OrderDetail />}
+          />{" "}
+          {/* Ensure this route is defined */}
           <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>

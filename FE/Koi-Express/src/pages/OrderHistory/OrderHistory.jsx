@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const OrderHistory = () => {
   const [isTimeFilterExpanded, setIsTimeFilterExpanded] = useState(false);
@@ -12,6 +13,7 @@ const OrderHistory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [orders, setOrders] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -40,6 +42,16 @@ const OrderHistory = () => {
 
     fetchOrders();
   }, []);
+
+  const goToOrderDetail = (order) => {
+    if (order && order.orderId) {
+      navigate(`/apphomepage/history/detail/${order.orderId}`, {
+        state: order,
+      });
+    } else {
+      console.error("Order or Order ID is missing");
+    }
+  };
 
   const handleTimeFilterClick = () => {
     setTempSelectedTimeFilter(selectedTimeFilter);
@@ -357,11 +369,11 @@ const OrderHistory = () => {
                     const statusColor =
                       statusColors[getVietnameseStatus(order.status)] ||
                       defaultStatusColor;
-
                     return (
                       <tr
                         key={index}
-                        className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
+                        className="transition duration-300 border-b border-gray-200 cursor-pointer hover:bg-blue-50"
+                        onClick={() => goToOrderDetail(order)} // Correctly pass the entire order object
                       >
                         <td className="p-2 font-semibold text-blue-600">
                           {order.orderId}
@@ -377,7 +389,7 @@ const OrderHistory = () => {
                         </td>
                         <td className="p-2 text-sm font-medium text-blue-600">
                           {order.totalFee !== null
-                            ? `đ ${order.totalFee.toLocaleString("vi-VN")}`
+                            ? `₫ ${order.totalFee.toLocaleString("vi-VN")}`
                             : "N/A"}
                         </td>
                         <td className="p-2 text-center">
