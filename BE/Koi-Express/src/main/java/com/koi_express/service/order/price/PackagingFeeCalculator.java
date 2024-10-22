@@ -1,41 +1,58 @@
 package com.koi_express.service.order.price;
 
 import java.math.BigDecimal;
-import java.util.logging.Logger;
+import java.math.RoundingMode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PackagingFeeCalculator {
 
-    private static final Logger logger = Logger.getLogger(PackagingFeeCalculator.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(PackagingFeeCalculator.class);
 
-    private static final BigDecimal SMALL_FISH_FEE = BigDecimal.valueOf(15000); // VND per fish for fish < 30 cm
-    private static final BigDecimal MEDIUM_FISH_FEE =
-            BigDecimal.valueOf(150000); // VND per fish for fish between 30-50 cm
-    private static final BigDecimal LARGE_FISH_FEE = BigDecimal.valueOf(250000); // VND per fish for fish > 50 cm
-    private static final BigDecimal SMALL_FISH_THRESHOLD = BigDecimal.valueOf(30); // fish size < 30 cm
-    private static final BigDecimal MEDIUM_FISH_THRESHOLD = BigDecimal.valueOf(50); // fish size between 30-50 cm
+    // Load packaging fees from configuration
+    @Value("${packaging.fee.small:15000}")
+    private BigDecimal smallFishFee;
 
-    public BigDecimal calculateTotalPackagingFee(int quantity, BigDecimal length) {
-        if (length.compareTo(BigDecimal.ZERO) <= 0) {
-            logger.warning("Invalid fish dimensions. Length must be greater than 0.");
-            throw new IllegalArgumentException("Invalid fish dimensions. Length must be greater than 0.");
-        }
+    @Value("${packaging.fee.medium:150000}")
+    private BigDecimal mediumFishFee;
+
+    @Value("${packaging.fee.large:250000}")
+    private BigDecimal largeFishFee;
+
+    @Value("${packaging.threshold.small:30}")
+    private BigDecimal smallFishThreshold;
+
+    @Value("${packaging.threshold.medium:50}")
+    private BigDecimal mediumFishThreshold;
+
+    public BigDecimal calculateFee(int quantity, BigDecimal length) {
+        validateInputs(quantity, length);
 
         BigDecimal totalFee;
 
-        if (length.compareTo(SMALL_FISH_THRESHOLD) < 0) {
-            totalFee = SMALL_FISH_FEE.multiply(BigDecimal.valueOf(quantity));
-        } else if (length.compareTo(MEDIUM_FISH_THRESHOLD) <= 0) {
-            totalFee = MEDIUM_FISH_FEE.multiply(BigDecimal.valueOf(quantity));
+        if (length.compareTo(smallFishThreshold) < 0) {
+            totalFee = smallFishFee.multiply(BigDecimal.valueOf(quantity));
+        } else if (length.compareTo(mediumFishThreshold) <= 0) {
+            totalFee = mediumFishFee.multiply(BigDecimal.valueOf(quantity));
         } else {
-            totalFee = LARGE_FISH_FEE.multiply(BigDecimal.valueOf(quantity));
+            totalFee = largeFishFee.multiply(BigDecimal.valueOf(quantity));
         }
 
-        logger.info(String.format("Quantity: %d, Length: %.2f cm", quantity, length));
-        logger.info("Total packaging fee: " + totalFee + " VND");
+        logger.info("Quantity: {}, Length: {} cm, Total packaging fee: {} VND", quantity, length, totalFee);
 
-        return totalFee.setScale(2, BigDecimal.ROUND_HALF_UP);
+        return totalFee.setScale(0, RoundingMode.HALF_UP);
+    }
+
+    private void validateInputs(int quantity, BigDecimal length) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than 0");
+        }
+        if (length.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Length must be greater than 0");
+        }
     }
 }

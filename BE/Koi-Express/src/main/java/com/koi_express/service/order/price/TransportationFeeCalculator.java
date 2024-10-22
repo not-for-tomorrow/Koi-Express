@@ -2,61 +2,76 @@ package com.koi_express.service.order.price;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TransportationFeeCalculator {
 
-    private static final Logger logger = Logger.getLogger(TransportationFeeCalculator.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(TransportationFeeCalculator.class);
 
-    private static final BigDecimal BASE_FEE_PER_KM = new BigDecimal("5200");
-    private static final BigDecimal FUEL_PRICE = new BigDecimal("19000");
-    private static final BigDecimal SHORT_DISTANCE_FUEL_CONSUMPTION = new BigDecimal("11.0");
-    private static final BigDecimal LONG_DISTANCE_FUEL_CONSUMPTION = new BigDecimal("14.0");
+    private final BigDecimal baseFeePerKm;
+    private final BigDecimal fuelPrice;
+    private final BigDecimal shortDistanceFuelConsumption;
+    private final BigDecimal longDistanceFuelConsumption;
 
-    public static BigDecimal calculateTotalFee(BigDecimal kilometers) {
-        if (kilometers.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Distance cannot be negative");
-        }
+    public TransportationFeeCalculator(
+            @Value("${transportation.baseFeePerKm:5200}") BigDecimal baseFeePerKm,
+            @Value("${transportation.fuelPrice:19000}") BigDecimal fuelPrice,
+            @Value("${transportation.shortDistanceFuelConsumption:11.0}") BigDecimal shortDistanceFuelConsumption,
+            @Value("${transportation.longDistanceFuelConsumption:14.0}") BigDecimal longDistanceFuelConsumption) {
+        this.baseFeePerKm = baseFeePerKm;
+        this.fuelPrice = fuelPrice;
+        this.shortDistanceFuelConsumption = shortDistanceFuelConsumption;
+        this.longDistanceFuelConsumption = longDistanceFuelConsumption;
+    }
+
+    public BigDecimal calculateTotalFee(BigDecimal kilometers) {
+        validateDistance(kilometers);
 
         if (kilometers.compareTo(BigDecimal.ZERO) == 0) {
+            logger.info("Total Fee for 0 km: 0 VND");
             return BigDecimal.ZERO;
-        } else if (kilometers.compareTo(BigDecimal.ONE) <= 0) {
-            return BASE_FEE_PER_KM.setScale(0, RoundingMode.HALF_UP);
         }
 
         BigDecimal fuelConsumption = getFuelConsumption(kilometers);
-        BigDecimal distanceFee = kilometers.multiply(BASE_FEE_PER_KM);
+        logger.info("Fuel Consumption for distance {} km: {} liters per 100 km", kilometers, fuelConsumption);
+
+        BigDecimal distanceFee = kilometers.multiply(baseFeePerKm);
+        logger.info("Distance Fee for {} km: {} VND", kilometers, distanceFee);
+
         BigDecimal fuelCost = calculateFuelCost(kilometers, fuelConsumption);
+        logger.info("Fuel Cost for {} km: {} VND", kilometers, fuelCost);
 
         BigDecimal totalFee = distanceFee.add(fuelCost);
-        logger.info(String.format(
-                "Distance: %.2f km, Distance Fee: %.2f VND, Fuel Cost: %.2f VND, Total Fee: %.2f VND",
-                kilometers, distanceFee, fuelCost, totalFee));
+        logger.info("Total Fee for {} km: {} VND", kilometers, totalFee);
 
         return totalFee.setScale(0, RoundingMode.HALF_UP);
     }
 
-    // Xác định mức tiêu thụ nhiên liệu dựa trên khoảng cách
-    private static BigDecimal getFuelConsumption(BigDecimal kilometers) {
+    private BigDecimal getFuelConsumption(BigDecimal kilometers) {
         return kilometers.compareTo(BigDecimal.valueOf(300)) <= 0
-                ? SHORT_DISTANCE_FUEL_CONSUMPTION
-                : LONG_DISTANCE_FUEL_CONSUMPTION;
+                ? shortDistanceFuelConsumption
+                : longDistanceFuelConsumption;
     }
 
-    // Tính toán chi phí nhiên liệu
-    private static BigDecimal calculateFuelCost(BigDecimal kilometers, BigDecimal fuelConsumption) {
-        return kilometers
+    private BigDecimal calculateFuelCost(BigDecimal kilometers, BigDecimal fuelConsumption) {
+        BigDecimal fuelCost = kilometers
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
                 .multiply(fuelConsumption)
-                .multiply(FUEL_PRICE)
-                .setScale(0, RoundingMode.HALF_UP);
+                .multiply(fuelPrice);
+        return fuelCost.setScale(0, RoundingMode.HALF_UP);
     }
 
-    // Tính phí cam kết dựa trên tổng phí
-    public static BigDecimal calculateCommitmentFee(BigDecimal kilometers) {
+    private void validateDistance(BigDecimal kilometers) {
+        if (kilometers.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Distance cannot be negative");
+        }
+    }
+
+    public  BigDecimal calculateCommitmentFee(BigDecimal kilometers) {
         BigDecimal totalFee = calculateTotalFee(kilometers);
         BigDecimal commitmentFee = totalFee.multiply(BigDecimal.valueOf(0.30));
         logger.info(String.format("Commitment Fee for %.2f km: %.2f VND", kilometers, commitmentFee));

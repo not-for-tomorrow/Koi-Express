@@ -18,11 +18,14 @@ public class OrderBuilder {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private TransportationFeeCalculator transportationFeeCalculator;
+
     public Orders buildOrder(OrderRequest orderRequest, Customers customer) {
 
-        BigDecimal distanceFee = TransportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
+        BigDecimal distanceFee = transportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
 
-        BigDecimal commitmentFee = TransportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
+        BigDecimal commitmentFee = transportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
 
         Orders orders = Orders.builder()
                 .customer(customer)

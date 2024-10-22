@@ -17,7 +17,6 @@ public class KoiPriceCalculator {
         BigDecimal basePrice = getBasePrice(koiType, length);
         BigDecimal quantityFactor = getQuantityFactor(quantity);
 
-        // Calculate total price using BigDecimal.multiply()
         BigDecimal totalPrice = basePrice.multiply(quantityFactor).multiply(BigDecimal.valueOf(quantity));
 
         logger.info(String.format("Total price for %d %s koi: %.2f", quantity, koiType.name(), totalPrice));

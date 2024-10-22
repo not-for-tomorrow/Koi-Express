@@ -14,15 +14,14 @@ import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
-import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.enums.KoiType;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
-import com.koi_express.repository.OrderDetailRepository;
 import com.koi_express.repository.OrderRepository;
-import com.koi_express.repository.TransactionLogsRepository;
 import com.koi_express.service.manager.ManagerService;
+import com.koi_express.service.order.price.KoiInvoiceCalculator;
 import com.koi_express.service.order.price.TransportationFeeCalculator;
 import com.koi_express.service.payment.VNPayService;
 import com.koi_express.service.staffAssignment.StaffAssignmentService;
@@ -66,7 +65,10 @@ public class OrderService {
     private VNPayService vnPayService;
 
     @Autowired
-    private OrderDetailRepository orderDetailRepository;
+    private KoiInvoiceCalculator koiInvoiceCalculator;
+
+    @Autowired
+    private TransportationFeeCalculator transportationFeeCalculator;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
@@ -96,8 +98,8 @@ public class OrderService {
     }
 
     private Orders prepareOrder(OrderRequest orderRequest, Customers customer) {
-        BigDecimal totalFee = TransportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
-        BigDecimal commitmentFee = TransportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
+        BigDecimal totalFee = transportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
+        BigDecimal commitmentFee = transportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
 
         Orders orders = orderBuilder.buildOrder(orderRequest, customer);
         orders.getOrderDetail().setDistanceFee(totalFee);
@@ -268,7 +270,23 @@ public class OrderService {
     }
 
     public Orders getOrderWithDetails(Long orderId) {
-        return orderRepository.findById(orderId)
+        return orderRepository
+                .findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
     }
+
+    public ApiResponse<Map<String, BigDecimal>> calculateTotalFee(Long orderId, KoiType koiType, BigDecimal koiSize) {
+        Orders order = findOrderById(orderId); // Fetch the order by its ID
+
+        int koiQuantity = order.getOrderDetail().getKoiQuantity();
+        BigDecimal distanceFee = order.getOrderDetail().getDistanceFee();
+        BigDecimal commitmentFee = order.getOrderDetail().getCommitmentFee();
+
+        // Use the modified KoiInvoiceCalculator to get the full fee breakdown
+        ApiResponse<Map<String, BigDecimal>> response = koiInvoiceCalculator.calculateTotalPrice(
+                koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
+
+        return response;
+    }
+
 }
