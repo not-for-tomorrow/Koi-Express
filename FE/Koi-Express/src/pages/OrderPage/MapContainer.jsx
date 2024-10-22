@@ -12,8 +12,8 @@ const MapContainer = ({ pickupLocation, deliveryLocation }) => {
       style={{ width: "100%", height: "100%" }}
     >
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=<pk.57eb525ef1bdb7826a61cf49564f8a86>"
+        attribution='&copy; <a href="https://locationiq.com">LocationIQ</a> contributors'
       />
       {/* Only render markers if locations are defined */}
       {pickupLocation && <Marker position={pickupLocation} />}

@@ -17,8 +17,8 @@ const OrderForm2 = ({
   senderPhone,
   recipientName,
   recipientPhone,
-  isPickupConfirmed,  // Ensure it's received here
-  isDeliveryConfirmed,  // Ensure it's received here
+  isPickupConfirmed, // Ensure it's received here
+  isDeliveryConfirmed, // Ensure it's received here
 }) => {
   const [koiQuantity, setKoiQuantity] = useState(0);
   const [useInsurance, setUseInsurance] = useState(false);
@@ -32,21 +32,28 @@ const OrderForm2 = ({
 
   const handleConfirmOrder = async () => {
     // Validate required fields before making the API call, but address details are optional
-    if (!senderName || !senderPhone || !recipientName || !recipientPhone || !pickupAddress || !deliveryAddress) {
+    if (
+      !senderName ||
+      !senderPhone ||
+      !recipientName ||
+      !recipientPhone ||
+      !pickupAddress ||
+      !deliveryAddress
+    ) {
       alert("Please fill in all required fields.");
       return; // Stop execution if any required field is empty
     }
-  
+
     try {
       // Get the token from localStorage
       const token = localStorage.getItem("token");
-  
+
       // Check if the token exists
       if (!token) {
         console.error("No authentication token found. Please login again.");
         return;
       }
-  
+
       // Prepare order data - mapping the addresses as per your requirement
       const orderData = {
         senderName: senderName.trim(),
@@ -62,9 +69,9 @@ const OrderForm2 = ({
         insuranceSelected: !!useInsurance, // Ensure it's a boolean
         kilometers: basePrice / 20000, // Assuming 20,000 VND/km pricing
       };
-  
+
       console.log("Order Data being sent to API:", orderData); // Debugging to check the payload
-  
+
       // Make the API request to create the order
       const response = await axios.post(
         "http://localhost:8080/api/orders/create",
@@ -76,18 +83,21 @@ const OrderForm2 = ({
           },
         }
       );
-  
+
       // Check if the payment URL exists in the response
-      if (response.data && response.data.result && response.data.result.paymentUrl) {
+      if (
+        response.data &&
+        response.data.result &&
+        response.data.result.paymentUrl
+      ) {
         setPaymentUrl(response.data.result.paymentUrl);
       } else {
         console.error("Payment URL not found in response:", response.data);
       }
-  
+
       // Set the modal to show order confirmation
       setShowPlaceOrderModal(true);
       console.log("Order created successfully:", response.data);
-  
     } catch (error) {
       if (error.response) {
         console.error("Error Response:", error.response.data);
@@ -104,9 +114,6 @@ const OrderForm2 = ({
       }
     }
   };
-  
-  
-  
 
   const paymentMethodIcon = getPaymentMethodIcon(paymentMethod);
 
@@ -232,13 +239,12 @@ const OrderForm2 = ({
         </div>
       </div>
       <button
-  className="w-full p-3 mt-4 text-white bg-blue-500 rounded-lg shadow-lg hover:bg-blue-600"
-  onClick={handleConfirmOrder}
-  disabled={!isPickupConfirmed || !isDeliveryConfirmed} // Ensure both addresses are confirmed
->
-  Đặt đơn
-</button>
-
+        className="w-full p-3 mt-4 text-white bg-blue-500 rounded-lg shadow-lg hover:bg-blue-600"
+        onClick={handleConfirmOrder}
+        disabled={!isPickupConfirmed || !isDeliveryConfirmed} // Ensure both addresses are confirmed
+      >
+        Đặt đơn
+      </button>
 
       {showPlaceOrderModal && (
         <PlaceOrderModal
