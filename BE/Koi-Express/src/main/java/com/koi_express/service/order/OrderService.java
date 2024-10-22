@@ -14,10 +14,12 @@ import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
+import com.koi_express.repository.OrderDetailRepository;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.repository.TransactionLogsRepository;
 import com.koi_express.service.manager.ManagerService;
@@ -64,7 +66,7 @@ public class OrderService {
     private VNPayService vnPayService;
 
     @Autowired
-    private TransactionLogsRepository transactionLogsRepository;
+    private OrderDetailRepository orderDetailRepository;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
@@ -266,7 +268,7 @@ public class OrderService {
     }
 
     public Orders getOrderWithDetails(Long orderId) {
-        return orderRepository.findByIdWithDetail(orderId)
+        return orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
     }
 }
