@@ -32,6 +32,7 @@ public class Orders { // Quản lý đơn hàng
 
     @ManyToOne
     @JoinColumn(name = "customer_id", referencedColumnName = "customerId", nullable = false)
+    @JsonIgnore
     Customers customer;
 
     @ManyToOne
@@ -71,7 +72,7 @@ public class Orders { // Quản lý đơn hàng
     LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
+//    @JsonIgnore
     OrderDetail orderDetail;
 
     @PrePersist

@@ -2,11 +2,13 @@ package com.koi_express.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,4 +37,10 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
             @Param("toDate") LocalDate toDate);
 
     List<Orders> findByStatusAndDeliveringStaffId(OrderStatus status, Long deliveringStaffId);
+
+    @Query("SELECT o FROM Orders o LEFT JOIN FETCH o.orderDetail WHERE o.orderId = :orderId")
+    Optional<Orders> findByIdWithDetail(@Param("orderId") Long orderId);
+
+    @EntityGraph(attributePaths = {"orderDetail"})
+    Optional<Orders> findById(Long orderId);
 }

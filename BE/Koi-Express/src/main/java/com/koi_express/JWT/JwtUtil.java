@@ -1,26 +1,29 @@
 package com.koi_express.JWT;
 
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.function.Function;
-
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Function;
+
 @Component
 public class JwtUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
 
-    @Value("${jwt.secret-key}")
+    @Value("${spring.jwt.secret-key}")
     private String SECRET_KEY;
 
     public String generateToken(
@@ -50,7 +53,7 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(phoneNumber)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // Token valid for 10 hours
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
@@ -74,8 +77,7 @@ public class JwtUtil {
     }
 
     public String extractPhoneNumber(String token) {
-        Claims claims =
-                Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+        Claims claims = extractAllClaims(token);
         return claims.getSubject();
     }
 
@@ -96,13 +98,12 @@ public class JwtUtil {
 
     public String extractCustomerId(String token) {
         try {
-            // Sanitize the token by trimming whitespace
-            String sanitizedToken = sanitizeToken(token);
+            String cleanedToken = cleanToken(token);
 
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(SECRET_KEY)
                     .build()
-                    .parseClaimsJws(sanitizedToken)
+                    .parseClaimsJws(cleanedToken)
                     .getBody();
             return claims.get("customerId", String.class);
         } catch (JwtException e) {
@@ -111,7 +112,7 @@ public class JwtUtil {
         }
     }
 
-    private String sanitizeToken(String token) {
+    public String sanitizeToken(String token) {
         return token.trim().replaceAll("[\\r\\n\\s]", "");
     }
 
@@ -125,15 +126,18 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+        // Ensure the token is sanitized before parsing
+        String sanitizedToken = sanitizeToken(token);
+
+        return Jwts.parserBuilder()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(sanitizedToken)
+                .getBody();
     }
 
     private boolean isTokenExpired(String token) {
-        final Date expiration = Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
+        final Date expiration = extractExpiration(token);
         return expiration.before(new Date());
     }
 
@@ -146,4 +150,9 @@ public class JwtUtil {
         Claims claims = extractAllClaims(token);
         return (String) claims.get("role");
     }
+
+    public String cleanToken(String token) {
+        return token != null ? token.replace("Bearer", "").trim() : null;
+    }
+
 }

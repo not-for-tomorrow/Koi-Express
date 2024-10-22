@@ -127,4 +127,10 @@ public class OrderController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<Orders> getOrderWithDetails(@PathVariable Long orderId) {
+        Orders order = orderService.getOrderWithDetails(orderId);
+        return ResponseEntity.ok(order);
+    }
 }

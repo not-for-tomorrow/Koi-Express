@@ -41,6 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
+            jwt = jwtUtil.sanitizeToken(jwt);
             try {
                 phoneNumber = jwtUtil.extractPhoneNumber(jwt);
             } catch (ExpiredJwtException e) {
@@ -64,22 +65,29 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private void validateAndAuthenticateToken(HttpServletRequest request, String jwt, String phoneNumber) {
+        logger.info("Validating token for phone number: {}");
+
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(phoneNumber);
 
         if (jwtUtil.validateToken(jwt, userDetails)) {
-
             String role = jwtUtil.extractRole(jwt);
+            if (role == null || role.isEmpty()) {
+                logger.error("Invalid role in token for phone number: {}");
+                return;
+            }
 
             List<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList("ROLE_" + role);
-            logger.info("Extracted role: " + role);
+            logger.info("Extracted role: {}");
 
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            logger.info("Authentication in SecurityContext: "
-                    + SecurityContextHolder.getContext().getAuthentication());
+            logger.info("Authentication successful for phone number: {}");
+        } else {
+            logger.warn("Invalid token for phone number: {}");
+            SecurityContextHolder.clearContext();
         }
     }
 
