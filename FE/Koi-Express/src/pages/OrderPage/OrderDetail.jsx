@@ -117,8 +117,8 @@ const OrderDetail = () => {
             }}
           >
             <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=pk.57eb525ef1bdb7826a61cf49564f8a86" // LocationIQ tiles
+              attribution='&copy; <a href="https://locationiq.com">LocationIQ</a> contributors'
             />
             <Marker position={pickupLocation} />
             <Marker position={deliveryLocation} />
@@ -139,7 +139,7 @@ const OrderDetail = () => {
             />
           </LeafletMap>
         ) : (
-          <p>Loading map... Retry attempt {retryCount}</p>
+          <p>Loading map...</p>
         )}
       </div>
     </div>

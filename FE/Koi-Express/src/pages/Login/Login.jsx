@@ -20,13 +20,16 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:8080/api/auth/login", {
-        phoneNumber,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:8080/api/auth/login",
+        {
+          phoneNumber,
+          password,
+        }
+      );
 
       if (response.status === 200) {
-        const token = response.data.result; 
+        const token = response.data.result;
 
         if (token) {
           localStorage.setItem("token", token); // Store the token in localStorage
@@ -40,13 +43,17 @@ const Login = () => {
       if (err.response) {
         switch (err.response.status) {
           case 401:
-            setError("Invalid credentials. Please check your phone number and password.");
+            setError(
+              "Invalid credentials. Please check your phone number and password."
+            );
             break;
           case 500:
             setError("Server error. Please try again later.");
             break;
           default:
-            setError("Login failed: " + (err.response.data.message || "Unknown error"));
+            setError(
+              "Login failed: " + (err.response.data.message || "Unknown error")
+            );
         }
       } else {
         setError("An unexpected error occurred. Please try again.");
@@ -61,7 +68,8 @@ const Login = () => {
   };
 
   const handleFacebookLogin = () => {
-    window.location.href = "http://localhost:8080/oauth2/authorization/facebook";
+    window.location.href =
+      "http://localhost:8080/oauth2/authorization/facebook";
   };
 
   const handleRegister = () => {
@@ -69,7 +77,7 @@ const Login = () => {
   };
 
   return (
-    <section className="loginpage bg-gray-50 min-h-screen flex items-center justify-center ">
+    <section className="loginpage  bg-gray-50 min-h-screen flex items-center justify-center ">
       {/* login container */}
       <div className="logincard bg-gray-100 flex rounded-2xl shadow-lg max-w-3xl p-5 items-center">
         {/* form */}
@@ -113,7 +121,10 @@ const Login = () => {
                 onChange={() => setRememberMe(!rememberMe)}
                 id="rememberMe"
               />
-              <label htmlFor="rememberMe" className="ml-2 text-sm text-[#002D74]">
+              <label
+                htmlFor="rememberMe"
+                className="ml-2 text-sm text-[#002D74]"
+              >
                 Remember Me
               </label>
             </div>
