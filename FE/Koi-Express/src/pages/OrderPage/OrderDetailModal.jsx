@@ -37,9 +37,16 @@ const OrderDetailModal = ({ orderId, distance }) => {
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
+      const token = localStorage.getItem("token"); // Retrieve the token from localStorage
+
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/orders/${orderId}`
+          `http://localhost:8080/api/orders/${orderId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Include the token in the request headers
+            },
+          }
         );
         setOrder(response.data);
       } catch (err) {
@@ -76,7 +83,10 @@ const OrderDetailModal = ({ orderId, distance }) => {
   );
 
   const translatedStatus = statusMapping[status] || status;
-  const statusColor = statusColors[translatedStatus] || { background: "#fff", text: "#000" };
+  const statusColor = statusColors[translatedStatus] || {
+    background: "#fff",
+    text: "#000",
+  };
 
   return (
     <div className="relative z-20 flex flex-col w-full max-w-lg p-6 bg-white border border-gray-200 shadow-lg h-full">
@@ -87,11 +97,12 @@ const OrderDetailModal = ({ orderId, distance }) => {
             Đơn hàng #{orderId}
           </div>
 
-          <div className="text-sm text-gray-600">
-            <strong>Lộ trình:</strong> {distance.toFixed(2)} km
+          <div className="text-sm ">
+            <strong className="text-gray-600">Lộ trình:</strong>{" "}
+            {distance.toFixed(2)} km
           </div>
 
-          <div className="mt-4">
+          <div className="mt-6">
             {/* Sender Information */}
             <div className="flex items-start space-x-2">
               <div className="flex-shrink-0">
@@ -99,27 +110,54 @@ const OrderDetailModal = ({ orderId, distance }) => {
               </div>
               <div>
                 <p className="text-lg font-semibold">
-                  {orderDetail.senderName} • <span className="text-base text-gray-700">{orderDetail.senderPhone}</span>
+                  {orderDetail.senderName} •{" "}
+                  <span className="text-base text-gray-700">
+                    {orderDetail.senderPhone}
+                  </span>
                 </p>
-                <p className="text-sm text-gray-500">{originLocation || "N/A"}</p>
+                <p className="text-sm text-gray-500">
+                  {originLocation || "N/A"}
+                </p>
               </div>
             </div>
 
             {/* Recipient Information */}
-            <div className="flex items-start mt-4 space-x-2">
+            <div className="flex items-start mt-6 space-x-2">
               <div className="flex-shrink-0">
                 <div className="w-4 h-4 mt-1 bg-green-500 rounded-full"></div>
               </div>
               <div>
                 <p className="text-lg font-semibold">
-                  {orderDetail.recipientName} • <span className="text-base text-gray-700">{orderDetail.recipientPhone}</span>
+                  {orderDetail.recipientName} •{" "}
+                  <span className="text-base text-gray-700">
+                    {orderDetail.recipientPhone}
+                  </span>
                 </p>
-                <p className="text-sm text-gray-500">{destinationLocation || "N/A"}</p>
+                <p className="text-sm text-gray-500">
+                  {destinationLocation || "N/A"}
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Koi Quantity and Size Section */}
+      {orderDetail.koiQuantity > 0 && (
+        <div className="p-4 mt-4 border rounded-lg bg-gray-50">
+          <div className="flex justify-between">
+            <p>Số lượng cá</p>
+            <p>{orderDetail.koiQuantity}</p>
+          </div>
+          {/* Koi size is only displayed if it's a valid number greater than 0 */}
+          {orderDetail.koiSize > 0 && (
+            <div className="flex justify-between mt-2">
+              <p>Kích cỡ cá</p>
+              <p>{orderDetail.koiSize}</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Fee Breakdown Section */}
       <div className="p-4 mt-4 border rounded-lg bg-gray-50">
@@ -148,7 +186,7 @@ const OrderDetailModal = ({ orderId, distance }) => {
             {translatedStatus}
           </span>
         </p>
-        <p>
+        <p className="mt-3">
           <strong>Phương thức thanh toán:</strong> {paymentMethod}
         </p>
       </div>
