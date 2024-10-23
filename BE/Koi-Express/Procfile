@@ -1,0 +1,2 @@
+web: java -jar target/koi-express.jar
+web: cd BE/Koi-Express && ./mvnw clean install && ./mvnw spring-boot:run
