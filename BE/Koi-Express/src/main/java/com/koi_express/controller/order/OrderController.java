@@ -1,4 +1,4 @@
-package com.koi_express.controller;
+package com.koi_express.controller.order;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.koi_express.JWT.JwtUtil;
+import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.KoiType;
 import com.koi_express.service.order.OrderService;
@@ -136,58 +138,29 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<Orders> getOrderWithDetails(@PathVariable Long orderId, HttpSession session, HttpServletRequest request) {
+    public ResponseEntity<OrderWithCustomerDTO> getOrderWithDetails(@PathVariable Long orderId, HttpSession session, HttpServletRequest request) {
         logger.info("Fetching order with details for orderId: {}", orderId);
 
         String token = request.getHeader("Authorization").substring(7);  // Extract the token
         String role = jwtUtil.extractRole(token);
-
-        logger.info("Extracted role: {}", role);
-
-        // Extract the appropriate ID based on the role
         String userId = jwtUtil.extractUserId(token, role);
-        logger.info("Extracted userId: {}", userId);
 
-        Orders order = orderService.getOrderWithDetails(orderId);
-        logger.info("Order details retrieved for orderId: {}", orderId);
+        logger.info("Extracted role: {}, Extracted userId: {}", role, userId);
 
-        // Store data in session using the appropriate key based on role
-        switch (role) {
-            case "CUSTOMER":
-                logger.info("Storing session data for customer with ID: {}", userId);
-                session.setAttribute("customer_" + userId, Map.of(
-                        "koiQuantity", order.getOrderDetail().getKoiQuantity(),
-                        "distanceFee", order.getOrderDetail().getDistanceFee(),
-                        "commitmentFee", order.getOrderDetail().getCommitmentFee(),
-                        "role", role
-                ));
-                break;
-            case "DELIVERING_STAFF":
-                logger.info("Storing session data for delivering staff with ID: {}", userId);
-                session.setAttribute("staff_" + userId, Map.of(
-                        "koiQuantity", order.getOrderDetail().getKoiQuantity(),
-                        "distanceFee", order.getOrderDetail().getDistanceFee(),
-                        "commitmentFee", order.getOrderDetail().getCommitmentFee(),
-                        "role", role
-                ));
-                break;
-            case "SALES_STAFF":
-            case "MANAGER":
-                logger.info("Storing session data for account (sales staff or manager) with ID: {}", userId);
-                session.setAttribute("account_" + userId, Map.of(
-                        "koiQuantity", order.getOrderDetail().getKoiQuantity(),
-                        "distanceFee", order.getOrderDetail().getDistanceFee(),
-                        "commitmentFee", order.getOrderDetail().getCommitmentFee(),
-                        "role", role
-                ));
-                break;
-            default:
-                logger.error("Invalid role: {}", role);
-                throw new IllegalArgumentException("Invalid role: " + role);
-        }
+        Orders order = orderService.getOrderWithDetails(orderId).getOrder();
+        Customers customer = order.getCustomer();
 
-        return ResponseEntity.ok(order);
+        // Store data in session based on the role
+        storeSessionData(session, role, userId, order);
+
+        OrderWithCustomerDTO response = OrderWithCustomerDTO.builder()
+                .order(order)
+                .customer(customer)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
+
 
     @PostMapping("/calculate-total-fee")
     public ResponseEntity<ApiResponse<Map<String, BigDecimal>>> calculateTotalFee(
@@ -195,32 +168,22 @@ public class OrderController {
             @RequestParam BigDecimal koiSize,
             HttpSession session, HttpServletRequest request) {
 
-        String token = request.getHeader("Authorization").substring(7);  // Extract the token
-        String role = jwtUtil.extractRole(token);  // Extract role from token
-        String userId = jwtUtil.extractUserId(token, role);  // Extract userId based on role
-
-        // Retrieve stored values using the appropriate session key based on role
-        Map<String, Object> sessionData;
-        switch (role) {
-            case "CUSTOMER":
-                sessionData = (Map<String, Object>) session.getAttribute("customer_" + userId);
-                break;
-            case "DELIVERING_STAFF":
-                sessionData = (Map<String, Object>) session.getAttribute("staff_" + userId);
-                break;
-            case "SALES_STAFF":
-            case "MANAGER":
-                sessionData = (Map<String, Object>) session.getAttribute("account_" + userId);
-                break;
-            default:
-                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid role", null), HttpStatus.BAD_REQUEST);
+        if (session == null) {
+            logger.error("Session is null. Cannot proceed.");
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Session is null", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        if (sessionData == null) {
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Session data not found for user", null), HttpStatus.BAD_REQUEST);
+        String token = request.getHeader("Authorization").substring(7);
+        String role = jwtUtil.extractRole(token);
+        String userId = jwtUtil.extractUserId(token, role);
+
+        Map<String, Object> sessionData = retrieveSessionData(session, role, userId);
+        if (sessionData == null || !sessionData.containsKey("koiQuantity")
+                || !sessionData.containsKey("distanceFee")
+                || !sessionData.containsKey("commitmentFee")) {
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Session data missing", null), HttpStatus.BAD_REQUEST);
         }
 
-        // Extract stored data
         Integer koiQuantity = (Integer) sessionData.get("koiQuantity");
         BigDecimal distanceFee = (BigDecimal) sessionData.get("distanceFee");
         BigDecimal commitmentFee = (BigDecimal) sessionData.get("commitmentFee");
@@ -229,10 +192,101 @@ public class OrderController {
             return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid session data", null), HttpStatus.BAD_REQUEST);
         }
 
-        // Calculate the total price using the KoiInvoiceCalculator and get the full breakdown
         ApiResponse<Map<String, BigDecimal>> response = koiInvoiceCalculator.calculateTotalPrice(koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
+
+        storeCalculationSessionData(session, role, userId, response.getResult());
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @PostMapping("/confirm-payment")
+    public ResponseEntity<ApiResponse<String>> confirmVnPayPayment(
+            HttpServletRequest request,
+            @RequestParam Map<String, String> vnpParams,
+            @RequestParam KoiType koiType,
+            @RequestParam BigDecimal koiSize,
+            HttpSession session) {
+
+        String token = request.getHeader("Authorization").substring(7);
+        String role = jwtUtil.extractRole(token);
+        String userId = jwtUtil.extractUserId(token, role);
+
+        Map<String, Object> sessionData = retrieveSessionData(session, role, userId);
+
+        if (sessionData == null || sessionData.get("orderId") == null) {
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Order ID not found in session", null), HttpStatus.BAD_REQUEST);
+        }
+
+        Long orderId = (Long) sessionData.get("orderId");
+
+        ApiResponse<String> response = orderService.confirmVnPayPayment(orderId, vnpParams, koiType, koiSize);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    private String getSessionKey(String role, String userId) {
+        switch (role) {
+            case "CUSTOMER":
+                return "customer_" + userId;
+            case "DELIVERING_STAFF":
+                return "staff_" + userId;
+            case "SALES_STAFF":
+            case "MANAGER":
+                return "account_" + userId;
+            default:
+                throw new IllegalArgumentException("Invalid role: " + role);
+        }
+    }
+
+    private void storeSessionData(HttpSession session, String role, String userId, Orders order) {
+        String sessionKey = getSessionKey(role, userId);
+
+        Customers customer = order.getCustomer();
+
+        Map<String, Object> sessionData = Map.of(
+                "koiQuantity", order.getOrderDetail().getKoiQuantity(),
+                "distanceFee", order.getOrderDetail().getDistanceFee(),
+                "commitmentFee", order.getOrderDetail().getCommitmentFee(),
+                "orderId", order.getOrderId(),
+                "customerId", customer.getCustomerId(),
+                "email", customer.getEmail()
+        );
+
+        session.setAttribute(sessionKey, sessionData);
+
+        // Log the stored session data
+        logger.info("Session data stored for key '{}': {}", sessionKey, sessionData);
+    }
+
+    private Map<String, Object> retrieveSessionData(HttpSession session, String role, String userId) {
+        String sessionKey = getSessionKey(role, userId);
+        Map<String, Object> sessionData = (Map<String, Object>) session.getAttribute(sessionKey);
+
+        // Log the retrieved session data
+        if (sessionData != null) {
+            logger.info("Session data retrieved for key '{}': {}", sessionKey, sessionData);
+        } else {
+            logger.info("No session data found for key '{}'", sessionKey);
+        }
+
+        return sessionData;
+    }
+
+    private void storeCalculationSessionData(HttpSession session, String role, String userId, Map<String, BigDecimal> calculationData) {
+        String sessionKey = getSessionKey(role, userId) + "_calculation";
+
+        // Store the calculation data
+        session.setAttribute(sessionKey, calculationData);
+
+        // Log the stored session data
+        logger.info("Calculation session data stored for key '{}': {}", sessionKey, calculationData);
+    }
+
+
+    private Map<String, Object> retrieveCalculationSessionData(HttpSession session, String role, String userId) {
+        String sessionKey = getSessionKey(role, userId) + "_calculation";
+        return (Map<String, Object>) session.getAttribute(sessionKey);
+    }
+
 
 }

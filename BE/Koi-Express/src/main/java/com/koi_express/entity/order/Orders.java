@@ -1,5 +1,6 @@
 package com.koi_express.entity.order;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -7,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.entity.shipment.Shipments;
-import com.koi_express.enums.InvoiceStatus;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.enums.PaymentMethod;
 import jakarta.persistence.*;
@@ -23,7 +23,7 @@ import org.hibernate.annotations.CreationTimestamp;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Orders { // Quản lý đơn hàng
+public class Orders implements Serializable { // Quản lý đơn hàng
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,9 +63,6 @@ public class Orders { // Quản lý đơn hàng
 
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
-
-    @Enumerated(EnumType.STRING)
-    InvoiceStatus invoiceStatus;
 
     @Column(updatable = false)
     @CreationTimestamp

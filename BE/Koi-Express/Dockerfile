@@ -18,7 +18,7 @@ FROM amazoncorretto:21.0.4
 WORKDIR /app
 
 # Step 7: Copy the JAR file from the build stage
-COPY --from=build /app/target/Koi-Express-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/Koi-Express-0.0.1-SNAPSHOT.jar koi-express.jar
 
 # Step 8: Expose the port the application will run on
 EXPOSE 8080

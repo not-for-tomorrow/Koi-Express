@@ -1,4 +1,4 @@
-package com.koi_express.service.order;
+package com.koi_express.service.order.builder;
 
 import java.math.BigDecimal;
 

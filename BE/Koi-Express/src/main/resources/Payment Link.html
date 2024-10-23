@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmation - Koi Express</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            animation: fadeIn 2s ease-in;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0077b6, #00a8e8, #00c8a8);
+            color: #ffffff;
+            text-align: center;
+            padding: 30px 10px;
+            position: relative;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .header img {
+            width: 80px;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            animation: bounceIn 1s ease-in-out;
+        }
+
+        .content {
+            padding: 40px;
+            line-height: 1.8;
+            color: #333333;
+        }
+
+        .content h2 {
+            color: #0077b6;
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .content p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .order-summary {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-top: 20px;
+            animation: slideUp 1.5s ease-in;
+        }
+
+        .order-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+        }
+
+        .order-summary-item p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #0077b6, #00a8e8, #00c8a8);
+            color: #ffffff;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 30px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .button:hover {
+            background-color: #005f85;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .thank-you {
+            font-size: 16px;
+            color: #0077b6;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #777;
+            background-color: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer a {
+            color: #0077b6;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Koi Express - Payment Confirmation</h1>
+        <img src="https://yourdomain.com/assets/images/koi-fish-logo.png" alt="Koi Fish Logo">
+    </div>
+    <div class="content">
+        <h2>Your Payment is Pending</h2>
+        <p>Dear <strong>{{CustomerName}}</strong>,</p>
+        <p>Thank you for choosing Koi Express! Your order is confirmed, but we are still waiting for your payment. Please click the button below to proceed to the payment page and complete your purchase.</p>
+
+        <div class="order-summary">
+            <div class="order-summary-item">
+                <i class="fas fa-receipt icon"></i>
+                <p><strong>Order ID:</strong></p>
+                <p>{{OrderID}}</p>
+            </div>
+            <div class="order-summary-item">
+                <i class="fas fa-calendar-alt icon"></i>
+                <p><strong>Date:</strong></p>
+                <p>{{OrderDate}}</p>
+            </div>
+            <div class="order-summary-item">
+                <i class="fas fa-map-marker-alt icon"></i>
+                <p><strong>Delivery Address:</strong></p>
+                <p>{{Address}}</p>
+            </div>
+            <div class="order-summary-item">
+                <i class="fas fa-dollar-sign icon"></i>
+                <p><strong>Total Amount:</strong></p>
+                <p>{{TotalAmount}}</p>
+            </div>
+        </div>
+
+        <p>To complete your payment, click the button below.</p>
+        <a href="{{PaymentLink}}" class="button">Proceed to Payment</a>
+
+        <p class="thank-you">We appreciate your business! If you have any questions, feel free to contact us anytime.</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 Koi Express. All rights reserved.</p>
+        <p>Need help? <a href="mailto:support@koiexpress.com">Contact Support</a></p>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

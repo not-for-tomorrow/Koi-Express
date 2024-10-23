@@ -11,16 +11,24 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.koi_express.JWT.JwtUtil;
+import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.entity.order.Invoice;
+import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.KoiType;
 import com.koi_express.enums.OrderStatus;
+import com.koi_express.enums.PaymentMethod;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
+import com.koi_express.repository.InvoiceRepository;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.service.manager.ManagerService;
+import com.koi_express.service.order.builder.InvoiceBuilder;
+import com.koi_express.service.order.builder.OrderBuilder;
+import com.koi_express.service.order.builder.OrderDetailBuilder;
 import com.koi_express.service.order.price.KoiInvoiceCalculator;
 import com.koi_express.service.order.price.TransportationFeeCalculator;
 import com.koi_express.service.payment.VNPayService;
@@ -41,38 +49,50 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderService {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
-
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private ManagerService managerService;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private OrderBuilder orderBuilder;
-
-    @Autowired
-    private StaffAssignmentService staffAssignmentService;
-
-    @Autowired
-    @Lazy
-    private VNPayService vnPayService;
-
-    @Autowired
-    private KoiInvoiceCalculator koiInvoiceCalculator;
-
-    @Autowired
-    private TransportationFeeCalculator transportationFeeCalculator;
-
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    // Create Order with OrderRequest, order with add into database base on customerId in payload of token
+    private final OrderRepository orderRepository;
+    private final JwtUtil jwtUtil;
+    private final ManagerService managerService;
+    private final EmailService emailService;
+    private final OrderBuilder orderBuilder;
+    private final StaffAssignmentService staffAssignmentService;
+    private final VNPayService vnPayService;
+    private final KoiInvoiceCalculator koiInvoiceCalculator;
+    private final TransportationFeeCalculator transportationFeeCalculator;
+    private final InvoiceRepository invoiceRepository;
+    private final InvoiceBuilder invoiceBuilder;
+    private final OrderDetailBuilder orderDetailBuilder;
+
+    @Autowired
+    public OrderService(
+            OrderRepository orderRepository,
+            JwtUtil jwtUtil,
+            ManagerService managerService,
+            EmailService emailService,
+            OrderBuilder orderBuilder,
+            StaffAssignmentService staffAssignmentService,
+            @Lazy VNPayService vnPayService,
+            KoiInvoiceCalculator koiInvoiceCalculator,
+            TransportationFeeCalculator transportationFeeCalculator,
+            InvoiceRepository invoiceRepository,
+            InvoiceBuilder invoiceBuilder,
+            OrderDetailBuilder orderDetailBuilder
+    ) {
+        this.orderRepository = orderRepository;
+        this.jwtUtil = jwtUtil;
+        this.managerService = managerService;
+        this.emailService = emailService;
+        this.orderBuilder = orderBuilder;
+        this.staffAssignmentService = staffAssignmentService;
+        this.vnPayService = vnPayService;
+        this.koiInvoiceCalculator = koiInvoiceCalculator;
+        this.transportationFeeCalculator = transportationFeeCalculator;
+        this.invoiceRepository = invoiceRepository;
+        this.invoiceBuilder = invoiceBuilder;
+        this.orderDetailBuilder = orderDetailBuilder;
+    }
+
     public ApiResponse<Map<String, Object>> createOrder(OrderRequest orderRequest, String token) {
 
         try {
@@ -213,7 +233,6 @@ public class OrderService {
         Orders order = optionalOrder.get();
         logger.info("Order found: {}", order);
 
-        // Kiểm tra trạng thái đơn hàng có đúng là PENDING không
         if (order.getStatus() != OrderStatus.PENDING) {
             logger.error("Order with ID {} is not in PENDING status, current status: {}", orderId, order.getStatus());
             throw new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order is not in PENDING status");
@@ -243,7 +262,6 @@ public class OrderService {
             String customerId = jwtUtil.extractCustomerId(token);
             logger.info("Customer ID extracted from token: {}", customerId);
 
-            // Parse dates and status
             LocalDate from = (fromDate != null) ? LocalDate.parse(fromDate) : null;
             LocalDate to = (toDate != null) ? LocalDate.parse(toDate) : null;
             OrderStatus orderStatus =
@@ -269,24 +287,128 @@ public class OrderService {
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found"));
     }
 
-    public Orders getOrderWithDetails(Long orderId) {
-        return orderRepository
+    public OrderWithCustomerDTO getOrderWithDetails(Long orderId) {
+        Orders order = orderRepository
                 .findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
-    }
 
-    public ApiResponse<Map<String, BigDecimal>> calculateTotalFee(Long orderId, KoiType koiType, BigDecimal koiSize) {
-        Orders order = findOrderById(orderId); // Fetch the order by its ID
+        Customers customer = order.getCustomer();
 
-        int koiQuantity = order.getOrderDetail().getKoiQuantity();
-        BigDecimal distanceFee = order.getOrderDetail().getDistanceFee();
-        BigDecimal commitmentFee = order.getOrderDetail().getCommitmentFee();
-
-        // Use the modified KoiInvoiceCalculator to get the full fee breakdown
-        ApiResponse<Map<String, BigDecimal>> response = koiInvoiceCalculator.calculateTotalPrice(
-                koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
+        OrderWithCustomerDTO response = new OrderWithCustomerDTO(order, customer);
 
         return response;
     }
 
+
+    public ApiResponse<Map<String, BigDecimal>> calculateTotalFee(Long orderId, KoiType koiType, BigDecimal koiSize) {
+        try {
+            Orders order = findOrderById(orderId);
+
+            int koiQuantity = order.getOrderDetail().getKoiQuantity();
+            if (koiQuantity <= 0) {
+                return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid koi quantity", null);
+            }
+
+            BigDecimal distanceFee = order.getOrderDetail().getDistanceFee();
+            BigDecimal commitmentFee = order.getOrderDetail().getCommitmentFee();
+
+            if (distanceFee == null || commitmentFee == null) {
+                return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid fees in order details", null);
+            }
+
+            logger.info("Calculating total fee for koiType: {}, koiQuantity: {}, koiSize: {}, distanceFee: {}, commitmentFee: {}",
+                    koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
+
+            ApiResponse<Map<String, BigDecimal>> response = koiInvoiceCalculator.calculateTotalPrice(
+                    koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
+
+            if (response.getCode() != HttpStatus.OK.value()) {
+                logger.error("Error calculating total fee: {}", response.getMessage());
+            }
+
+            return response;
+        } catch (Exception e) {
+            logger.error("Error during fee calculation: ", e);
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error calculating total fee");
+        }
+    }
+
+
+    public ApiResponse<String> processOrderPayment(Long orderId, PaymentMethod paymentMethod) {
+        Orders order = this.findOrderById(orderId);
+
+        // Lấy thông tin tổng chi phí
+        ApiResponse<Map<String, BigDecimal>> totalFeeResponse = this.calculateTotalFee(orderId, null, null);
+        if (totalFeeResponse.getCode() != 200) {
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Không thể tính toán tổng chi phí", null);
+        }
+
+        BigDecimal totalFee = totalFeeResponse.getResult().get("totalPrice");
+
+        // Kiểm tra phương thức thanh toán
+        if (paymentMethod == PaymentMethod.VNPAY) {
+            // Tạo liên kết thanh toán VNPay
+            ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPayment(order);
+            if (paymentLinkResponse.getCode() != 200) {
+                return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Không thể tạo liên kết thanh toán VNPay", null);
+            }
+
+            String paymentLink = paymentLinkResponse.getResult();
+
+            // Gửi email chứa liên kết thanh toán VNPay cho khách hàng
+            String customerEmail = order.getCustomer().getEmail();
+            emailService.sendPaymentLink(customerEmail, paymentLink, order);
+
+            return new ApiResponse<>(HttpStatus.OK.value(), "Đã gửi liên kết thanh toán VNPay đến email của khách hàng", paymentLink);
+        } else if (paymentMethod == PaymentMethod.CASH_BY_RECEIVER || paymentMethod == PaymentMethod.CASH_BY_SENDER) {
+            // Cập nhật trạng thái đơn hàng sang IN_TRANSIT và đánh dấu là chưa thanh toán
+            order.setStatus(OrderStatus.IN_TRANSIT);
+            order.setPaymentConfirmed(false); // Đánh dấu là chưa thanh toán
+            orderRepository.save(order);
+
+            return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán bằng tiền mặt. Đơn hàng đang vận chuyển (chưa thanh toán).", null);
+        }
+
+        return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Phương thức thanh toán không hợp lệ", null);
+    }
+
+    @Transactional
+    public ApiResponse<String> confirmVnPayPayment(Long orderId, Map<String, String> vnpParams, KoiType koiType, BigDecimal koiSize) {
+        try {
+            // Xác thực thanh toán VNPay
+            boolean isPaymentVerified = vnPayService.verifyPayment(vnpParams);
+            String responseCode = vnpParams.get("vnp_ResponseCode");
+
+            Orders order = this.findOrderById(orderId);
+            if (isPaymentVerified && "00".equals(responseCode)) {
+                // Thanh toán thành công, cập nhật trạng thái đơn hàng và thông tin liên quan
+                order.setStatus(OrderStatus.IN_TRANSIT);
+                order.setPaymentConfirmed(true);
+
+                // Tính toán lại các khoản phí dựa trên loại Koi và kích thước
+                ApiResponse<Map<String, BigDecimal>> feeCalculation = this.calculateTotalFee(orderId, koiType, koiSize);
+                Map<String, BigDecimal> fees = feeCalculation.getResult();
+
+                orderDetailBuilder.updateOrderDetails(order, fees, koiType, koiSize);
+
+                // Tính tổng số tiền
+                BigDecimal totalFee = fees.get("totalPrice");
+                order.setTotalFee(totalFee);
+
+                // Lưu thông tin cập nhật cho Order và OrderDetail
+                orderRepository.save(order);
+
+                invoiceBuilder.updateInvoice(order, fees);
+
+                return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán thành công, thông tin đơn hàng và hóa đơn đã được cập nhật", null);
+            } else {
+                // Nếu thanh toán thất bại, yêu cầu khách hàng thử lại
+                order.setStatus(OrderStatus.PAYMENT_PENDING);
+                orderRepository.save(order);
+                return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Thanh toán thất bại, vui lòng thử lại.", null);
+            }
+        } catch (Exception e) {
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi trong quá trình xử lý thanh toán", e.getMessage());
+        }
+    }
 }

@@ -14,7 +14,8 @@ public enum OrderStatus {
     CANCELED("Đã hủy"),
 
     COMMIT_FEE_PENDING("Chờ xác nhận phí cam kết"),
-    COMMIT_FEE_PAID("Đã thanh toán phí cam kết");
+    COMMIT_FEE_PAID("Đã thanh toán phí cam kết"),
+    PAYMENT_PENDING("Chờ xác nhận thanh toán");
 
     private final String vietnameseStatus;
 

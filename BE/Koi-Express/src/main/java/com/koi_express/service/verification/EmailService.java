@@ -63,6 +63,34 @@ public class EmailService {
     }
 
     @Async
+    public void sendPaymentLink(String recipientEmail, String paymentLink, Orders order) {
+        try {
+            String htmlTemplate = loadEmailTemplate("Payment Link.html");
+
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("{{CustomerName}}", order.getCustomer().getFullName());
+            placeholders.put("{{OrderID}}", String.valueOf(order.getOrderId()));
+            placeholders.put("{{PaymentLink}}", paymentLink);
+            placeholders.put("{{TotalAmount}}", String.format("%.2f", order.getTotalFee()));
+
+            htmlTemplate = replacePlaceholders(htmlTemplate, placeholders);
+
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(recipientEmail);
+            helper.setSubject("Payment for your Order - Koi Express");
+            helper.setText(htmlTemplate, true);
+            javaMailSender.send(message);
+
+            logger.info("Payment link email sent to: {}", recipientEmail);
+        } catch (Exception e) {
+            logger.error("Error sending payment link email: ", e);
+            throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
+        }
+    }
+
+
+    @Async
     public void sendAccountCreatedEmail(Object account, String rawPassword, boolean isDeliveringStaff) {
         try {
             String htmlTemplate = loadEmailTemplate("Account Confirmation.html");
