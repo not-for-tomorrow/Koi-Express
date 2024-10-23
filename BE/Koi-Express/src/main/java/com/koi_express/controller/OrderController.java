@@ -1,5 +1,6 @@
 package com.koi_express.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -8,8 +9,11 @@ import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.enums.KoiType;
 import com.koi_express.service.order.OrderService;
+import com.koi_express.service.order.price.KoiInvoiceCalculator;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +37,9 @@ public class OrderController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private KoiInvoiceCalculator koiInvoiceCalculator;
 
     @PostMapping("/create")
     public ApiResponse<Map<String, Object>> createOrder(
@@ -129,8 +136,103 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<Orders> getOrderWithDetails(@PathVariable Long orderId) {
+    public ResponseEntity<Orders> getOrderWithDetails(@PathVariable Long orderId, HttpSession session, HttpServletRequest request) {
+        logger.info("Fetching order with details for orderId: {}", orderId);
+
+        String token = request.getHeader("Authorization").substring(7);  // Extract the token
+        String role = jwtUtil.extractRole(token);
+
+        logger.info("Extracted role: {}", role);
+
+        // Extract the appropriate ID based on the role
+        String userId = jwtUtil.extractUserId(token, role);
+        logger.info("Extracted userId: {}", userId);
+
         Orders order = orderService.getOrderWithDetails(orderId);
+        logger.info("Order details retrieved for orderId: {}", orderId);
+
+        // Store data in session using the appropriate key based on role
+        switch (role) {
+            case "CUSTOMER":
+                logger.info("Storing session data for customer with ID: {}", userId);
+                session.setAttribute("customer_" + userId, Map.of(
+                        "koiQuantity", order.getOrderDetail().getKoiQuantity(),
+                        "distanceFee", order.getOrderDetail().getDistanceFee(),
+                        "commitmentFee", order.getOrderDetail().getCommitmentFee(),
+                        "role", role
+                ));
+                break;
+            case "DELIVERING_STAFF":
+                logger.info("Storing session data for delivering staff with ID: {}", userId);
+                session.setAttribute("staff_" + userId, Map.of(
+                        "koiQuantity", order.getOrderDetail().getKoiQuantity(),
+                        "distanceFee", order.getOrderDetail().getDistanceFee(),
+                        "commitmentFee", order.getOrderDetail().getCommitmentFee(),
+                        "role", role
+                ));
+                break;
+            case "SALES_STAFF":
+            case "MANAGER":
+                logger.info("Storing session data for account (sales staff or manager) with ID: {}", userId);
+                session.setAttribute("account_" + userId, Map.of(
+                        "koiQuantity", order.getOrderDetail().getKoiQuantity(),
+                        "distanceFee", order.getOrderDetail().getDistanceFee(),
+                        "commitmentFee", order.getOrderDetail().getCommitmentFee(),
+                        "role", role
+                ));
+                break;
+            default:
+                logger.error("Invalid role: {}", role);
+                throw new IllegalArgumentException("Invalid role: " + role);
+        }
+
         return ResponseEntity.ok(order);
     }
+
+    @PostMapping("/calculate-total-fee")
+    public ResponseEntity<ApiResponse<Map<String, BigDecimal>>> calculateTotalFee(
+            @RequestParam KoiType koiType,
+            @RequestParam BigDecimal koiSize,
+            HttpSession session, HttpServletRequest request) {
+
+        String token = request.getHeader("Authorization").substring(7);  // Extract the token
+        String role = jwtUtil.extractRole(token);  // Extract role from token
+        String userId = jwtUtil.extractUserId(token, role);  // Extract userId based on role
+
+        // Retrieve stored values using the appropriate session key based on role
+        Map<String, Object> sessionData;
+        switch (role) {
+            case "CUSTOMER":
+                sessionData = (Map<String, Object>) session.getAttribute("customer_" + userId);
+                break;
+            case "DELIVERING_STAFF":
+                sessionData = (Map<String, Object>) session.getAttribute("staff_" + userId);
+                break;
+            case "SALES_STAFF":
+            case "MANAGER":
+                sessionData = (Map<String, Object>) session.getAttribute("account_" + userId);
+                break;
+            default:
+                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid role", null), HttpStatus.BAD_REQUEST);
+        }
+
+        if (sessionData == null) {
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Session data not found for user", null), HttpStatus.BAD_REQUEST);
+        }
+
+        // Extract stored data
+        Integer koiQuantity = (Integer) sessionData.get("koiQuantity");
+        BigDecimal distanceFee = (BigDecimal) sessionData.get("distanceFee");
+        BigDecimal commitmentFee = (BigDecimal) sessionData.get("commitmentFee");
+
+        if (koiQuantity == null || distanceFee == null || commitmentFee == null) {
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid session data", null), HttpStatus.BAD_REQUEST);
+        }
+
+        // Calculate the total price using the KoiInvoiceCalculator and get the full breakdown
+        ApiResponse<Map<String, BigDecimal>> response = koiInvoiceCalculator.calculateTotalPrice(koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 }

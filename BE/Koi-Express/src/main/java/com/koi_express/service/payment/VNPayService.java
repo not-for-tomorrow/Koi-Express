@@ -53,7 +53,6 @@ public class VNPayService {
         return new ApiResponse<>(200, "Payment URL generated successfully", fullPaymentUrl);
     }
 
-
     public boolean verifyPayment(Map<String, String> vnpParams) throws IOException {
         String vnpSecureHash = vnpParams.get("vnp_SecureHash");
         vnpParams.remove("vnp_SecureHash");
@@ -85,7 +84,7 @@ public class VNPayService {
         vnpParamsMap.put("vnp_TxnRef", String.valueOf(order.getOrderId()));
         vnpParamsMap.put("vnp_OrderInfo", "Thanh toan commit fee cho don hang: " + order.getOrderId());
         vnpParamsMap.put("vnp_BankCode", bankCode);
-        vnpParamsMap.put("vnp_IpAddr", "127.0.0.1");  // Cần thay bằng IP thực tế trong môi trường sản xuất
+        vnpParamsMap.put("vnp_IpAddr", "127.0.0.1"); // Cần thay bằng IP thực tế trong môi trường sản xuất
 
         return vnpParamsMap;
     }

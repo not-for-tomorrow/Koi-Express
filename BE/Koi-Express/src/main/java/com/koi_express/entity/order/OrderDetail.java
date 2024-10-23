@@ -27,8 +27,8 @@ public class OrderDetail {
     Long orderDetailId;
 
     @OneToOne
-    @JoinColumn(name = "order_id", nullable = false)
-    @JsonIgnore
+    @JoinColumn(name = "order_id")
+            @JsonIgnore
     Orders order;
 
     @NotEmpty(message = "Sender name cannot be empty")
@@ -53,7 +53,8 @@ public class OrderDetail {
     int koiQuantity;
 
     @PositiveOrZero(message = "Koi size must be positive or zero")
-    double koiSize;
+    @Digits(integer = 5, fraction = 2, message = "Koi size must be a valid number with up to 2 decimal places")
+    BigDecimal koiSize;
 
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;

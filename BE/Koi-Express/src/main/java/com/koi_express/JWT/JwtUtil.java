@@ -1,5 +1,10 @@
 package com.koi_express.JWT;
 
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Function;
+
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
@@ -12,11 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 @Component
 public class JwtUtil {
@@ -154,5 +154,4 @@ public class JwtUtil {
     public String cleanToken(String token) {
         return token != null ? token.replace("Bearer", "").trim() : null;
     }
-
 }

@@ -55,7 +55,9 @@ public class StaffAssignmentService {
         }
 
         BigDecimal kilometers = order.getOrderDetail().getKilometers();
-        DeliveringStaffLevel level = kilometers.compareTo(new BigDecimal(300)) < 0 ? DeliveringStaffLevel.LEVEL_1 : DeliveringStaffLevel.LEVEL_2;
+        DeliveringStaffLevel level = kilometers.compareTo(new BigDecimal(300)) < 0
+                ? DeliveringStaffLevel.LEVEL_1
+                : DeliveringStaffLevel.LEVEL_2;
 
         List<DeliveringStaff> availableStaff =
                 deliveringStaffRepository.findByLevelAndStatus(level, StaffStatus.AVAILABLE);

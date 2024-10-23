@@ -3,15 +3,16 @@ package com.koi_express.service.order.price;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.koi_express.enums.KoiType;
-import org.springframework.stereotype.Component;
 
 @Component
 public class CareFee {
 
-    private static final Logger logger = Logger.getLogger(CareFee.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(CareFee.class);
 
     public enum Size {
         LESS_THAN_30_CM,
@@ -51,11 +52,13 @@ public class CareFee {
         BigDecimal feePerFish = priceTable.get(key);
 
         if (feePerFish == null) {
-            logger.warning(String.format("Price not found for combination: %s", key));
+            logger.warn("Price not found for combination: type={}, size={}", type, size);
             throw new IllegalArgumentException("Price not available for this combination");
         }
 
         // Multiply the fee per fish by the quantity using BigDecimal.multiply()
-        return feePerFish.multiply(BigDecimal.valueOf(quantity));
+        BigDecimal totalFee = feePerFish.multiply(BigDecimal.valueOf(quantity));
+        logger.info("Care fee for {} koi of type {} and size {}: {} VND", quantity, type, size, totalFee);
+        return totalFee.setScale(0, BigDecimal.ROUND_HALF_UP);
     }
 }
