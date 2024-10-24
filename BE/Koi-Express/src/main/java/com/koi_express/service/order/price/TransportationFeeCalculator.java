@@ -2,6 +2,7 @@ package com.koi_express.service.order.price;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,7 +72,7 @@ public class TransportationFeeCalculator {
         }
     }
 
-    public  BigDecimal calculateCommitmentFee(BigDecimal kilometers) {
+    public BigDecimal calculateCommitmentFee(BigDecimal kilometers) {
         BigDecimal totalFee = calculateTotalFee(kilometers);
         BigDecimal commitmentFee = totalFee.multiply(BigDecimal.valueOf(0.30));
         logger.info(String.format("Commitment Fee for %.2f km: %.2f VND", kilometers, commitmentFee));

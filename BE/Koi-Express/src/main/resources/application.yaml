@@ -1,6 +1,8 @@
 spring:
   application:
     name: Koi-Express
+  port:
+    server: 8080
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver

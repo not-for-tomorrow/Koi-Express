@@ -1,5 +1,6 @@
 package com.koi_express.entity.order;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -20,7 +21,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderDetail {
+public class OrderDetail implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +29,7 @@ public class OrderDetail {
 
     @OneToOne
     @JoinColumn(name = "order_id")
-            @JsonIgnore
+    @JsonIgnore
     Orders order;
 
     @NotEmpty(message = "Sender name cannot be empty")
@@ -72,7 +73,7 @@ public class OrderDetail {
 
     @Column(nullable = false)
     @Digits(integer = 10, fraction = 2, message = "Packing fee must be a valid monetary amount")
-    BigDecimal packingFee;
+    BigDecimal packagingFee;
 
     @Column(nullable = false)
     @Digits(integer = 10, fraction = 2, message = "Return fee must be a valid monetary amount")

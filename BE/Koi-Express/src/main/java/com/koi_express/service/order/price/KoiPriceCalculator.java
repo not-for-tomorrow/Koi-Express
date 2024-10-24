@@ -11,10 +11,10 @@ public class KoiPriceCalculator {
 
     private static final Logger logger = Logger.getLogger(KoiPriceCalculator.class.getName());
 
-    public static BigDecimal calculateTotalPrice(KoiType koiType, int quantity, double length) {
-        validateInputs(quantity, length);
+    public static BigDecimal calculateTotalPrice(KoiType koiType, int quantity, BigDecimal koiSize) {
+        validateInputs(quantity, koiSize);
 
-        BigDecimal basePrice = getBasePrice(koiType, length);
+        BigDecimal basePrice = getBasePrice(koiType, koiSize);
         BigDecimal quantityFactor = getQuantityFactor(quantity);
 
         BigDecimal totalPrice = basePrice.multiply(quantityFactor).multiply(BigDecimal.valueOf(quantity));
@@ -23,17 +23,26 @@ public class KoiPriceCalculator {
         return totalPrice;
     }
 
-    private static BigDecimal getBasePrice(KoiType koiType, double length) {
+    private static BigDecimal getBasePrice(KoiType koiType, BigDecimal koiSize) {
         switch (koiType) {
             case KOI_NHAT_BAN:
                 return calculateBasePriceForType(
-                        length, BigDecimal.valueOf(50_000), BigDecimal.valueOf(150_000), BigDecimal.valueOf(250_000));
+                        koiSize.doubleValue(),
+                        BigDecimal.valueOf(50_000),
+                        BigDecimal.valueOf(150_000),
+                        BigDecimal.valueOf(250_000));
             case KOI_VIET_NAM:
                 return calculateBasePriceForType(
-                        length, BigDecimal.valueOf(50_000), BigDecimal.valueOf(100_000), BigDecimal.valueOf(150_000));
+                        koiSize.doubleValue(),
+                        BigDecimal.valueOf(50_000),
+                        BigDecimal.valueOf(100_000),
+                        BigDecimal.valueOf(150_000));
             case KOI_CHAU_AU:
                 return calculateBasePriceForType(
-                        length, BigDecimal.valueOf(120_000), BigDecimal.valueOf(220_000), BigDecimal.valueOf(450_000));
+                        koiSize.doubleValue(),
+                        BigDecimal.valueOf(120_000),
+                        BigDecimal.valueOf(220_000),
+                        BigDecimal.valueOf(450_000));
             default:
                 throw new IllegalArgumentException("Invalid Koi Type");
         }
@@ -57,12 +66,12 @@ public class KoiPriceCalculator {
         return factor;
     }
 
-    private static void validateInputs(int quantity, double length) {
+    private static void validateInputs(int quantity, BigDecimal koiSize) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
-        if (length <= 0) {
-            throw new IllegalArgumentException("Length must be greater than 0");
+        if (koiSize.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Koi size must be greater than 0");
         }
     }
 }

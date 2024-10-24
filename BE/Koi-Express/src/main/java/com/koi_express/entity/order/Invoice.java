@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.koi_express.entity.customer.Customers;
-import com.koi_express.enums.InvoiceStatus;
 import com.koi_express.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,7 +41,7 @@ public class Invoice {
     BigDecimal careFee; // Phí chăm sóc
 
     @Column(nullable = false, precision = 15, scale = 2)
-    BigDecimal packingFee; // Phí đóng gói
+    BigDecimal packagingFee; // Phí đóng gói
 
     @Column(nullable = false, precision = 15, scale = 2)
     BigDecimal returnFee; // Phí trả hàng
@@ -62,10 +61,6 @@ public class Invoice {
     @Column(nullable = false)
     @CreationTimestamp
     LocalDateTime issuedAt;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    InvoiceStatus status;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -55,27 +55,28 @@ public class KoiInvoiceCalculator {
 
         CareFee.Size size = convertLengthToSize(koiSize);
 
-        BigDecimal fishPrice = koiPriceCalculator.calculateTotalPrice(koiType, quantity, koiSize.doubleValue());
+        BigDecimal koiFee = koiPriceCalculator.calculateTotalPrice(koiType, quantity, koiSize);
         BigDecimal careFee = careFeeCalculator.calculateCareFee(koiType, size, quantity);
         BigDecimal packagingFee = packagingFeeCalculator.calculateFee(quantity, koiSize);
         BigDecimal remainingTransportationFee = calculateRemainingTransportationFee(distanceFee, commitmentFee);
-        BigDecimal insuranceFee = calculateInsuranceFee(fishPrice, careFee, packagingFee, remainingTransportationFee);
-        BigDecimal subtotal = calculateSubtotal(fishPrice, careFee, packagingFee, remainingTransportationFee, insuranceFee);
+        BigDecimal insuranceFee = calculateInsuranceFee(koiFee, careFee, packagingFee, remainingTransportationFee);
+        BigDecimal subtotal =
+                calculateSubtotal(koiFee, careFee, packagingFee, remainingTransportationFee, insuranceFee);
         BigDecimal vat = calculateVAT(subtotal);
-        BigDecimal totalPrice = subtotal.add(vat);
+        BigDecimal totalFee = subtotal.add(vat);
 
-        // Create a map to hold all the fee components for response
         Map<String, BigDecimal> feeDetails = new HashMap<>();
-        feeDetails.put("fishPrice", fishPrice.setScale(0, RoundingMode.HALF_UP));
+        feeDetails.put("koiFee", koiFee.setScale(0, RoundingMode.HALF_UP));
         feeDetails.put("careFee", careFee.setScale(0, RoundingMode.HALF_UP));
         feeDetails.put("packagingFee", packagingFee.setScale(0, RoundingMode.HALF_UP));
         feeDetails.put("remainingTransportationFee", remainingTransportationFee.setScale(0, RoundingMode.HALF_UP));
         feeDetails.put("insuranceFee", insuranceFee.setScale(0, RoundingMode.HALF_UP));
         feeDetails.put("subtotal", subtotal.setScale(0, RoundingMode.HALF_UP));
         feeDetails.put("vat", vat.setScale(0, RoundingMode.HALF_UP));
-        feeDetails.put("totalPrice", totalPrice.setScale(0, RoundingMode.HALF_UP));
+        feeDetails.put("totalFee", totalFee.setScale(0, RoundingMode.HALF_UP));
 
-        logger.info(String.format("Total price for %d %s koi: %s", quantity, koiType.name(), CURRENCY_FORMAT.format(totalPrice)));
+        logger.info(String.format(
+                "Total price for %d %s koi: %s", quantity, koiType.name(), CURRENCY_FORMAT.format(totalFee)));
         return new ApiResponse<>(200, "Total price calculated successfully", feeDetails);
     }
 
@@ -84,12 +85,8 @@ public class KoiInvoiceCalculator {
     }
 
     private BigDecimal calculateInsuranceFee(
-            BigDecimal fishPrice, BigDecimal careFee, BigDecimal packagingFee, BigDecimal transportationFee) {
-        return fishPrice
-                .add(careFee)
-                .add(packagingFee)
-                .add(transportationFee)
-                .multiply(BigDecimal.valueOf(insuranceRate));
+            BigDecimal koiFee, BigDecimal careFee, BigDecimal packagingFee, BigDecimal transportationFee) {
+        return koiFee.add(careFee).add(packagingFee).add(transportationFee).multiply(BigDecimal.valueOf(insuranceRate));
     }
 
     private BigDecimal calculateSubtotal(
