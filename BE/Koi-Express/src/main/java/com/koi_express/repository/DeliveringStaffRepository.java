@@ -3,9 +3,13 @@ package com.koi_express.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.DeliveringStaffLevel;
+import com.koi_express.enums.Role;
 import com.koi_express.enums.StaffStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,4 +23,6 @@ public interface DeliveringStaffRepository extends JpaRepository<DeliveringStaff
     List<DeliveringStaff> findByLevelAndStatus(DeliveringStaffLevel level, StaffStatus status);
 
     List<DeliveringStaff> findByStatus(StaffStatus status);
+
+    Page<DeliveringStaff> findAllByRole(Role role, Pageable pageable);
 }

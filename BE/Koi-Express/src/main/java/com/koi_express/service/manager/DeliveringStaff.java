@@ -2,6 +2,7 @@ package com.koi_express.service.manager;
 
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.enums.DeliveringStaffLevel;
 import com.koi_express.enums.Role;
 import com.koi_express.enums.StaffStatus;
@@ -10,6 +11,8 @@ import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.service.verification.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -53,5 +56,9 @@ public class DeliveringStaff {
 
         return new ApiResponse<>(
                 HttpStatus.OK.value(), "Delivering staff account created successfully", deliveringStaff);
+    }
+
+    public Page<com.koi_express.entity.shipment.DeliveringStaff> getAllAccountsByRole(Role role, Pageable pageable) {
+        return deliveringStaffRepository.findAllByRole(role, pageable);
     }
 }
