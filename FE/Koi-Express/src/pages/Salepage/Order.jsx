@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Order = () => {
   const [isTimeFilterExpanded, setIsTimeFilterExpanded] = useState(false);
@@ -7,77 +8,97 @@ const Order = () => {
   const [tempSelectedTimeFilter, setTempSelectedTimeFilter] = useState("all");
   const [customDateRange, setCustomDateRange] = useState({ from: "", to: "" });
   const [displayDateRange, setDisplayDateRange] = useState("");
-  const [selectedTab, setSelectedTab] = useState("Chờ xác nhận");
+  const [selectedTab, setSelectedTab] = useState("Tất cả");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [orders, setOrders] = useState([]);
-  const [customerNames, setCustomerNames] = useState({}); // To store customer names
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("Token not found. Please log in.");
-        }
-
-        const response = await axios.get(
-          "http://localhost:8080/api/orders/history",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setOrders(response.data.result || []); // Update orders from API response
-        setLoading(false);
-      } catch (err) {
-        setError(err.message || "Failed to fetch orders");
-        setLoading(false);
+    // Static test data for orders with all possible statuses
+    const testOrders = [
+      {
+        orderId: 1,
+        originLocation: "Phường Tăng Nhơn Phú B, Thủ Đức, Ho Chi Minh City",
+        destinationLocation: "Nhà thờ Tân Phú, Nguyễn Hậu, Tan Thanh Ward",
+        createdAt: "2024-10-19T14:00:32",
+        totalFee: 500000,
+        status: "PENDING",
+      },
+      {
+        orderId: 2,
+        originLocation: "Phường Tăng Nhơn Phú B, Thủ Đức, Ho Chi Minh City",
+        destinationLocation: "Nhà thờ Tân Phú, Nguyễn Hậu, Tan Thanh Ward",
+        createdAt: "2024-10-19T14:25:16",
+        totalFee: 750000,
+        status: "ACCEPTED",
+      },
+      {
+        orderId: 3,
+        originLocation: "Phường Tăng Nhơn Phú B, Thủ Đức, Ho Chi Minh City",
+        destinationLocation: "Nhà thờ Tân Phú, Nguyễn Hậu, Tan Thanh Ward",
+        createdAt: "2024-10-19T14:37:57",
+        totalFee: 300000,
+        status: "ASSIGNED",
+      },
+      {
+        orderId: 4,
+        originLocation: "Phường Tăng Nhơn Phú B, Thủ Đức, Ho Chi Minh City",
+        destinationLocation: "Nhà thờ Tân Phú, Nguyễn Hậu, Tan Thanh Ward",
+        createdAt: "2024-10-19T22:08:36",
+        totalFee: 1000000,
+        status: "PICKING_UP",
+      },
+      {
+        orderId: 5,
+        originLocation: "Phường Tăng Nhơn Phú B, Thủ Đức, Ho Chi Minh City",
+        destinationLocation: "Nhà thờ Tân Phú, Nguyễn Hậu, Tan Thanh Ward",
+        createdAt: "2024-10-19T22:14:07",
+        totalFee: 2000000,
+        status: "IN_TRANSIT",
+      },
+      {
+        orderId: 6,
+        originLocation: "Phường Tăng Nhơn Phú B, Thủ Đức, Ho Chi Minh City",
+        destinationLocation: "Nhà thờ Tân Phú, Nguyễn Hậu, Tan Thanh Ward",
+        createdAt: "2024-10-19T22:20:16",
+        totalFee: 0,
+        status: "DELIVERED",
+      },
+      {
+        orderId: 7,
+        originLocation: "Phường Tăng Nhơn Phú B, Thủ Đức, Ho Chi Minh City",
+        destinationLocation: "Nhà thờ Tân Phú, Nguyễn Hậu, Tan Thanh Ward",
+        createdAt: "2024-10-20T22:32:11",
+        totalFee: 1500000,
+        status: "CANCELED",
+      },
+      {
+        orderId: 8,
+        originLocation: "Phường Tăng Nhơn Phú B, Thủ Đức, Ho Chi Minh City",
+        destinationLocation: "Nhà thờ Tân Phú, Nguyễn Hậu, Tan Thanh Ward",
+        createdAt: "2024-10-20T22:37:05",
+        totalFee: 400000,
+        status: "COMMIT_FEE_PENDING",
       }
-    };
-
-    fetchOrders();
+    ];
+  
+    // Set static orders data
+    setOrders(testOrders);
+    setLoading(false); // Set loading to false after data is ready
   }, []);
+  
 
-  // Fetch customer name for each order
-  useEffect(() => {
-    const fetchCustomerNames = async () => {
-      const token = localStorage.getItem("token");
-      const newCustomerNames = { ...customerNames }; // Copy current state
-
-      for (const order of orders) {
-        if (!newCustomerNames[order.customer.customerId]) {
-          // If the customer name is not already in state
-          try {
-            const response = await axios.get(
-              `http://localhost:8080/api/manager/id/${order.customer.customerId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-            newCustomerNames[order.customer.customerId] =
-              response.data.fullName || "N/A"; // Store the customer's full name
-          } catch (err) {
-            console.error(
-              `Failed to fetch customer name for ID ${order.customer.customerId}`,
-              err
-            );
-            newCustomerNames[order.customer.customerId] = "N/A"; // Fallback
-          }
-        }
-      }
-      setCustomerNames(newCustomerNames); // Update the state with new names
-    };
-
-    if (orders.length > 0) {
-      fetchCustomerNames();
+  const goToOrderDetail = (order) => {
+    if (order && order.orderId) {
+      navigate(`/apphomepage/history/detail/${order.orderId}`, {
+        state: order,
+      });
+    } else {
+      console.error("Order or Order ID is missing");
     }
-  }, [orders]);
+  };
 
   const handleTimeFilterClick = () => {
     setTempSelectedTimeFilter(selectedTimeFilter);
@@ -247,34 +268,32 @@ const Order = () => {
           <div className="sticky top-0 z-20 bg-white">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-gray-800">
-                Tổng đơn hàng
+                Lịch sử đơn hàng
               </h1>
             </div>
 
             <div className="flex mb-6 space-x-4 overflow-x-auto">
-              {Object.keys(statusColors)
-                .filter((tab) => tab !== "Tất cả") // Bỏ "Tất cả" khỏi danh sách
-                .map((tab, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedTab(tab)}
-                    className={`px-4 py-2 rounded-full transition duration-300 text-sm ${
+              {Object.keys(statusColors).map((tab, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedTab(tab)}
+                  className={`px-4 py-2 rounded-full transition duration-300 text-sm ${
+                    selectedTab === tab
+                      ? "font-bold shadow-md bg-blue-100 text-blue-900"
+                      : "text-blue-700 bg-transparent"
+                  }`}
+                  style={{
+                    backgroundColor:
                       selectedTab === tab
-                        ? "font-bold shadow-md"
-                        : "text-blue-700"
-                    }`}
-                    style={{
-                      backgroundColor:
-                        selectedTab === tab
-                          ? statusColors[tab].background
-                          : "transparent",
-                      color:
-                        selectedTab === tab ? statusColors[tab].text : "black",
-                    }}
-                  >
-                    {tab}
-                  </button>
-                ))}
+                        ? statusColors[tab].background
+                        : "transparent",
+                    color:
+                      selectedTab === tab ? statusColors[tab].text : "black",
+                  }}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
 
             <div className="flex items-center mb-6 space-x-6">
@@ -289,7 +308,11 @@ const Order = () => {
               <div className="relative">
                 <button
                   onClick={handleTimeFilterClick}
-                  className="flex items-center p-2 text-sm text-blue-700 transition duration-300 bg-blue-100 rounded-lg shadow-sm hover:bg-blue-200"
+                  className={`flex items-center p-2 text-sm transition duration-300 rounded-lg shadow-sm ${
+                    isTimeFilterExpanded
+                      ? "bg-blue-100 text-blue-900"
+                      : "text-blue-700 bg-transparent"
+                  }`}
                 >
                   <span>{displayDateRange || "Tất cả"}</span>
                 </button>
@@ -383,7 +406,6 @@ const Order = () => {
                 <thead className="sticky top-0 z-10 bg-blue-100">
                   <tr className="text-blue-900 border-b border-blue-200">
                     <th className="p-2 font-semibold w-1/8">Mã đơn hàng</th>
-                    <th className="p-2 font-semibold w-1/8">Tên khách hàng</th> {/* New Column */}
                     <th className="w-1/4 p-2 font-semibold">Điểm lấy hàng</th>
                     <th className="w-1/3 p-2 font-semibold">Điểm giao hàng</th>
                     <th className="p-2 font-semibold w-1/10">Thời gian tạo</th>
@@ -398,17 +420,14 @@ const Order = () => {
                     const statusColor =
                       statusColors[getVietnameseStatus(order.status)] ||
                       defaultStatusColor;
-
                     return (
                       <tr
                         key={index}
-                        className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
+                        className="transition duration-300 border-b border-gray-200 cursor-pointer hover:bg-blue-50"
+                        onClick={() => goToOrderDetail(order)} // Correctly pass the entire order object
                       >
                         <td className="p-2 font-semibold text-blue-600">
                           {order.orderId}
-                        </td>
-                        <td className="p-2 text-sm text-gray-700">
-                          {customerNames[order.customer.customerId] || "N/A"} {/* Display customer name */}
                         </td>
                         <td className="p-2 text-sm text-gray-700">
                           {order.originLocation}
@@ -421,7 +440,7 @@ const Order = () => {
                         </td>
                         <td className="p-2 text-sm font-medium text-blue-600">
                           {order.totalFee !== null
-                            ? `đ ${order.totalFee.toLocaleString("vi-VN")}`
+                            ? `₫ ${order.totalFee.toLocaleString("vi-VN")}`
                             : "N/A"}
                         </td>
                         <td className="p-2 text-center">
@@ -430,6 +449,10 @@ const Order = () => {
                             style={{
                               backgroundColor: statusColor.background,
                               color: statusColor.text,
+                              minWidth: "120px", // Đảm bảo kích thước tối thiểu cho trạng thái đồng nhất
+                              textAlign: "center", // Căn giữa văn bản
+                              padding: "6px 12px", // Đồng bộ padding
+                              whiteSpace: "nowrap", // Ngăn trạng thái xuống dòng
                             }}
                           >
                             {getVietnameseStatus(order.status)}
