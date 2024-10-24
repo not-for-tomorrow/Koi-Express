@@ -89,7 +89,7 @@ const OrderDetailModal = ({ orderId, distance }) => {
   };
 
   return (
-    <div className="relative z-20 flex flex-col w-full max-w-lg p-6 bg-white border border-gray-200 shadow-lg h-full">
+    <div className="relative z-20 flex flex-col w-full h-full max-w-lg p-6 bg-white border border-gray-200 shadow-lg">
       <div className="flex-grow">
         {/* Order Info Section */}
         <div className="mb-4">
@@ -109,9 +109,9 @@ const OrderDetailModal = ({ orderId, distance }) => {
                 <div className="w-4 h-4 mt-1 bg-blue-500 rounded-full"></div>
               </div>
               <div>
-                <p className="text-lg font-semibold">
+                <p className="text-lg font-bold">
                   {orderDetail.senderName} •{" "}
-                  <span className="text-base text-gray-700">
+                  <span className="text-base font-normal">
                     {orderDetail.senderPhone}
                   </span>
                 </p>
@@ -127,9 +127,9 @@ const OrderDetailModal = ({ orderId, distance }) => {
                 <div className="w-4 h-4 mt-1 bg-green-500 rounded-full"></div>
               </div>
               <div>
-                <p className="text-lg font-semibold">
+                <p className="text-lg font-bold">
                   {orderDetail.recipientName} •{" "}
-                  <span className="text-base text-gray-700">
+                  <span className="text-base font-normal">
                     {orderDetail.recipientPhone}
                   </span>
                 </p>
@@ -192,8 +192,8 @@ const OrderDetailModal = ({ orderId, distance }) => {
       </div>
 
       {/* Button at the bottom */}
-      <div className="mt-6 flex-shrink-0">
-        <button className="w-full p-3 rounded-lg text-base font-semibold bg-blue-500 text-white hover:bg-blue-600 transition-all transform">
+      <div className="flex-shrink-0 mt-6">
+        <button className="w-full p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600">
           <Link to="/apphomepage/history">Đóng</Link>
         </button>
       </div>

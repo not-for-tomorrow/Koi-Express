@@ -15,13 +15,7 @@ const Sidebar = () => {
     // Điều hướng dựa trên item.title
     switch (item.title) {
       case "Tổng đơn hàng":
-        navigate("/salepage");
-        break;
-      case "Tài khoản khách hàng":
-        navigate("/salepage/customeraccount");
-        break;
-      case "Duyệt đơn hàng":
-        navigate("/salepage/acceptorder");
+        navigate("/deliveringstaffpage");
         break;
       default:
         break;

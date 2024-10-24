@@ -232,8 +232,8 @@ const OrderHistory = () => {
                   onClick={() => setSelectedTab(tab)}
                   className={`px-4 py-2 rounded-full transition duration-300 text-sm ${
                     selectedTab === tab
-                      ? "font-bold shadow-md"
-                      : "text-blue-700"
+                      ? "font-bold shadow-md bg-blue-100 text-blue-900"
+                      : "text-blue-700 bg-transparent"
                   }`}
                   style={{
                     backgroundColor:
@@ -261,7 +261,11 @@ const OrderHistory = () => {
               <div className="relative">
                 <button
                   onClick={handleTimeFilterClick}
-                  className="flex items-center p-2 text-sm text-blue-700 transition duration-300 bg-blue-100 rounded-lg shadow-sm hover:bg-blue-200"
+                  className={`flex items-center p-2 text-sm transition duration-300 rounded-lg shadow-sm ${
+                    isTimeFilterExpanded
+                      ? "bg-blue-100 text-blue-900"
+                      : "text-blue-700 bg-transparent"
+                  }`}
                 >
                   <span>{displayDateRange || "Tất cả"}</span>
                 </button>
@@ -398,6 +402,10 @@ const OrderHistory = () => {
                             style={{
                               backgroundColor: statusColor.background,
                               color: statusColor.text,
+                              minWidth: "120px", // Đảm bảo kích thước tối thiểu cho trạng thái đồng nhất
+                              textAlign: "center", // Căn giữa văn bản
+                              padding: "6px 12px", // Đồng bộ padding
+                              whiteSpace: "nowrap", // Ngăn trạng thái xuống dòng
                             }}
                           >
                             {getVietnameseStatus(order.status)}

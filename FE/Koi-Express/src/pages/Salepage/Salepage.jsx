@@ -1,28 +1,37 @@
-import React from 'react'
-import { Route, Routes } from 'react-router-dom'
-import Sidebar from '../../componentsDashboard/Salepage/Sidebar/Sidebar'
-import Order from '../../componentsDashboard/Salepage/pages/Order/Order'
-import CustomerAccount from '../../componentsDashboard/Salepage/pages/CustomerAccount/CustomerAccount'
-import AcceptOrder from '../../componentsDashboard/Salepage/pages/AcceptOrder/AcceptOrder'
+import React from "react";
+import { Route, Routes } from "react-router-dom";
+import Sidebar from "../../componentsDashboard/Salecomponents/Sidebar/Sidebar";
+import Header from "../../componentsDashboard/Salecomponents/Header/Header"; // Import Header component
+import Order from "./Order";
+import CustomerAccount from "./CustomerAccount";
+import AcceptOrder from "./AcceptOrder";
+import { UserProvider } from "../../componentsDashboard/Salecomponents/UserContext/UserContext"; // Import UserProvider
 
 const Salepage = () => {
   return (
-    <div className="flex h-screen">
-      {/* Sidebar */}
-      <div className="transition-all duration-300 bg-white shadow-lg">
-        <Sidebar />
-      </div>
+    <UserProvider>
+      <div className="flex flex-col h-screen overflow-hidden"> {/* Full screen layout and prevent scrolling */}
+        {/* Header (fixed) */}
+        <Header />
 
-      {/* Content area */}
-      <div className="flex-grow h-full overflow-auto bg-gray-100">
-        <Routes>
-          <Route path="/" element={<Order />} />
-          <Route path="/customeraccount" element={<CustomerAccount />} />
-          <Route path="/acceptorder" element={<AcceptOrder />} />
-        </Routes>
-      </div>
-    </div>
-  )
-}
+        <div className="flex flex-grow overflow-hidden"> {/* Flex container for Sidebar and Content, prevent overflow */}
+          {/* Sidebar (fixed) */}
+          <div className="h-full bg-white shadow-lg">
+            <Sidebar />
+          </div>
 
-export default Salepage
+          {/* Content area: Keep within full screen, prevent scrolling */}
+          <div className="flex-grow h-full bg-gray-100">
+            <Routes>
+              <Route path="/" element={<Order />} />
+              <Route path="/customeraccount" element={<CustomerAccount />} />
+              <Route path="/acceptorder" element={<AcceptOrder />} />
+            </Routes>
+          </div>
+        </div>
+      </div>
+    </UserProvider>
+  );
+};
+
+export default Salepage;
