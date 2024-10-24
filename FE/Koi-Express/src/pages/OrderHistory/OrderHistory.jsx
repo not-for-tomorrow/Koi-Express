@@ -45,7 +45,7 @@ const OrderHistory = () => {
 
   const goToOrderDetail = (order) => {
     if (order && order.orderId) {
-      navigate(`/apphomepage/history/detail/${order.orderId}`, {
+      navigate(`/appkoiexpress/history/detail/${order.orderId}`, {
         state: order,
       });
     } else {
