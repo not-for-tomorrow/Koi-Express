@@ -1,24 +1,31 @@
-import React from 'react'
-import { Route, Routes } from 'react-router-dom'
-import Sidebar from '../../componentsDashboard/DeliveringStaffcomponents/Sidebar/Sidebar'
-import Order from './Order'
+import React from "react";
+import { Route, Routes } from "react-router-dom";
+import Sidebar from "../../componentsDashboard/DeliveringStaffcomponents/Sidebar/Sidebar";
+import Order from "./Order";
+import Header from "../../componentsDashboard/DeliveringStaffcomponents/Header/Header";
+import { UserProvider } from "../../componentsDashboard/DeliveringStaffcomponents/UserContext/UserContext";
 
 const DeliveringStaffpage = () => {
   return (
-    <div className="flex h-screen">
-      {/* Sidebar */}
-      <div className="transition-all duration-300 bg-white shadow-lg">
-        <Sidebar />
-      </div>
+    <UserProvider>
+      <div className="flex flex-col h-screen overflow-hidden">
+        <Header />
 
-      {/* Content area */}
-      <div className="flex-grow h-full overflow-auto bg-gray-100">
-        <Routes>
-          <Route path="/" element={<Order />} />
-        </Routes>
-      </div>
-    </div>
-  )
-}
+        <div className="flex flex-grow overflow-hidden">
+          <div className="h-full bg-white shadow-lg">
+            <Sidebar />
+          </div>
 
-export default DeliveringStaffpage
+          {/* Content area: Keep within full screen, prevent scrolling */}
+          <div className="flex-grow h-full bg-gray-100">
+            <Routes>
+              <Route path="/" element={<Order />} />
+            </Routes>
+          </div>
+        </div>
+      </div>
+    </UserProvider>
+  );
+};
+
+export default DeliveringStaffpage;
