@@ -1,5 +1,8 @@
 package com.koi_express.controller.order;
 
+import java.math.BigDecimal;
+import java.util.Map;
+
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.enums.KoiType;
@@ -15,9 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.math.BigDecimal;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -38,11 +38,14 @@ public class OrderCalculation {
     public ResponseEntity<ApiResponse<Map<String, BigDecimal>>> calculateTotalFee(
             @RequestParam KoiType koiType,
             @RequestParam BigDecimal koiSize,
-            HttpSession session, HttpServletRequest request) {
+            HttpSession session,
+            HttpServletRequest request) {
 
         if (session == null) {
             logger.error("Session is null. Cannot proceed.");
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Session is null", null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Session is null", null),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         String token = request.getHeader("Authorization").substring(7);
@@ -50,17 +53,21 @@ public class OrderCalculation {
         String userId = jwtUtil.extractUserId(token, role);
 
         Map<String, Object> sessionData = sessionManager.retrieveSessionData(session, role, userId);
-        if (sessionData == null || !sessionData.containsKey("koiQuantity")
+        if (sessionData == null
+                || !sessionData.containsKey("koiQuantity")
                 || !sessionData.containsKey("distanceFee")
                 || !sessionData.containsKey("commitmentFee")) {
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Session data missing", null), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Session data missing", null),
+                    HttpStatus.BAD_REQUEST);
         }
 
         Integer koiQuantity = (Integer) sessionData.get("koiQuantity");
         BigDecimal distanceFee = (BigDecimal) sessionData.get("distanceFee");
         BigDecimal commitmentFee = (BigDecimal) sessionData.get("commitmentFee");
 
-        ApiResponse<Map<String, BigDecimal>> response = koiInvoiceCalculator.calculateTotalPrice(koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
+        ApiResponse<Map<String, BigDecimal>> response =
+                koiInvoiceCalculator.calculateTotalPrice(koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
         sessionManager.storeCalculationSessionData(session, role, userId, response.getResult());
 
         return new ResponseEntity<>(response, HttpStatus.OK);

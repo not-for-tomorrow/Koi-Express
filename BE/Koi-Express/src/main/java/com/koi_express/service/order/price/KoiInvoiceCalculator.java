@@ -60,7 +60,8 @@ public class KoiInvoiceCalculator {
         BigDecimal packagingFee = packagingFeeCalculator.calculateFee(quantity, koiSize);
         BigDecimal remainingTransportationFee = calculateRemainingTransportationFee(distanceFee, commitmentFee);
         BigDecimal insuranceFee = calculateInsuranceFee(koiFee, careFee, packagingFee, remainingTransportationFee);
-        BigDecimal subtotal = calculateSubtotal(koiFee, careFee, packagingFee, remainingTransportationFee, insuranceFee);
+        BigDecimal subtotal =
+                calculateSubtotal(koiFee, careFee, packagingFee, remainingTransportationFee, insuranceFee);
         BigDecimal vat = calculateVAT(subtotal);
         BigDecimal totalFee = subtotal.add(vat);
 
@@ -74,7 +75,8 @@ public class KoiInvoiceCalculator {
         feeDetails.put("vat", vat.setScale(0, RoundingMode.HALF_UP));
         feeDetails.put("totalFee", totalFee.setScale(0, RoundingMode.HALF_UP));
 
-        logger.info(String.format("Total price for %d %s koi: %s", quantity, koiType.name(), CURRENCY_FORMAT.format(totalFee)));
+        logger.info(String.format(
+                "Total price for %d %s koi: %s", quantity, koiType.name(), CURRENCY_FORMAT.format(totalFee)));
         return new ApiResponse<>(200, "Total price calculated successfully", feeDetails);
     }
 
@@ -84,11 +86,7 @@ public class KoiInvoiceCalculator {
 
     private BigDecimal calculateInsuranceFee(
             BigDecimal koiFee, BigDecimal careFee, BigDecimal packagingFee, BigDecimal transportationFee) {
-        return koiFee
-                .add(careFee)
-                .add(packagingFee)
-                .add(transportationFee)
-                .multiply(BigDecimal.valueOf(insuranceRate));
+        return koiFee.add(careFee).add(packagingFee).add(transportationFee).multiply(BigDecimal.valueOf(insuranceRate));
     }
 
     private BigDecimal calculateSubtotal(

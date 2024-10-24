@@ -1,7 +1,9 @@
 package com.koi_express.controller.order;
 
+import java.util.List;
+import java.util.Map;
+
 import com.koi_express.JWT.JwtUtil;
-import com.koi_express.controller.order.OrderSessionManager;
 import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -21,9 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -90,7 +89,8 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderWithCustomerDTO> getOrderWithDetails(@PathVariable Long orderId, HttpSession session, HttpServletRequest request) {
+    public ResponseEntity<OrderWithCustomerDTO> getOrderWithDetails(
+            @PathVariable Long orderId, HttpSession session, HttpServletRequest request) {
         logger.info("Fetching order with details for orderId: {}", orderId);
         String token = request.getHeader("Authorization").substring(7);
         String role = jwtUtil.extractRole(token);
@@ -99,10 +99,8 @@ public class OrderController {
         Orders order = orderService.getOrderWithDetails(orderId).getOrder();
         Customers customer = order.getCustomer();
         sessionManager.storeSessionData(session, role, userId, order);
-        OrderWithCustomerDTO response = OrderWithCustomerDTO.builder()
-                .order(order)
-                .customer(customer)
-                .build();
+        OrderWithCustomerDTO response =
+                OrderWithCustomerDTO.builder().order(order).customer(customer).build();
         return ResponseEntity.ok(response);
     }
 

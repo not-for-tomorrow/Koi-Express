@@ -27,13 +27,22 @@ public class KoiPriceCalculator {
         switch (koiType) {
             case KOI_NHAT_BAN:
                 return calculateBasePriceForType(
-                        koiSize.doubleValue(), BigDecimal.valueOf(50_000), BigDecimal.valueOf(150_000), BigDecimal.valueOf(250_000));
+                        koiSize.doubleValue(),
+                        BigDecimal.valueOf(50_000),
+                        BigDecimal.valueOf(150_000),
+                        BigDecimal.valueOf(250_000));
             case KOI_VIET_NAM:
                 return calculateBasePriceForType(
-                        koiSize.doubleValue(), BigDecimal.valueOf(50_000), BigDecimal.valueOf(100_000), BigDecimal.valueOf(150_000));
+                        koiSize.doubleValue(),
+                        BigDecimal.valueOf(50_000),
+                        BigDecimal.valueOf(100_000),
+                        BigDecimal.valueOf(150_000));
             case KOI_CHAU_AU:
                 return calculateBasePriceForType(
-                        koiSize.doubleValue(), BigDecimal.valueOf(120_000), BigDecimal.valueOf(220_000), BigDecimal.valueOf(450_000));
+                        koiSize.doubleValue(),
+                        BigDecimal.valueOf(120_000),
+                        BigDecimal.valueOf(220_000),
+                        BigDecimal.valueOf(450_000));
             default:
                 throw new IllegalArgumentException("Invalid Koi Type");
         }

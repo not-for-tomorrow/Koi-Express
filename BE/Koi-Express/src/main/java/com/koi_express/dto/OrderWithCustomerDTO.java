@@ -1,7 +1,6 @@
 package com.koi_express.dto;
 
 import com.koi_express.entity.customer.Customers;
-import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

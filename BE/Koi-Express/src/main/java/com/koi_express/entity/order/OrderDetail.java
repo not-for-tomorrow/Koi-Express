@@ -29,7 +29,7 @@ public class OrderDetail implements Serializable {
 
     @OneToOne
     @JoinColumn(name = "order_id")
-            @JsonIgnore
+    @JsonIgnore
     Orders order;
 
     @NotEmpty(message = "Sender name cannot be empty")

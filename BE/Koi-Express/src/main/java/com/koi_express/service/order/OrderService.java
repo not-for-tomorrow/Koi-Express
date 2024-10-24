@@ -80,8 +80,7 @@ public class OrderService {
             TransportationFeeCalculator transportationFeeCalculator,
             InvoiceBuilder invoiceBuilder,
             OrderDetailBuilder orderDetailBuilder,
-            OrderSessionManager sessionManager
-    ) {
+            OrderSessionManager sessionManager) {
         this.orderRepository = orderRepository;
         this.jwtUtil = jwtUtil;
         this.managerService = managerService;
@@ -169,7 +168,6 @@ public class OrderService {
                 order.setStatus(OrderStatus.PENDING);
                 orderRepository.save(order);
 
-                // Gửi email xác nhận thanh toán thành công
                 emailService.sendOrderConfirmationEmail(order.getCustomer().getEmail(), order);
 
                 return new ApiResponse<>(HttpStatus.OK.value(), "Commit fee payment confirmed successfully", null);
@@ -318,11 +316,16 @@ public class OrderService {
                 return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid fees in order details", null);
             }
 
-            logger.info("Calculating total fee for koiType: {}, koiQuantity: {}, koiSize: {}, distanceFee: {}, commitmentFee: {}",
-                    koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
+            logger.info(
+                    "Calculating total fee for koiType: {}, koiQuantity: {}, koiSize: {}, distanceFee: {}, commitmentFee: {}",
+                    koiType,
+                    koiQuantity,
+                    koiSize,
+                    distanceFee,
+                    commitmentFee);
 
-            ApiResponse<Map<String, BigDecimal>> response = koiInvoiceCalculator.calculateTotalPrice(
-                    koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
+            ApiResponse<Map<String, BigDecimal>> response =
+                    koiInvoiceCalculator.calculateTotalPrice(koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
 
             if (response.getCode() != HttpStatus.OK.value()) {
                 logger.error("Error calculating total fee: {}", response.getMessage());
@@ -348,7 +351,8 @@ public class OrderService {
         if (paymentMethod == PaymentMethod.VNPAY) {
             ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPayment(order);
             if (paymentLinkResponse.getCode() != 200) {
-                return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Không thể tạo liên kết thanh toán VNPay", null);
+                return new ApiResponse<>(
+                        HttpStatus.BAD_REQUEST.value(), "Không thể tạo liên kết thanh toán VNPay", null);
             }
 
             String paymentLink = paymentLinkResponse.getResult();
@@ -356,54 +360,62 @@ public class OrderService {
             String customerEmail = order.getCustomer().getEmail();
             emailService.sendPaymentLink(customerEmail, paymentLink, order);
 
-            return new ApiResponse<>(HttpStatus.OK.value(), "Đã gửi liên kết thanh toán VNPay đến email của khách hàng", paymentLink);
+            return new ApiResponse<>(
+                    HttpStatus.OK.value(), "Đã gửi liên kết thanh toán VNPay đến email của khách hàng", paymentLink);
         } else if (paymentMethod == PaymentMethod.CASH_BY_RECEIVER || paymentMethod == PaymentMethod.CASH_BY_SENDER) {
             order.setStatus(OrderStatus.IN_TRANSIT);
             order.setPaymentConfirmed(false);
             orderRepository.save(order);
 
-            return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán bằng tiền mặt. Đơn hàng đang vận chuyển (chưa thanh toán).", null);
+            return new ApiResponse<>(
+                    HttpStatus.OK.value(),
+                    "Thanh toán bằng tiền mặt. Đơn hàng đang vận chuyển (chưa thanh toán).",
+                    null);
         }
 
         return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Phương thức thanh toán không hợp lệ", null);
     }
 
     @Transactional
-    public ResponseEntity<ApiResponse<String>> confirmPayment(HttpSession session, HttpServletRequest request) {
-        // Lấy role và userId từ session
+    public ResponseEntity<ApiResponse<String>> confirmPayment(HttpSession session, HttpServletRequest request)
+            throws IOException {
         String role = sessionManager.getRoleFromSession(session);
         String userId = sessionManager.getUserIdFromSession(session);
 
-        // Lấy dữ liệu từ session đầu tiên (chứa orderId và các biến liên quan)
         Map<String, Object> sessionData = sessionManager.retrieveSessionData(session, role, userId);
         if (sessionData.isEmpty() || !sessionData.containsKey("orderId")) {
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Order ID not found in session", null), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Order ID not found in session", null),
+                    HttpStatus.BAD_REQUEST);
         }
 
         Long orderId = (Long) sessionData.get("orderId");
 
-        // Lấy dữ liệu từ session thứ hai (chứa totalFee và các biến tính toán)
         Map<String, BigDecimal> calculationData = sessionManager.retrieveCalculationSessionData(session, role, userId);
         if (calculationData.isEmpty() || !calculationData.containsKey("totalFee")) {
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Calculation data missing", null), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Calculation data missing", null),
+                    HttpStatus.BAD_REQUEST);
         }
 
         BigDecimal totalFee = calculationData.get("totalFee");
 
-        // Tìm thông tin đơn hàng theo orderId
         Orders order = this.findOrderById(orderId);
 
-        // Lấy phương thức thanh toán từ order và cho phép người dùng thay đổi nếu cần
         PaymentMethod paymentMethod = order.getPaymentMethod();
         if (request.getParameter("paymentMethod") != null) {
-            paymentMethod = PaymentMethod.valueOf(request.getParameter("paymentMethod").toUpperCase());
+            paymentMethod =
+                    PaymentMethod.valueOf(request.getParameter("paymentMethod").toUpperCase());
         }
 
         if (paymentMethod == PaymentMethod.VNPAY) {
             try {
                 ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPaymentWithTotalFee(order, totalFee);
                 if (paymentLinkResponse.getCode() != HttpStatus.OK.value()) {
-                    return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null), HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(
+                            new ApiResponse<>(
+                                    HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null),
+                            HttpStatus.BAD_REQUEST);
                 }
 
                 String email = (String) sessionData.get("email");
@@ -412,12 +424,39 @@ public class OrderService {
                 orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
                 invoiceBuilder.updateInvoice(order, calculationData);
 
-                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult()), HttpStatus.OK);
+                return new ResponseEntity<>(
+                        new ApiResponse<>(
+                                HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult()),
+                        HttpStatus.OK);
 
             } catch (Exception e) {
                 logger.error("Error creating VNPay payment link: ", e);
-                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>(
+                        new ApiResponse<>(
+                                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                "Failed to create VNPay payment link",
+                                e.getMessage()),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
             }
+        }
+
+        Map<String, String> vnpParams = request.getParameterMap().entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
+
+        if (vnPayService.verifyPayment(vnpParams)) {
+            order.setStatus(OrderStatus.IN_TRANSIT);
+            order.setPaymentConfirmed(true);
+
+            orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
+            invoiceBuilder.updateInvoice(order, calculationData);
+
+            orderRepository.save(order);
+
+            String email = (String) sessionData.get("email");
+            emailService.sendInvoiceEmail(email, order, calculationData);
+
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.OK.value(), "Payment confirmed, invoice sent", null), HttpStatus.OK);
         }
 
         if (paymentMethod == PaymentMethod.CASH_BY_RECEIVER || paymentMethod == PaymentMethod.CASH_BY_SENDER) {
@@ -428,10 +467,13 @@ public class OrderService {
             invoiceBuilder.updateInvoice(order, calculationData);
 
             orderRepository.save(order);
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Order is in-transit but not yet paid", null), HttpStatus.OK);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.OK.value(), "Order is in-transit but not yet paid", null),
+                    HttpStatus.OK);
         }
 
-        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid payment method", null), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(
+                new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid payment method", null),
+                HttpStatus.BAD_REQUEST);
     }
-
 }

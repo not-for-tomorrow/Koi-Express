@@ -1,5 +1,9 @@
 package com.koi_express.controller.order;
 
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
@@ -22,10 +26,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @RestController
 @RequestMapping("/api/orders")
 public class OrderPayment {
@@ -42,14 +42,15 @@ public class OrderPayment {
     private final OrderRepository orderRepository;
 
     @Autowired
-    public OrderPayment(OrderService orderService,
-                        OrderSessionManager sessionManager,
-                        JwtUtil jwtUtil,
-                        OrderDetailBuilder orderDetailBuilder,
-                        InvoiceBuilder invoiceBuilder,
-                        VNPayService vnPayService,
-                        EmailService emailService,
-                        OrderRepository orderRepository) {
+    public OrderPayment(
+            OrderService orderService,
+            OrderSessionManager sessionManager,
+            JwtUtil jwtUtil,
+            OrderDetailBuilder orderDetailBuilder,
+            InvoiceBuilder invoiceBuilder,
+            VNPayService vnPayService,
+            EmailService emailService,
+            OrderRepository orderRepository) {
         this.orderService = orderService;
         this.sessionManager = sessionManager;
         this.jwtUtil = jwtUtil;
@@ -79,9 +80,7 @@ public class OrderPayment {
     }
 
     @PostMapping("/confirm-payment")
-    public ResponseEntity<ApiResponse<String>> confirmVnPayPayment(
-            HttpServletRequest request,
-            HttpSession session) {
+    public ResponseEntity<ApiResponse<String>> confirmVnPayPayment(HttpServletRequest request, HttpSession session) {
 
         String role = sessionManager.getRoleFromSession(session);
         String userId = sessionManager.getUserIdFromSession(session);
@@ -89,14 +88,18 @@ public class OrderPayment {
         // Lấy dữ liệu từ session
         Map<String, Object> sessionData = sessionManager.retrieveSessionData(session, role, userId);
         if (sessionData == null || !sessionData.containsKey("orderId")) {
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Order ID not found in session", null), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Order ID not found in session", null),
+                    HttpStatus.BAD_REQUEST);
         }
         Long orderId = (Long) sessionData.get("orderId");
 
         // Lấy dữ liệu từ session thứ hai (chứa totalFee và các biến liên quan)
         Map<String, BigDecimal> calculationData = sessionManager.retrieveCalculationSessionData(session, role, userId);
         if (calculationData == null || !calculationData.containsKey("totalFee")) {
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Calculation data missing", null), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Calculation data missing", null),
+                    HttpStatus.BAD_REQUEST);
         }
 
         BigDecimal totalFee = calculationData.get("totalFee");
@@ -107,7 +110,8 @@ public class OrderPayment {
         // Xử lý phương thức thanh toán
         PaymentMethod paymentMethod = order.getPaymentMethod();
         if (request.getParameter("paymentMethod") != null) {
-            paymentMethod = PaymentMethod.valueOf(request.getParameter("paymentMethod").toUpperCase());
+            paymentMethod =
+                    PaymentMethod.valueOf(request.getParameter("paymentMethod").toUpperCase());
         }
 
         // Nếu người dùng chọn phương thức VNPay
@@ -116,18 +120,29 @@ public class OrderPayment {
                 // Tạo link thanh toán VNPay
                 ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPaymentWithTotalFee(order, totalFee);
                 if (paymentLinkResponse.getCode() != HttpStatus.OK.value()) {
-                    return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null), HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(
+                            new ApiResponse<>(
+                                    HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null),
+                            HttpStatus.BAD_REQUEST);
                 }
 
                 // Gửi link thanh toán qua email
                 String email = (String) sessionData.get("email");
                 emailService.sendPaymentLink(email, paymentLinkResponse.getResult(), order);
 
-                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult()), HttpStatus.OK);
+                return new ResponseEntity<>(
+                        new ApiResponse<>(
+                                HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult()),
+                        HttpStatus.OK);
 
             } catch (Exception e) {
                 logger.error("Error creating VNPay payment link: ", e);
-                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>(
+                        new ApiResponse<>(
+                                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                                "Failed to create VNPay payment link",
+                                e.getMessage()),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
 
@@ -141,10 +156,13 @@ public class OrderPayment {
             invoiceBuilder.updateInvoice(order, calculationData);
 
             orderRepository.save(order);
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Order is in-transit but not yet paid", null), HttpStatus.OK);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.OK.value(), "Order is in-transit but not yet paid", null),
+                    HttpStatus.OK);
         }
 
-        // Chuyển đổi request parameters từ Map<String, String[]> sang Map<String, String> để tương thích với verifyPayment
+        // Chuyển đổi request parameters từ Map<String, String[]> sang Map<String, String> để tương thích với
+        // verifyPayment
         Map<String, String> vnpParams = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
 
@@ -159,15 +177,21 @@ public class OrderPayment {
                 invoiceBuilder.updateInvoice(order, calculationData);
 
                 orderRepository.save(order);
-                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Payment confirmed, order is in-transit", null), HttpStatus.OK);
+                return new ResponseEntity<>(
+                        new ApiResponse<>(HttpStatus.OK.value(), "Payment confirmed, order is in-transit", null),
+                        HttpStatus.OK);
             } else {
-                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Payment verification failed", null), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(
+                        new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Payment verification failed", null),
+                        HttpStatus.BAD_REQUEST);
             }
 
         } catch (Exception e) {
             logger.error("Error verifying VNPay payment: ", e);
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Payment verification error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), "Payment verification error", e.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 }

@@ -1,15 +1,15 @@
 package com.koi_express.controller.order;
 
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Map;
+
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Map;
 
 @Component
 public class OrderSessionManager {
@@ -29,8 +29,7 @@ public class OrderSessionManager {
                 "commitmentFee", order.getOrderDetail().getCommitmentFee(),
                 "orderId", order.getOrderId(),
                 "customerId", customer.getCustomerId(),
-                "email", customer.getEmail()
-        );
+                "email", customer.getEmail());
         session.setAttribute(sessionKey, sessionData);
         session.setAttribute(ROLE_SESSION_KEY, role);
         session.setAttribute(USER_ID_SESSION_KEY, userId);
@@ -52,7 +51,8 @@ public class OrderSessionManager {
     }
 
     // Lưu dữ liệu tính toán vào session
-    public void storeCalculationSessionData(HttpSession session, String role, String userId, Map<String, BigDecimal> calculationData) {
+    public void storeCalculationSessionData(
+            HttpSession session, String role, String userId, Map<String, BigDecimal> calculationData) {
         String sessionKey = getSessionKey(role, userId) + "_calculation";
         session.setAttribute(sessionKey, calculationData);
         logger.info("Calculation session data stored for key '{}': {}", sessionKey, calculationData);

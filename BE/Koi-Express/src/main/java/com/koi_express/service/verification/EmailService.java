@@ -1,5 +1,14 @@
 package com.koi_express.service.verification;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.shipment.DeliveringStaff;
@@ -16,14 +25,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @Service
 public class EmailService {
 
@@ -35,6 +36,7 @@ public class EmailService {
     private static final String TEMPLATE_ORDER_CONFIRMATION = "Order Confirmation.html";
     private static final String TEMPLATE_PAYMENT_LINK = "Payment Link.html";
     private static final String TEMPLATE_ACCOUNT_CONFIRMATION = "Account Confirmation.html";
+    private static final String TEMPLATE_INVOICE = "Invoice.html";
 
     @Async
     public void sendOrderConfirmationEmail(String recipientEmail, Orders order) throws IOException {
@@ -105,10 +107,36 @@ public class EmailService {
                     isDeliveringStaff ? ((DeliveringStaff) account).getEmail() : ((SystemAccount) account).getEmail(),
                     "Account Created - Koi Express",
                     template,
-                    placeholders
-            );
+                    placeholders);
         } catch (Exception e) {
             logger.error("Error sending account creation email: ", e);
+            throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
+        }
+    }
+
+    @Async
+    public void sendInvoiceEmail(String recipientEmail, Orders order, Map<String, BigDecimal> calculationData) {
+        try {
+            String template = loadEmailTemplate(TEMPLATE_INVOICE); // Sử dụng template hóa đơn
+
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put("{{CustomerName}}", order.getCustomer().getFullName());
+            placeholders.put("{{InvoiceID}}", String.valueOf(order.getOrderId()));
+            placeholders.put("{{OrderID}}", String.valueOf(order.getOrderId()));
+            placeholders.put("{{InvoiceDate}}", order.getCreatedAt().toString());
+            placeholders.put("{{Address}}", order.getDestinationLocation());
+            placeholders.put(
+                    "{{KoiQuantity}}", String.valueOf(order.getOrderDetail().getKoiQuantity()));
+            placeholders.put("{{Subtotal}}", String.format("%.2f", calculationData.get("subtotal")));
+            placeholders.put("{{CareFee}}", String.format("%.2f", calculationData.get("careFee")));
+            placeholders.put("{{InsuranceFee}}", String.format("%.2f", calculationData.get("insuranceFee")));
+            placeholders.put("{{PackagingFee}}", String.format("%.2f", calculationData.get("packagingFee")));
+            placeholders.put("{{VAT}}", String.format("%.2f", calculationData.get("vat")));
+            placeholders.put("{{TotalAmount}}", String.format("%.2f", calculationData.get("totalFee")));
+
+            sendEmail(recipientEmail, "Invoice - Koi Express", template, placeholders);
+        } catch (Exception e) {
+            logger.error("Error sending invoice email: ", e);
             throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
         }
     }
@@ -117,7 +145,7 @@ public class EmailService {
         ClassPathResource resource = new ClassPathResource(fileName);
 
         try (BufferedReader reader =
-                     new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
+                new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
             return reader.lines().collect(Collectors.joining(System.lineSeparator()));
         }
     }
@@ -129,7 +157,8 @@ public class EmailService {
         return template;
     }
 
-    private void sendEmail(String recipientEmail, String subject, String template, Map<String, String> placeholders) throws IOException, MessagingException {
+    private void sendEmail(String recipientEmail, String subject, String template, Map<String, String> placeholders)
+            throws IOException, MessagingException {
         String populatedTemplate = replacePlaceholders(template, placeholders);
 
         MimeMessage message = javaMailSender.createMimeMessage();
