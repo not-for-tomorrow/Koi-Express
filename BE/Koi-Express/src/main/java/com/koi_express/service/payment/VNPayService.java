@@ -75,6 +75,36 @@ public class VNPayService {
         return true;
     }
 
+    public ApiResponse<String> createVnPayPaymentWithTotalFee(Orders order, BigDecimal totalFee) {
+        if (order == null || totalFee == null) {
+            throw new IllegalArgumentException("Invalid order or totalFee provided.");
+        }
+
+        // Chuyển đổi totalFee sang đơn vị nhỏ nhất
+        BigDecimal amount = totalFee.multiply(BigDecimal.valueOf(100)); // VND to sub-unit
+        String bankCode = "NCB"; // Có thể tùy chỉnh theo yêu cầu
+        String orderId = String.valueOf(order.getOrderId());
+
+        // Xây dựng tham số cho VNPay sử dụng totalFee
+        Map<String, String> vnpParamsMap = buildVnPayParams(order, amount, bankCode);
+
+        // Tạo URL thanh toán
+        String queryUrl = VNPayUtil.getPaymentURL(vnpParamsMap);
+        logger.info("Request params: {}", vnpParamsMap);
+        logger.info("Query string before signature: {}", queryUrl);
+
+        // Tạo chữ ký bảo mật
+        String vnpSecureHash = VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), queryUrl);
+        vnpParamsMap.put("vnp_SecureHash", URLEncoder.encode(vnpSecureHash, StandardCharsets.UTF_8));
+
+        // Tạo URL thanh toán đầy đủ
+        String fullPaymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + VNPayUtil.getPaymentURL(vnpParamsMap);
+        logger.info("Generated VNPay payment URL: {}", fullPaymentUrl);
+
+        return new ApiResponse<>(200, "Payment URL generated successfully", fullPaymentUrl);
+    }
+
+
     // Xây dựng các tham số cho VNPay và đảm bảo sắp xếp theo thứ tự alphabet
     private Map<String, String> buildVnPayParams(Orders order, BigDecimal amount, String bankCode) {
         Map<String, String> vnpParamsMap = new TreeMap<>(vnPayConfig.getVNPayConfig());

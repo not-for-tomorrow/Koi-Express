@@ -1,5 +1,6 @@
 package com.koi_express.service.order;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -9,21 +10,20 @@ import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.koi_express.JWT.JwtUtil;
+import com.koi_express.controller.order.OrderSessionManager;
 import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
-import com.koi_express.entity.order.Invoice;
-import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.KoiType;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.enums.PaymentMethod;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
-import com.koi_express.repository.InvoiceRepository;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.service.manager.ManagerService;
 import com.koi_express.service.order.builder.InvoiceBuilder;
@@ -35,6 +35,8 @@ import com.koi_express.service.payment.VNPayService;
 import com.koi_express.service.staffAssignment.StaffAssignmentService;
 import com.koi_express.service.verification.EmailService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +44,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,9 +63,9 @@ public class OrderService {
     private final VNPayService vnPayService;
     private final KoiInvoiceCalculator koiInvoiceCalculator;
     private final TransportationFeeCalculator transportationFeeCalculator;
-    private final InvoiceRepository invoiceRepository;
     private final InvoiceBuilder invoiceBuilder;
     private final OrderDetailBuilder orderDetailBuilder;
+    private final OrderSessionManager sessionManager;
 
     @Autowired
     public OrderService(
@@ -75,9 +78,9 @@ public class OrderService {
             @Lazy VNPayService vnPayService,
             KoiInvoiceCalculator koiInvoiceCalculator,
             TransportationFeeCalculator transportationFeeCalculator,
-            InvoiceRepository invoiceRepository,
             InvoiceBuilder invoiceBuilder,
-            OrderDetailBuilder orderDetailBuilder
+            OrderDetailBuilder orderDetailBuilder,
+            OrderSessionManager sessionManager
     ) {
         this.orderRepository = orderRepository;
         this.jwtUtil = jwtUtil;
@@ -88,9 +91,9 @@ public class OrderService {
         this.vnPayService = vnPayService;
         this.koiInvoiceCalculator = koiInvoiceCalculator;
         this.transportationFeeCalculator = transportationFeeCalculator;
-        this.invoiceRepository = invoiceRepository;
         this.invoiceBuilder = invoiceBuilder;
         this.orderDetailBuilder = orderDetailBuilder;
+        this.sessionManager = sessionManager;
     }
 
     public ApiResponse<Map<String, Object>> createOrder(OrderRequest orderRequest, String token) {
@@ -299,7 +302,6 @@ public class OrderService {
         return response;
     }
 
-
     public ApiResponse<Map<String, BigDecimal>> calculateTotalFee(Long orderId, KoiType koiType, BigDecimal koiSize) {
         try {
             Orders order = findOrderById(orderId);
@@ -333,11 +335,9 @@ public class OrderService {
         }
     }
 
-
     public ApiResponse<String> processOrderPayment(Long orderId, PaymentMethod paymentMethod) {
         Orders order = this.findOrderById(orderId);
 
-        // Lấy thông tin tổng chi phí
         ApiResponse<Map<String, BigDecimal>> totalFeeResponse = this.calculateTotalFee(orderId, null, null);
         if (totalFeeResponse.getCode() != 200) {
             return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Không thể tính toán tổng chi phí", null);
@@ -345,9 +345,7 @@ public class OrderService {
 
         BigDecimal totalFee = totalFeeResponse.getResult().get("totalPrice");
 
-        // Kiểm tra phương thức thanh toán
         if (paymentMethod == PaymentMethod.VNPAY) {
-            // Tạo liên kết thanh toán VNPay
             ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPayment(order);
             if (paymentLinkResponse.getCode() != 200) {
                 return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Không thể tạo liên kết thanh toán VNPay", null);
@@ -355,15 +353,13 @@ public class OrderService {
 
             String paymentLink = paymentLinkResponse.getResult();
 
-            // Gửi email chứa liên kết thanh toán VNPay cho khách hàng
             String customerEmail = order.getCustomer().getEmail();
             emailService.sendPaymentLink(customerEmail, paymentLink, order);
 
             return new ApiResponse<>(HttpStatus.OK.value(), "Đã gửi liên kết thanh toán VNPay đến email của khách hàng", paymentLink);
         } else if (paymentMethod == PaymentMethod.CASH_BY_RECEIVER || paymentMethod == PaymentMethod.CASH_BY_SENDER) {
-            // Cập nhật trạng thái đơn hàng sang IN_TRANSIT và đánh dấu là chưa thanh toán
             order.setStatus(OrderStatus.IN_TRANSIT);
-            order.setPaymentConfirmed(false); // Đánh dấu là chưa thanh toán
+            order.setPaymentConfirmed(false);
             orderRepository.save(order);
 
             return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán bằng tiền mặt. Đơn hàng đang vận chuyển (chưa thanh toán).", null);
@@ -373,42 +369,69 @@ public class OrderService {
     }
 
     @Transactional
-    public ApiResponse<String> confirmVnPayPayment(Long orderId, Map<String, String> vnpParams, KoiType koiType, BigDecimal koiSize) {
-        try {
-            // Xác thực thanh toán VNPay
-            boolean isPaymentVerified = vnPayService.verifyPayment(vnpParams);
-            String responseCode = vnpParams.get("vnp_ResponseCode");
+    public ResponseEntity<ApiResponse<String>> confirmPayment(HttpSession session, HttpServletRequest request) {
+        // Lấy role và userId từ session
+        String role = sessionManager.getRoleFromSession(session);
+        String userId = sessionManager.getUserIdFromSession(session);
 
-            Orders order = this.findOrderById(orderId);
-            if (isPaymentVerified && "00".equals(responseCode)) {
-                // Thanh toán thành công, cập nhật trạng thái đơn hàng và thông tin liên quan
-                order.setStatus(OrderStatus.IN_TRANSIT);
-                order.setPaymentConfirmed(true);
-
-                // Tính toán lại các khoản phí dựa trên loại Koi và kích thước
-                ApiResponse<Map<String, BigDecimal>> feeCalculation = this.calculateTotalFee(orderId, koiType, koiSize);
-                Map<String, BigDecimal> fees = feeCalculation.getResult();
-
-                orderDetailBuilder.updateOrderDetails(order, fees, koiType, koiSize);
-
-                // Tính tổng số tiền
-                BigDecimal totalFee = fees.get("totalPrice");
-                order.setTotalFee(totalFee);
-
-                // Lưu thông tin cập nhật cho Order và OrderDetail
-                orderRepository.save(order);
-
-                invoiceBuilder.updateInvoice(order, fees);
-
-                return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán thành công, thông tin đơn hàng và hóa đơn đã được cập nhật", null);
-            } else {
-                // Nếu thanh toán thất bại, yêu cầu khách hàng thử lại
-                order.setStatus(OrderStatus.PAYMENT_PENDING);
-                orderRepository.save(order);
-                return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Thanh toán thất bại, vui lòng thử lại.", null);
-            }
-        } catch (Exception e) {
-            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi trong quá trình xử lý thanh toán", e.getMessage());
+        // Lấy dữ liệu từ session đầu tiên (chứa orderId và các biến liên quan)
+        Map<String, Object> sessionData = sessionManager.retrieveSessionData(session, role, userId);
+        if (sessionData.isEmpty() || !sessionData.containsKey("orderId")) {
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Order ID not found in session", null), HttpStatus.BAD_REQUEST);
         }
+
+        Long orderId = (Long) sessionData.get("orderId");
+
+        // Lấy dữ liệu từ session thứ hai (chứa totalFee và các biến tính toán)
+        Map<String, BigDecimal> calculationData = sessionManager.retrieveCalculationSessionData(session, role, userId);
+        if (calculationData.isEmpty() || !calculationData.containsKey("totalFee")) {
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Calculation data missing", null), HttpStatus.BAD_REQUEST);
+        }
+
+        BigDecimal totalFee = calculationData.get("totalFee");
+
+        // Tìm thông tin đơn hàng theo orderId
+        Orders order = this.findOrderById(orderId);
+
+        // Lấy phương thức thanh toán từ order và cho phép người dùng thay đổi nếu cần
+        PaymentMethod paymentMethod = order.getPaymentMethod();
+        if (request.getParameter("paymentMethod") != null) {
+            paymentMethod = PaymentMethod.valueOf(request.getParameter("paymentMethod").toUpperCase());
+        }
+
+        if (paymentMethod == PaymentMethod.VNPAY) {
+            try {
+                ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPaymentWithTotalFee(order, totalFee);
+                if (paymentLinkResponse.getCode() != HttpStatus.OK.value()) {
+                    return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null), HttpStatus.BAD_REQUEST);
+                }
+
+                String email = (String) sessionData.get("email");
+                emailService.sendPaymentLink(email, paymentLinkResponse.getResult(), order);
+
+                orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
+                invoiceBuilder.updateInvoice(order, calculationData);
+
+                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult()), HttpStatus.OK);
+
+            } catch (Exception e) {
+                logger.error("Error creating VNPay payment link: ", e);
+                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        if (paymentMethod == PaymentMethod.CASH_BY_RECEIVER || paymentMethod == PaymentMethod.CASH_BY_SENDER) {
+            order.setStatus(OrderStatus.IN_TRANSIT);
+            order.setPaymentConfirmed(false);
+
+            orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
+            invoiceBuilder.updateInvoice(order, calculationData);
+
+            orderRepository.save(order);
+            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Order is in-transit but not yet paid", null), HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid payment method", null), HttpStatus.BAD_REQUEST);
     }
+
 }
