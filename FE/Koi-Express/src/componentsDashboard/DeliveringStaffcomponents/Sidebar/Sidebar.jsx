@@ -20,6 +20,9 @@ const Sidebar = () => {
       case "Tổng đơn hàng":
         navigate("/deliveringstaffpage");
         break;
+        case "Logout":
+          navigate("/login");
+          break;
       default:
         break;
     }

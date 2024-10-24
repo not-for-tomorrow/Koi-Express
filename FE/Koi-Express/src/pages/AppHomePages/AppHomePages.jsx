@@ -22,8 +22,7 @@ const AppHomePages = () => {
           <Route
             path="/history/detail/:orderId"
             element={<OrderDetail />}
-          />{" "}
-          {/* Ensure this route is defined */}
+          />
           <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>

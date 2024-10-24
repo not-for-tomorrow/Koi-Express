@@ -2,15 +2,12 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Sidebar from "../../componentsDashboard/DeliveringStaffcomponents/Sidebar/Sidebar";
 import Order from "./Order";
-import Header from "../../componentsDashboard/DeliveringStaffcomponents/Header/Header";
 import { UserProvider } from "../../componentsDashboard/DeliveringStaffcomponents/UserContext/UserContext";
 
 const DeliveringStaffpage = () => {
   return (
     <UserProvider>
       <div className="flex flex-col h-screen overflow-hidden">
-        <Header />
-
         <div className="flex flex-grow overflow-hidden">
           <div className="h-full bg-white shadow-lg">
             <Sidebar />

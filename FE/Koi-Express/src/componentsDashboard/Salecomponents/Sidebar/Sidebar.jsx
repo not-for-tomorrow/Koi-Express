@@ -16,15 +16,18 @@ const Sidebar = () => {
   const handleItemClick = (item) => {
     setActiveItem(item.id);
     switch (item.title) {
-      case "Tổng đơn hàng":
-        navigate("/salepage");
-        break;
       case "Tài khoản khách hàng":
         navigate("/salepage/customeraccount");
         break;
-      case "Duyệt đơn hàng":
-        navigate("/salepage/acceptorder");
+      case "Tổng đơn hàng":
+        navigate("/salepage/allorder");
         break;
+      case "Duyệt đơn hàng":
+        navigate("/salepage");
+        break;
+      case "Logout":
+          navigate("/login");
+          break;
       default:
         break;
     }
