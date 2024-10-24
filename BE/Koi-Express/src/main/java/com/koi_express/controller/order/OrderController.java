@@ -65,15 +65,16 @@ public class OrderController {
     }
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('SALES_STAFF')")
-    @GetMapping(value = "/all", produces = "application/json")
-    public ResponseEntity<Page<Orders>> getAllOrders(
+    @GetMapping(value = "/all-orders", produces = "application/json")
+    public ResponseEntity<ApiResponse<Page<OrderWithCustomerDTO>>> getAllOrders(
             HttpServletRequest request,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+
         logger.info("Fetching all orders with page: {} and size: {}", page, size);
         Pageable paging = PageRequest.of(page, size);
-        Page<Orders> ordersPage = orderService.getAllOrders(paging);
-        return new ResponseEntity<>(ordersPage, HttpStatus.OK);
+        ApiResponse<Page<OrderWithCustomerDTO>> response = orderService.getAllOrders(paging);
+        return new ResponseEntity<>(response, response.getCode() == 200 ? org.springframework.http.HttpStatus.OK : org.springframework.http.HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/history")

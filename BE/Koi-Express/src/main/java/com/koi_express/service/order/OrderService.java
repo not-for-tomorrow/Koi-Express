@@ -217,8 +217,17 @@ public class OrderService {
     }
 
     //    Get All Orders
-    public Page<Orders> getAllOrders(Pageable pageable) {
-        return orderRepository.findAll(pageable);
+    public ApiResponse<Page<OrderWithCustomerDTO>> getAllOrders(Pageable pageable) {
+        try {
+            Page<OrderWithCustomerDTO> ordersWithCustomers = orderRepository.findAllWithCustomer(pageable);
+            if (ordersWithCustomers.isEmpty()) {
+                return new ApiResponse<>(HttpStatus.OK.value(), "No orders found", null);
+            }
+            return new ApiResponse<>(HttpStatus.OK.value(), "Orders retrieved successfully", ordersWithCustomers);
+        } catch (Exception e) {
+            logger.error("Error retrieving orders: ", e);
+            throw new AppException(ErrorCode.ORDER_RETRIEVAL_FAILED, "Error retrieving orders");
+        }
     }
 
     // Accept Order

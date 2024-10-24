@@ -17,6 +17,7 @@ public enum ErrorCode {
     JWT_PARSING_FAILED(1014, "JWT parsing failed"),
     ORDER_INVALID(1015, "Order has invalid status"),
     ORDER_NOT_ASSIGNED(1016, "Order not assigned to staff"),
+    ORDER_RETRIEVAL_FAILED(1017, "Order retrieval failed"),
     ;
 
     ErrorCode(int code, String message) {
