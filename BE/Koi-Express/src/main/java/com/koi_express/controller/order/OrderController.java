@@ -69,7 +69,7 @@ public class OrderController {
     public ResponseEntity<ApiResponse<Page<OrderWithCustomerDTO>>> getAllOrders(
             HttpServletRequest request,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "100") int size) {
 
         logger.info("Fetching all orders with page: {} and size: {}", page, size);
         Pageable paging = PageRequest.of(page, size);
