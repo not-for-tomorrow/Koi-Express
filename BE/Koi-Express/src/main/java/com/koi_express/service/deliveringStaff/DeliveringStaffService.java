@@ -1,14 +1,17 @@
 package com.koi_express.service.deliveringStaff;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.entity.shipment.Shipments;
 import com.koi_express.enums.OrderStatus;
+import com.koi_express.enums.ShipmentStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.OrderRepository;
+import com.koi_express.repository.ShipmentsRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,12 +26,7 @@ public class DeliveringStaffService {
     private OrderRepository orderRepository;
 
     @Autowired
-    private JwtUtil jwtUtil;
-
-    public List<Orders> getOrdersByStatus(OrderStatus status) {
-        log.info("Fetching orders with status: {}", status);
-        return orderRepository.findByStatus(status);
-    }
+    private ShipmentsRepository shipmentsRepository;
 
     @Transactional(readOnly = true)
     public List<Orders> getAssignedOrdersByDeliveringStaff(Long deliveringStaffId) {
@@ -58,7 +56,20 @@ public class DeliveringStaffService {
         order.setStatus(OrderStatus.PICKING_UP);
         orderRepository.save(order);
 
+        LocalDateTime pickupTime = PickupTimeCalculator.calculatePickupTime(order.getOrderDetail().getKilometers());
+
+        Shipments shipment = Shipments.builder()
+                .customer(order.getCustomer())
+                .order(order)
+                .deliveringStaff(order.getDeliveringStaff())
+                .status(ShipmentStatus.PREPARING)
+                .estimatedPickupTime(pickupTime)
+                .build();
+
+        shipmentsRepository.save(shipment);
+
         log.info("Order ID: {} status updated to Picking Up by staff ID: {}", orderId, deliveringStaffId);
+        log.info("Shipment created for order ID: {}", orderId);
         return new ApiResponse<>(HttpStatus.OK.value(), "Order status updated to Picking Up", null);
     }
 }
