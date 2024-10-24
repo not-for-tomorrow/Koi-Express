@@ -3,6 +3,7 @@ package com.koi_express.repository;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
 import org.springframework.data.domain.Page;
@@ -31,7 +32,6 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
 
     List<Orders> findByStatusAndDeliveringStaffId(OrderStatus status, Long deliveringStaffId);
 
-    //    @Query("SELECT o FROM Orders o LEFT JOIN FETCH o.orderDetail WHERE o.orderId = :orderId")
-    //    Optional<Orders> findByIdWithDetail(@Param("orderId") Long orderId);
-
+    @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c) FROM Orders o JOIN o.customer c")
+    Page<OrderWithCustomerDTO> findAllWithCustomer(Pageable pageable);
 }

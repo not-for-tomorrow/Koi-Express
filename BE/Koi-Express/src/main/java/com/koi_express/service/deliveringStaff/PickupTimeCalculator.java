@@ -1,26 +1,31 @@
 package com.koi_express.service.deliveringStaff;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
+@Service
 public class PickupTimeCalculator {
 
-    private static final BigDecimal AVERAGE_SPEED_KM_PER_HOUR = new BigDecimal("60.0"); // Updated speed as BigDecimal
-    private static final long ADDITIONAL_TIME_FOR_DELAYS_IN_HOURS = 1;
+    @Value("${delivery.speed:60}")
+    private BigDecimal averageSpeedKmPerHour;
 
-    public static LocalDateTime calculatePickupTime(BigDecimal kilometers) {
+    @Value("${delivery.buffer-time:1}")
+    private long additionalTimeForDelaysInHours;
 
-        BigDecimal timeInHours = kilometers.divide(AVERAGE_SPEED_KM_PER_HOUR, 2, RoundingMode.HALF_UP);
+public LocalDateTime calculatePickupTime(BigDecimal kilometers) {
 
-        BigDecimal timeInMinutes = timeInHours.multiply(new BigDecimal("60.0"));
+    BigDecimal timeInHours = kilometers.divide(averageSpeedKmPerHour, 2, RoundingMode.HALF_UP);
 
-        LocalDateTime estimatedPickupTime = LocalDateTime.now()
-                .plusMinutes(timeInMinutes.longValue())
-                .plusHours(ADDITIONAL_TIME_FOR_DELAYS_IN_HOURS);
+    BigDecimal timeInMinutes = timeInHours.multiply(new BigDecimal("60.0"));
 
-        return estimatedPickupTime;
-    }
+    LocalDateTime estimatedPickupTime = LocalDateTime.now()
+            .plusMinutes(timeInMinutes.longValue())
+            .plusHours(additionalTimeForDelaysInHours);
+
+    return estimatedPickupTime;
+}
 }

@@ -13,7 +13,6 @@ import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.repository.ShipmentsRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,11 +21,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class DeliveringStaffService {
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
+    private final ShipmentsRepository shipmentsRepository;
+    private final PickupTimeCalculator pickupTimeCalculator;
 
-    @Autowired
-    private ShipmentsRepository shipmentsRepository;
+    // Constructor injection
+    public DeliveringStaffService(OrderRepository orderRepository,
+                                  ShipmentsRepository shipmentsRepository,
+                                  PickupTimeCalculator pickupTimeCalculator) {
+        this.orderRepository = orderRepository;
+        this.shipmentsRepository = shipmentsRepository;
+        this.pickupTimeCalculator = pickupTimeCalculator;
+    }
 
     @Transactional(readOnly = true)
     public List<Orders> getAssignedOrdersByDeliveringStaff(Long deliveringStaffId) {
@@ -56,7 +62,7 @@ public class DeliveringStaffService {
         order.setStatus(OrderStatus.PICKING_UP);
         orderRepository.save(order);
 
-        LocalDateTime pickupTime = PickupTimeCalculator.calculatePickupTime(order.getOrderDetail().getKilometers());
+        LocalDateTime pickupTime = pickupTimeCalculator.calculatePickupTime(order.getOrderDetail().getKilometers());
 
         Shipments shipment = Shipments.builder()
                 .customer(order.getCustomer())
