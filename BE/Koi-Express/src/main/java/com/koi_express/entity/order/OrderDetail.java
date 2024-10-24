@@ -61,7 +61,6 @@ public class OrderDetail implements Serializable {
     PaymentMethod paymentMethod;
 
     boolean insurance;
-    boolean healthCheck;
 
     @Column(nullable = false)
     @Digits(integer = 10, fraction = 2, message = "Distance fee must be a valid monetary amount")

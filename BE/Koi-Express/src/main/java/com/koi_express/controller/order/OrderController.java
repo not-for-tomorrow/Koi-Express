@@ -64,7 +64,7 @@ public class OrderController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('SALES_STAFF')")
     @GetMapping(value = "/all", produces = "application/json")
     public ResponseEntity<Page<Orders>> getAllOrders(
             HttpServletRequest request,

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.enums.ShipmentCondition;
 import com.koi_express.enums.ShipmentStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -20,6 +21,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Table(name = "shipments")
 public class Shipments { // quản lý vận chuyển
 
     @Id
@@ -38,44 +40,22 @@ public class Shipments { // quản lý vận chuyển
     @JoinColumn(name = "delivering_staff_id", nullable = false)
     DeliveringStaff deliveringStaff;
 
-    LocalDateTime pickupDate;
-    LocalDateTime estimatedDeliveryDate;
-    LocalDateTime actualDeliveryDate;
+    LocalDateTime estimatedPickupTime;
 
-    @Column(nullable = false)
-    boolean healthChecked = false;
-
-    @NotEmpty(message = "Packing method cannot be empty")
-    String packingMethod;
-
-    @ManyToOne
-    @JoinColumn(name = "route_id", nullable = false)
-    Routes route;
+    LocalDateTime estimatedDeliveryTime;
 
     @Enumerated(EnumType.STRING)
     ShipmentStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "shipment_condition")
+    ShipmentCondition condition;
+
     @CreationTimestamp
     @Column(updatable = false)
-    LocalDateTime createdAt = LocalDateTime.now();
+    LocalDateTime createdAt;
 
     @UpdateTimestamp
-    LocalDateTime updatedAt = LocalDateTime.now();
-
-    @ElementCollection
-    @CollectionTable(name = "shipment_inspection_images", joinColumns = @JoinColumn(name = "shipment_id"))
-    @Column(name = "inspection_image_url")
-    List<String> inspectionImageUrls;
-
-    // Transport images
-    @ElementCollection
-    @CollectionTable(name = "shipment_transport_images", joinColumns = @JoinColumn(name = "shipment_id"))
-    @Column(name = "transport_image_url")
-    List<String> transportImageUrls;
-
-    // Delivery images
-    @ElementCollection
-    @CollectionTable(name = "shipment_delivery_images", joinColumns = @JoinColumn(name = "shipment_id"))
-    @Column(name = "delivery_image_url")
-    List<String> deliveryImageUrls;
+    LocalDateTime updatedAt;
+    
 }

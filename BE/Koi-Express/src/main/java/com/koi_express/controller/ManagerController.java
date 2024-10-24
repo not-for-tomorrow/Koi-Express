@@ -54,7 +54,8 @@ public class ManagerController {
         return ResponseEntity.status(response.getCode()).body(response);
     }
 
-    @GetMapping(value = "/customers")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('SALES_STAFF')")
+    @GetMapping("/customers")
     public ResponseEntity<Page<Customers>> getAllCustomers(
             HttpServletRequest httpServletRequest,
             @RequestParam(defaultValue = "0") int page,
