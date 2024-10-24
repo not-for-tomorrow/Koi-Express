@@ -4,6 +4,7 @@ import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.manager.ManagerService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -123,11 +124,11 @@ public class ManagerController {
     }
 
     @GetMapping("/delivering-staff")
-    public ResponseEntity<Page<SystemAccount>> getAllDeliveringStaff(
+    public ResponseEntity<Page<DeliveringStaff>> getAllDeliveringStaff(
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<SystemAccount> deliveringStaffAccounts = managerService.getAllDeliveringStaffAccounts(pageable);
+        Page<DeliveringStaff> deliveringStaffAccounts = managerService.getAllDeliveringStaffAccounts(pageable);
         return new ResponseEntity<>(deliveringStaffAccounts, HttpStatus.OK);
     }
 }

@@ -72,7 +72,7 @@ public class ManagerService {
         return systemAccountService.getAllAccountsByRole(Role.SALES_STAFF, pageable);
     }
 
-    public Page<com.koi_express.entity.account.SystemAccount> getAllDeliveringStaffAccounts(Pageable pageable) {
-        return systemAccountService.getAllAccountsByRole(Role.DELIVERING_STAFF, pageable);
+    public Page<com.koi_express.entity.shipment.DeliveringStaff> getAllDeliveringStaffAccounts(Pageable pageable) {
+        return deliveringStaffService.getAllAccountsByRole(Role.DELIVERING_STAFF, pageable);
     }
 }
