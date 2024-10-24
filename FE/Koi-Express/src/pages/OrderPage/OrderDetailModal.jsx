@@ -48,7 +48,7 @@ const OrderDetailModal = ({ orderId, distance }) => {
             },
           }
         );
-        setOrder(response.data);
+        setOrder(response.data.order); // Adjusted to access the order object within the response
       } catch (err) {
         setError(err.message);
       } finally {
@@ -75,11 +75,12 @@ const OrderDetailModal = ({ orderId, distance }) => {
     destinationLocation,
   } = order;
 
+  // Safely access properties and format them
   const formattedDistanceFee = new Intl.NumberFormat("vi-VN").format(
-    orderDetail.distanceFee || 0
+    orderDetail?.distanceFee || 0
   );
   const formattedCommitmentFee = new Intl.NumberFormat("vi-VN").format(
-    orderDetail.commitmentFee || 0
+    orderDetail?.commitmentFee || 0
   );
 
   const translatedStatus = statusMapping[status] || status;
@@ -99,7 +100,7 @@ const OrderDetailModal = ({ orderId, distance }) => {
 
           <div className="text-sm ">
             <strong className="text-gray-600">Lộ trình:</strong>{" "}
-            {distance.toFixed(2)} km
+            {distance?.toFixed(2)} km
           </div>
 
           <div className="mt-6">
@@ -110,9 +111,9 @@ const OrderDetailModal = ({ orderId, distance }) => {
               </div>
               <div>
                 <p className="text-lg font-bold">
-                  {orderDetail.senderName} •{" "}
+                  {orderDetail?.senderName || "N/A"} •{" "}
                   <span className="text-base font-normal">
-                    {orderDetail.senderPhone}
+                    {orderDetail?.senderPhone || "N/A"}
                   </span>
                 </p>
                 <p className="text-sm text-gray-500">
@@ -128,9 +129,9 @@ const OrderDetailModal = ({ orderId, distance }) => {
               </div>
               <div>
                 <p className="text-lg font-bold">
-                  {orderDetail.recipientName} •{" "}
+                  {orderDetail?.recipientName || "N/A"} •{" "}
                   <span className="text-base font-normal">
-                    {orderDetail.recipientPhone}
+                    {orderDetail?.recipientPhone || "N/A"}
                   </span>
                 </p>
                 <p className="text-sm text-gray-500">
@@ -143,17 +144,17 @@ const OrderDetailModal = ({ orderId, distance }) => {
       </div>
 
       {/* Koi Quantity and Size Section */}
-      {orderDetail.koiQuantity > 0 && (
+      {orderDetail?.koiQuantity > 0 && (
         <div className="p-4 mt-4 border rounded-lg bg-gray-50">
           <div className="flex justify-between">
             <p>Số lượng cá</p>
-            <p>{orderDetail.koiQuantity}</p>
+            <p>{orderDetail?.koiQuantity}</p>
           </div>
           {/* Koi size is only displayed if it's a valid number greater than 0 */}
-          {orderDetail.koiSize > 0 && (
+          {orderDetail?.koiSize > 0 && (
             <div className="flex justify-between mt-2">
               <p>Kích cỡ cá</p>
-              <p>{orderDetail.koiSize}</p>
+              <p>{orderDetail?.koiSize}</p>
             </div>
           )}
         </div>
@@ -187,7 +188,7 @@ const OrderDetailModal = ({ orderId, distance }) => {
           </span>
         </p>
         <p className="mt-3">
-          <strong>Phương thức thanh toán:</strong> {paymentMethod}
+          <strong>Phương thức thanh toán:</strong> {paymentMethod || "N/A"}
         </p>
       </div>
 
