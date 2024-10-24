@@ -195,7 +195,7 @@ const OrderDetailModal = ({ orderId, distance }) => {
       {/* Button at the bottom */}
       <div className="flex-shrink-0 mt-6">
         <button className="w-full p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600">
-          <Link to="/apphomepage/history">Đóng</Link>
+          <Link to="/appkoiexpress/history">Đóng</Link>
         </button>
       </div>
     </div>

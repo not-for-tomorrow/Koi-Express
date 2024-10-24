@@ -28,7 +28,7 @@ export default function useRouteElements() {
       element: <Register />,
     },
     {
-      path: "/apphomepage/*",
+      path: "/appkoiexpress/*",
       element: <AppHomePages />,
     },
     {

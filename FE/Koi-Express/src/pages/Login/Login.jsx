@@ -43,7 +43,7 @@ const Login = () => {
           // Redirect based on the user's role
           switch (role) {
             case "CUSTOMER":
-              navigate("/apphomepage");
+              navigate("/appkoiexpress");
               break;
             case "SALES_STAFF":
               navigate("/salepage");
