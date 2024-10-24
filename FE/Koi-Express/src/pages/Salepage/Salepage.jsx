@@ -10,12 +10,10 @@ import { UserProvider } from "../../componentsDashboard/Salecomponents/UserConte
 const Salepage = () => {
   return (
     <UserProvider>
-      <div className="flex flex-col h-screen overflow-hidden"> {/* Full screen layout and prevent scrolling */}
-        {/* Header (fixed) */}
+      <div className="flex flex-col h-screen overflow-hidden">
         <Header />
 
-        <div className="flex flex-grow overflow-hidden"> {/* Flex container for Sidebar and Content, prevent overflow */}
-          {/* Sidebar (fixed) */}
+        <div className="flex flex-grow overflow-hidden">
           <div className="h-full bg-white shadow-lg">
             <Sidebar />
           </div>

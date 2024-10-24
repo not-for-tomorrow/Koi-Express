@@ -81,14 +81,13 @@ const Order = () => {
         createdAt: "2024-10-20T22:37:05",
         totalFee: 400000,
         status: "COMMIT_FEE_PENDING",
-      }
+      },
     ];
-  
+
     // Set static orders data
     setOrders(testOrders);
     setLoading(false); // Set loading to false after data is ready
   }, []);
-  
 
   const goToOrderDetail = (order) => {
     if (order && order.orderId) {
@@ -396,7 +395,7 @@ const Order = () => {
             </div>
           </div>
 
-          <div className="overflow-auto max-h-[63.5vh] text-sm">
+          <div className="overflow-auto max-h-[50vh] text-sm">
             {filterOrders().length === 0 ? (
               <div className="text-center text-gray-500">
                 Không tìm thấy đơn hàng
