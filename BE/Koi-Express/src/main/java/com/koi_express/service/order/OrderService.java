@@ -217,9 +217,9 @@ public class OrderService {
     }
 
     //    Get All Orders
-    public ApiResponse<Page<OrderWithCustomerDTO>> getAllOrders(Pageable pageable) {
+    public ApiResponse<List<OrderWithCustomerDTO>> getAllOrders() {
         try {
-            Page<OrderWithCustomerDTO> ordersWithCustomers = orderRepository.findAllWithCustomer(pageable);
+            List<OrderWithCustomerDTO> ordersWithCustomers = orderRepository.findAllWithCustomer();
             if (ordersWithCustomers.isEmpty()) {
                 return new ApiResponse<>(HttpStatus.OK.value(), "No orders found", null);
             }
@@ -347,64 +347,22 @@ public class OrderService {
         }
     }
 
-    public ApiResponse<String> processOrderPayment(Long orderId, PaymentMethod paymentMethod) {
-        Orders order = this.findOrderById(orderId);
-
-        ApiResponse<Map<String, BigDecimal>> totalFeeResponse = this.calculateTotalFee(orderId, null, null);
-        if (totalFeeResponse.getCode() != 200) {
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Không thể tính toán tổng chi phí", null);
-        }
-
-        BigDecimal totalFee = totalFeeResponse.getResult().get("totalPrice");
-
-        if (paymentMethod == PaymentMethod.VNPAY) {
-            ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPayment(order);
-            if (paymentLinkResponse.getCode() != 200) {
-                return new ApiResponse<>(
-                        HttpStatus.BAD_REQUEST.value(), "Không thể tạo liên kết thanh toán VNPay", null);
-            }
-
-            String paymentLink = paymentLinkResponse.getResult();
-
-            String customerEmail = order.getCustomer().getEmail();
-            emailService.sendPaymentLink(customerEmail, paymentLink, order);
-
-            return new ApiResponse<>(
-                    HttpStatus.OK.value(), "Đã gửi liên kết thanh toán VNPay đến email của khách hàng", paymentLink);
-        } else if (paymentMethod == PaymentMethod.CASH_BY_RECEIVER || paymentMethod == PaymentMethod.CASH_BY_SENDER) {
-            order.setStatus(OrderStatus.IN_TRANSIT);
-            order.setPaymentConfirmed(false);
-            orderRepository.save(order);
-
-            return new ApiResponse<>(
-                    HttpStatus.OK.value(),
-                    "Thanh toán bằng tiền mặt. Đơn hàng đang vận chuyển (chưa thanh toán).",
-                    null);
-        }
-
-        return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Phương thức thanh toán không hợp lệ", null);
-    }
-
     @Transactional
-    public ResponseEntity<ApiResponse<String>> confirmPayment(HttpSession session, HttpServletRequest request)
+    public ApiResponse<String> confirmPayment(HttpSession session, HttpServletRequest request)
             throws IOException {
         String role = sessionManager.getRoleFromSession(session);
         String userId = sessionManager.getUserIdFromSession(session);
 
         Map<String, Object> sessionData = sessionManager.retrieveSessionData(session, role, userId);
-        if (sessionData.isEmpty() || !sessionData.containsKey("orderId")) {
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Order ID not found in session", null),
-                    HttpStatus.BAD_REQUEST);
+        if (sessionData == null || !sessionData.containsKey("orderId")) {
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Order ID not found in session", null);
         }
 
         Long orderId = (Long) sessionData.get("orderId");
 
         Map<String, BigDecimal> calculationData = sessionManager.retrieveCalculationSessionData(session, role, userId);
-        if (calculationData.isEmpty() || !calculationData.containsKey("totalFee")) {
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Calculation data missing", null),
-                    HttpStatus.BAD_REQUEST);
+        if (calculationData == null || !calculationData.containsKey("totalFee")) {
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Calculation data missing", null);
         }
 
         BigDecimal totalFee = calculationData.get("totalFee");
@@ -417,72 +375,57 @@ public class OrderService {
                     PaymentMethod.valueOf(request.getParameter("paymentMethod").toUpperCase());
         }
 
-        if (paymentMethod == PaymentMethod.VNPAY) {
-            try {
-                ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPaymentWithTotalFee(order, totalFee);
-                if (paymentLinkResponse.getCode() != HttpStatus.OK.value()) {
-                    return new ResponseEntity<>(
-                            new ApiResponse<>(
-                                    HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null),
-                            HttpStatus.BAD_REQUEST);
-                }
+        return handlePaymentMethod(order, paymentMethod, totalFee, sessionData, calculationData);
+    }
 
-                String email = (String) sessionData.get("email");
-                emailService.sendPaymentLink(email, paymentLinkResponse.getResult(), order);
+    public ApiResponse<String> handlePaymentMethod(Orders order, PaymentMethod paymentMethod, BigDecimal totalFee, Map<String, Object> sessionData, Map<String, BigDecimal> calculationData) {
+        switch (paymentMethod) {
+            case VNPAY:
+                return processVnPayPayment(order, totalFee, sessionData, calculationData);
 
-                orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
-                invoiceBuilder.updateInvoice(order, calculationData);
+            case CASH_BY_RECEIVER:
+            case CASH_BY_SENDER:
+                return processCashPayment(order, calculationData, paymentMethod);
 
-                return new ResponseEntity<>(
-                        new ApiResponse<>(
-                                HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult()),
-                        HttpStatus.OK);
+            default:
+                return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid payment method", null);
+        }
+    }
 
-            } catch (Exception e) {
-                logger.error("Error creating VNPay payment link: ", e);
-                return new ResponseEntity<>(
-                        new ApiResponse<>(
-                                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                                "Failed to create VNPay payment link",
-                                e.getMessage()),
-                        HttpStatus.INTERNAL_SERVER_ERROR);
+    private ApiResponse<String> processVnPayPayment(Orders order, BigDecimal totalFee, Map<String, Object> sessionData, Map<String, BigDecimal> calculationData) {
+        try {
+            // Tạo đường dẫn thanh toán VNPay với totalFee
+            ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPaymentWithTotalFee(order, totalFee);
+            if (paymentLinkResponse.getCode() != HttpStatus.OK.value()) {
+                return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null);
             }
-        }
 
-        Map<String, String> vnpParams = request.getParameterMap().entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
-
-        if (vnPayService.verifyPayment(vnpParams)) {
-            order.setStatus(OrderStatus.IN_TRANSIT);
-            order.setPaymentConfirmed(true);
-
-            orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
-            invoiceBuilder.updateInvoice(order, calculationData);
-
-            orderRepository.save(order);
-
+            // Gửi đường dẫn thanh toán qua email
             String email = (String) sessionData.get("email");
-            emailService.sendInvoiceEmail(email, order, calculationData);
+            emailService.sendPaymentLink(email, paymentLinkResponse.getResult(), order);
 
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.OK.value(), "Payment confirmed, invoice sent", null), HttpStatus.OK);
-        }
-
-        if (paymentMethod == PaymentMethod.CASH_BY_RECEIVER || paymentMethod == PaymentMethod.CASH_BY_SENDER) {
-            order.setStatus(OrderStatus.IN_TRANSIT);
-            order.setPaymentConfirmed(false);
-
+            // Cập nhật OrderDetail và Invoice sau khi tạo liên kết thanh toán
             orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
             invoiceBuilder.updateInvoice(order, calculationData);
 
-            orderRepository.save(order);
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.OK.value(), "Order is in-transit but not yet paid", null),
-                    HttpStatus.OK);
-        }
+            return new ApiResponse<>(HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult());
 
-        return new ResponseEntity<>(
-                new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid payment method", null),
-                HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            logger.error("Error creating VNPay payment link: ", e);
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage());
+        }
+    }
+
+    // Xử lý thanh toán bằng tiền mặt
+    private ApiResponse<String> processCashPayment(Orders order, Map<String, BigDecimal> calculationData, PaymentMethod paymentMethod) {
+        order.setStatus(OrderStatus.IN_TRANSIT);
+        order.setPaymentConfirmed(false); // Thanh toán tiền mặt chưa xác nhận thanh toán
+
+        // Cập nhật OrderDetail và Invoice sau khi xác nhận thanh toán
+        orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
+        invoiceBuilder.updateInvoice(order, calculationData);
+
+        orderRepository.save(order);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Order is in-transit but not yet paid", null);
     }
 }

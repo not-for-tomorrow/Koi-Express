@@ -60,6 +60,7 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl, onUpdat
   const handleUpdate = async () => {
     if (!nameErrorMessage && !emailErrorMessage) {
       try {
+
         setIsLoading(true);
         const token = localStorage.getItem("token");
         const response = await fetch(
@@ -77,9 +78,11 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl, onUpdat
           }
         );
   
+
         if (response.ok) {
           setIsEditing(false);
           setUpdateSuccessMessage("Cập nhật thông tin thành công!");
+
   
           // Cập nhật thông tin mới vào localStorage
           const newUserInfo = { fullName: updatedFullName, email: updatedEmail };
@@ -105,7 +108,6 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl, onUpdat
       }
     }
   };
-  
 
   return (
     <div className="flex flex-col items-center w-full p-8 mx-auto mt-4 bg-white rounded-lg shadow-md md:mt-0 max-w-auto">

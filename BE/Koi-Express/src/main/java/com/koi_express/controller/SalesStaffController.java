@@ -2,11 +2,8 @@ package com.koi_express.controller;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
-import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.saleStaff.SalesStaffService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +26,6 @@ public class SalesStaffController {
 
     @Autowired
     private JwtUtil jwtUtil;
-
-    @Autowired
-    private ManageCustomerService manageCustomerService;
 
     @PreAuthorize("hasRole('SALES_STAFF')")
     @GetMapping("/pending")
@@ -70,20 +64,5 @@ public class SalesStaffController {
                     new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error accepting order", null);
             return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    @PreAuthorize("hasRole('SALES_STAFF')")
-    @GetMapping("/customers")
-    public ResponseEntity<Page<Customers>> getAllCustomers(
-            HttpServletRequest httpServletRequest,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "100") int size) {
-
-        String token = httpServletRequest.getHeader("Authorization").substring(7);
-
-        Pageable paging = PageRequest.of(page, size);
-        Page<Customers> customersPage = manageCustomerService.getAllCustomers(paging);
-
-        return new ResponseEntity<>(customersPage, HttpStatus.OK);
     }
 }

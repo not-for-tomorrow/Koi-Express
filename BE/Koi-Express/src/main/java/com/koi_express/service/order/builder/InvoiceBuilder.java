@@ -29,7 +29,7 @@ public class InvoiceBuilder {
         invoice.setVat(order.getOrderDetail().getVat());
         invoice.setKoiFee(order.getOrderDetail().getKoiFee());
         invoice.setInsuranceFee(order.getOrderDetail().getInsuranceFee());
-        invoice.setTotalFee(fees.get("totalPrice"));
+        invoice.setTotalFee(fees.get("totalFee"));
         invoice.setPaymentMethod(order.getPaymentMethod());
         invoiceRepository.save(invoice);
     }

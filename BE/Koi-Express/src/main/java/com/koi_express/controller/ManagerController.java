@@ -18,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/manager")
 @PreAuthorize("hasRole('MANAGER')")
@@ -54,17 +56,13 @@ public class ManagerController {
         return ResponseEntity.status(response.getCode()).body(response);
     }
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('SALES_STAFF')")
-    @GetMapping("/customers")
-    public ResponseEntity<Page<Customers>> getAllCustomers(
-            HttpServletRequest httpServletRequest,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+    @GetMapping(value = "/customers")
+    public ResponseEntity<List<Customers>> getAllCustomers(
+            HttpServletRequest httpServletRequest) {
 
         String token = httpServletRequest.getHeader("Authorization").substring(7);
 
-        Pageable paging = PageRequest.of(page, size);
-        Page<Customers> customersPage = manageCustomerService.getAllCustomers(paging);
+        List<Customers> customersPage = manageCustomerService.getAllCustomers();
 
         return new ResponseEntity<>(customersPage, HttpStatus.OK);
     }
@@ -116,20 +114,16 @@ public class ManagerController {
     }
 
     @GetMapping("/sales-staff")
-    public ResponseEntity<Page<SystemAccount>> getAllSalesStaff(
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<List<SystemAccount>> getAllSalesStaff() {
 
-        Pageable pageable = PageRequest.of(page, size);
-        Page<SystemAccount> salesStaffAccounts = managerService.getAllSalesStaffAccounts(pageable);
+        List<SystemAccount> salesStaffAccounts = managerService.getAllSalesStaffAccounts();
         return new ResponseEntity<>(salesStaffAccounts, HttpStatus.OK);
     }
 
     @GetMapping("/delivering-staff")
-    public ResponseEntity<Page<DeliveringStaff>> getAllDeliveringStaff(
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<List<DeliveringStaff>> getAllDeliveringStaff() {
 
-        Pageable pageable = PageRequest.of(page, size);
-        Page<DeliveringStaff> deliveringStaffAccounts = managerService.getAllDeliveringStaffAccounts(pageable);
+        List<DeliveringStaff> deliveringStaffAccounts = managerService.getAllDeliveringStaffAccounts();
         return new ResponseEntity<>(deliveringStaffAccounts, HttpStatus.OK);
     }
 }

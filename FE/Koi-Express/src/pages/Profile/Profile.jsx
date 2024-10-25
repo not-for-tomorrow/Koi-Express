@@ -14,6 +14,8 @@ const Profile = () => {
     const token = localStorage.getItem("token");
 
     if (token) {
+
+
       fetch("http://localhost:8080/api/customers/basic-info", {
         method: "GET",
         headers: {
@@ -37,6 +39,7 @@ const Profile = () => {
         })
         .catch((error) => {
           console.error("Error fetching user info:", error);
+
         });
     } else {
       console.error("Token not found in localStorage.");

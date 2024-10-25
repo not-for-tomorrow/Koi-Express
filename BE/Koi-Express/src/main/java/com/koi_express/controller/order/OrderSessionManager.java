@@ -94,6 +94,8 @@ public class OrderSessionManager {
         switch (role) {
             case "CUSTOMER":
                 return "customer_" + userId;
+            case "SALES_STAFF":
+                return "staff_" + userId;
             case "DELIVERING_STAFF":
                 return "staff_" + userId;
             case "MANAGER":
