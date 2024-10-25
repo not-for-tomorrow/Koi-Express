@@ -6,8 +6,8 @@ import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import AppHomePages from "./pages/AppHomePages/AppHomePages";
 import OtpModal from "./pages/OTP/OtpModal";
-import Salepage from "./pages/Salepage/Salepage";
-import DeliveringStaffpage from "./pages/DeliveringStaffpage/DeliveringStaffpage";
+import Salepage from "./Salepage/Salepage";
+import DeliveringStaffpage from "./DeliveringStaffpage/DeliveringStaffpage";
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
