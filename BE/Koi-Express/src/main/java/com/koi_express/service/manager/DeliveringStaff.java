@@ -11,11 +11,11 @@ import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.service.verification.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class DeliveringStaff {
@@ -58,7 +58,7 @@ public class DeliveringStaff {
                 HttpStatus.OK.value(), "Delivering staff account created successfully", deliveringStaff);
     }
 
-    public Page<com.koi_express.entity.shipment.DeliveringStaff> getAllAccountsByRole(Role role, Pageable pageable) {
-        return deliveringStaffRepository.findAllByRole(role, pageable);
+    public List<com.koi_express.entity.shipment.DeliveringStaff> getAllAccountsByRole(Role role) {
+        return deliveringStaffRepository.findAllByRole(role);
     }
 }

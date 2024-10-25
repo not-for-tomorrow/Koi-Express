@@ -14,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ManagerService {
 
@@ -68,11 +70,11 @@ public class ManagerService {
         return deliveringStaffService.createDeliveringStaffAccount(createStaffRequest);
     }
 
-    public Page<com.koi_express.entity.account.SystemAccount> getAllSalesStaffAccounts(Pageable pageable) {
-        return systemAccountService.getAllAccountsByRole(Role.SALES_STAFF, pageable);
+    public List<com.koi_express.entity.account.SystemAccount> getAllSalesStaffAccounts() {
+        return systemAccountService.getAllAccountsByRole(Role.SALES_STAFF);
     }
 
-    public Page<com.koi_express.entity.shipment.DeliveringStaff> getAllDeliveringStaffAccounts(Pageable pageable) {
-        return deliveringStaffService.getAllAccountsByRole(Role.DELIVERING_STAFF, pageable);
+    public List<com.koi_express.entity.shipment.DeliveringStaff> getAllDeliveringStaffAccounts() {
+        return deliveringStaffService.getAllAccountsByRole(Role.DELIVERING_STAFF);
     }
 }

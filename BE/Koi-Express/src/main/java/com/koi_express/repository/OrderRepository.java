@@ -33,5 +33,5 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
     List<Orders> findByStatusAndDeliveringStaffId(OrderStatus status, Long deliveringStaffId);
 
     @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c) FROM Orders o JOIN o.customer c")
-    Page<OrderWithCustomerDTO> findAllWithCustomer(Pageable pageable);
+    List<OrderWithCustomerDTO> findAllWithCustomer();
 }

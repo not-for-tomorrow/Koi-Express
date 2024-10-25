@@ -28,7 +28,7 @@ const RoutingControl = ({ pickupLocation, deliveryLocation, setDistance }) => {
       routingControl.on("routesfound", (e) => {
         const route = e.routes[0];
         if (route) {
-          const distanceInKm = route.summary.totalDistance / 1000; // Convert distance to km
+          const distanceInKm = route.summary.totalDistance / 1000; 
           setDistance(distanceInKm);
         }
       });

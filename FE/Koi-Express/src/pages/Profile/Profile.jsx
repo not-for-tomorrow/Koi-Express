@@ -16,7 +16,6 @@ const Profile = () => {
   
     if (token) {
       try {
-        // Decode the token
         const decoded = jwt_decode(token);
         console.log("Decoded token:", decoded);
         

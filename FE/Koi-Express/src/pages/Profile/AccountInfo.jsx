@@ -24,7 +24,6 @@ const AccountInfo = ({ fullName, phoneNumber, email }) => {
 
   return (
     <div className="p-8 mt-4 space-y-6 md:mt-0">
-      
 
       {/* Các card thông tin khác */}
       {iconsData.map((card, index) => (

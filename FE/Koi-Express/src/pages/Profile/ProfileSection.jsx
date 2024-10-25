@@ -70,12 +70,18 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
             email: updatedEmail
           })
         });
-  
+
         if (response.ok) {
           const data = await response.json();
           setIsEditing(false);
           setUpdateSuccessMessage("Cập nhật thông tin thành công!");
-          // Optionally, update profile details based on response
+
+          // Update fullName and email with the new values
+          setUpdatedFullName(data.fullName);
+          setUpdatedEmail(data.email);
+
+          window.location.reload(); 
+
         } else {
           const errorData = await response.json();
           setUpdateErrorMessage(errorData.message || "Có lỗi xảy ra khi cập nhật.");
@@ -85,7 +91,6 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
       }
     }
   };
-  
 
   return (
     <div className="flex flex-col items-center w-full p-8 mx-auto mt-4 bg-white rounded-lg shadow-md md:mt-0 max-w-auto">
