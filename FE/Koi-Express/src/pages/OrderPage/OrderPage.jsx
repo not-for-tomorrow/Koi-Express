@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import OrderForm from "./OrderForm";
 import OrderForm2 from "./OrderForm2"; // Import OrderForm2
-import { MapContainer as LeafletMap, TileLayer, Marker } from "react-leaflet";
+import {
+  MapContainer as LeafletMap,
+  TileLayer,
+  Marker,
+  useMap,
+} from "react-leaflet";
 import RoutingControl from "./RoutingControl";
 import FitBoundsButton from "./FitBoundsButton";
 
@@ -25,7 +30,7 @@ const OrderPage = () => {
   const [recipientPhone, setRecipientPhone] = useState("");
   const [isPickupConfirmed, setIsPickupConfirmed] = useState(false);
   const [isDeliveryConfirmed, setIsDeliveryConfirmed] = useState(false);
-
+  const mapRef = useRef(null);
 
   // Function to reverse geocode lat/lng to an address
   const reverseGeocode = async (lat, lng) => {
@@ -146,12 +151,45 @@ const OrderPage = () => {
     }
   };
 
+  useEffect(() => {
+    if (mapRef.current) {
+      const map = mapRef.current;
+      let bounds = [];
+
+      // Fit bounds khi vị trí GPS có thay đổi và chưa có địa chỉ nào
+      if (gpsLocation && !pickupLocation && !deliveryLocation) {
+        bounds.push([gpsLocation.lat, gpsLocation.lng]);
+      }
+
+      // Nếu chỉ có địa chỉ lấy hàng (pickupLocation), thì fit đến vị trí lấy hàng
+      if (pickupLocation && !deliveryLocation) {
+        bounds.push([pickupLocation.lat, pickupLocation.lng]);
+      }
+
+      // Nếu chỉ có địa chỉ giao hàng (deliveryLocation), thì fit đến vị trí giao hàng
+      if (deliveryLocation && !pickupLocation) {
+        bounds.push([deliveryLocation.lat, deliveryLocation.lng]);
+      }
+
+      // Nếu cả hai vị trí đều đã nhập đầy đủ, thì fit đến cả hai
+      if (pickupLocation && deliveryLocation) {
+        bounds.push([pickupLocation.lat, pickupLocation.lng]);
+        bounds.push([deliveryLocation.lat, deliveryLocation.lng]);
+      }
+
+      // Nếu có bất kỳ vị trí nào được cung cấp, thì thực hiện fit bounds
+      if (bounds.length > 0) {
+        map.fitBounds(bounds);
+      }
+    }
+  }, [pickupLocation, deliveryLocation]);
+
   return (
     <div className="flex h-screen">
       {/* Sidebar Order Form Section */}
       {currentStep === 1 ? (
         <OrderForm
-        pickupAddress={pickupAddress}
+          pickupAddress={pickupAddress}
           setPickupAddress={setPickupAddress}
           deliveryAddress={deliveryAddress}
           setDeliveryAddress={setDeliveryAddress}
@@ -180,7 +218,7 @@ const OrderPage = () => {
         />
       ) : (
         <OrderForm2
-        handleBack={handleBack}
+          handleBack={handleBack}
           basePrice={totalPrice}
           pickupAddress={pickupAddress}
           deliveryAddress={deliveryAddress}
@@ -192,8 +230,7 @@ const OrderPage = () => {
           recipientPhone={recipientPhone}
           isPickupConfirmed={isPickupConfirmed} // Pass it here
           isDeliveryConfirmed={isDeliveryConfirmed} // Pass it here
-      />
-      
+        />
       )}
 
       {/* Full-Screen Map Section */}
@@ -208,10 +245,13 @@ const OrderPage = () => {
               position: "relative",
               zIndex: 1,
             }}
+            whenCreated={(mapInstance) => {
+              mapRef.current = mapInstance; // Save reference to the map instance
+            }}
           >
             <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=pk.57eb525ef1bdb7826a61cf49564f8a86" // LocationIQ tiles
+              attribution='&copy; <a href="https://locationiq.com">LocationIQ</a> contributors'
             />
             {gpsLocation && <Marker position={gpsLocation} />}
             {pickupLocation && !gpsLocation && (

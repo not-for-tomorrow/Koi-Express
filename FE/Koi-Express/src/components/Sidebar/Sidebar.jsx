@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
 import { IoReorderThreeOutline } from "react-icons/io5";
 import { navItems } from "./IconsData";
-import jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
@@ -16,26 +15,63 @@ const Sidebar = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
+  // Lấy thông tin fullName và email từ localStorage
+  const fetchUserInfoFromLocalStorage = () => {
+    const storedUserInfo = localStorage.getItem("userInfo");
+    if (storedUserInfo) {
+      const parsedUserInfo = JSON.parse(storedUserInfo);
+      setUserInfo((prevInfo) => ({
+        ...prevInfo,
+        fullName: parsedUserInfo.fullName || "Unknown User",
+        email: parsedUserInfo.email || "No Email",
+      }));
+    }
+  };
 
+  // Gọi API để lấy phone từ basic-info
+  const fetchPhoneFromAPI = async () => {
+    const token = localStorage.getItem("token");
     if (token) {
       try {
-        // Decode the token
-        const decoded = jwt_decode(token);
-
-        // Save user info
-        setUserInfo({
-          fullName: decoded.fullName || "Unknown User",
-          email: decoded.email || "No Email",
-          phone: decoded.sub || "No Phone",
+        const response = await fetch("http://localhost:8080/api/customers/basic-info", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
+        if (response.ok) {
+          const data = await response.json();
+          setUserInfo((prevInfo) => ({
+            ...prevInfo,
+            phone: data.result.phoneNumber || "No Phone",
+          }));
+        } else {
+          throw new Error("Failed to fetch phone number");
+        }
       } catch (error) {
-        console.error("Invalid token:", error);
+        console.error("Error fetching phone number:", error);
       }
-    } else {
-      console.error("Token not found in localStorage.");
     }
+  };
+
+  useEffect(() => {
+    // Lấy thông tin fullName và email từ localStorage
+    fetchUserInfoFromLocalStorage();
+
+    // Lấy thông tin phone từ API
+    fetchPhoneFromAPI();
+
+    // Lắng nghe sự kiện thay đổi localStorage để cập nhật thông tin
+    const handleStorageChange = () => {
+      fetchUserInfoFromLocalStorage();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   const handleItemClick = (item) => {
@@ -43,10 +79,10 @@ const Sidebar = () => {
     // Điều hướng dựa trên item.title
     switch (item.title) {
       case "Đơn hàng mới":
-        navigate("/apphomepage");
+        navigate("/appkoiexpress");
         break;
       case "Lịch sử đơn hàng":
-        navigate("/apphomepage/history");
+        navigate("/appkoiexpress/history");
         break;
       default:
         break;
@@ -56,7 +92,7 @@ const Sidebar = () => {
   const handleProfileClick = () => {
     // Điều hướng đến trang Profile mà không thay đổi trạng thái activeItem
     setActiveItem(null);
-    navigate("/apphomepage/profile");
+    navigate("/appkoiexpress/profile");
   };
 
   return (

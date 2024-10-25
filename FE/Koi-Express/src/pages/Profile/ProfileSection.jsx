@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
-const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
+const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl, onUpdateSuccess }) => {
   const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false);
   const [updatedFullName, setUpdatedFullName] = useState(fullName);
   const [updatedEmail, setUpdatedEmail] = useState(email);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [nameErrorMessage, setNameErrorMessage] = useState(""); // Lỗi tên
-  const [emailErrorMessage, setEmailErrorMessage] = useState(""); // Lỗi email
-  const [updateSuccessMessage, setUpdateSuccessMessage] = useState(""); // Success message
-  const [updateErrorMessage, setUpdateErrorMessage] = useState(""); // API error message
+  const [nameErrorMessage, setNameErrorMessage] = useState("");
+  const [emailErrorMessage, setEmailErrorMessage] = useState("");
+  const [updateSuccessMessage, setUpdateSuccessMessage] = useState("");
+  const [updateErrorMessage, setUpdateErrorMessage] = useState("");
 
+  // Update the fields when the parent data changes (useEffect will trigger re-render)
   useEffect(() => {
     setUpdatedFullName(fullName);
     setUpdatedEmail(email);
@@ -22,7 +24,7 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     console.log("Logout button clicked");
-    navigate('/login');
+    navigate("/login");
   };
 
   const handleEdit = () => {
@@ -33,9 +35,9 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
     setIsEditing(false);
     setUpdatedFullName(fullName);
     setUpdatedEmail(email);
-    setNameErrorMessage(""); // Reset lỗi khi hủy
+    setNameErrorMessage("");
     setEmailErrorMessage("");
-    setUpdateSuccessMessage(""); // Clear any success message
+    setUpdateSuccessMessage("");
   };
 
   const validateName = (name) => {
@@ -58,36 +60,51 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
   const handleUpdate = async () => {
     if (!nameErrorMessage && !emailErrorMessage) {
       try {
-        const token = localStorage.getItem("token"); // Get JWT from localStorage
-        const response = await fetch('http://localhost:8080/api/customers/update', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            fullName: updatedFullName,
-            email: updatedEmail
-          })
-        });
+
+        setIsLoading(true);
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          "http://localhost:8080/api/customers/update",
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              fullName: updatedFullName,
+              email: updatedEmail,
+            }),
+          }
+        );
+  
 
         if (response.ok) {
-          const data = await response.json();
           setIsEditing(false);
           setUpdateSuccessMessage("Cập nhật thông tin thành công!");
 
-          // Update fullName and email with the new values
-          setUpdatedFullName(data.fullName);
-          setUpdatedEmail(data.email);
-
-          window.location.reload(); 
-
+  
+          // Cập nhật thông tin mới vào localStorage
+          const newUserInfo = { fullName: updatedFullName, email: updatedEmail };
+          localStorage.setItem("userInfo", JSON.stringify(newUserInfo));
+  
+          // Sau khi cập nhật localStorage, trigger sự kiện
+          window.dispatchEvent(new Event('storage'));
+  
+          // Cập nhật lại trạng thái của fullName và email
+          onUpdateSuccess(); // Gọi hàm cập nhật từ component cha nếu cần
+  
+          // Đồng bộ lại updatedFullName và updatedEmail với giá trị mới
+          setUpdatedFullName(updatedFullName);
+          setUpdatedEmail(updatedEmail);
         } else {
           const errorData = await response.json();
           setUpdateErrorMessage(errorData.message || "Có lỗi xảy ra khi cập nhật.");
         }
       } catch (error) {
         setUpdateErrorMessage("Lỗi kết nối tới máy chủ.");
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -99,7 +116,11 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
         alt="Profile"
         className="object-cover w-24 h-24 mt-4 border-4 border-blue-500 rounded-full"
       />
-      <div className={`flex flex-col mt-2 space-y-2 w-full ${isEditing ? 'items-start text-left' : 'items-center text-center'}`}>
+      <div
+        className={`flex flex-col mt-2 space-y-2 w-full ${
+          isEditing ? "items-start text-left" : "items-center text-center"
+        }`}
+      >
         {isEditing ? (
           <>
             <p className="w-full text-gray-400 border-b border-gray-400 border-dotted">
@@ -114,7 +135,7 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
                   validateName(e.target.value);
                 }}
                 className="w-full text-left focus:outline-none"
-                style={{ border: 'none', outline: 'none' }}
+                style={{ border: "none", outline: "none" }}
               />
             </p>
             {nameErrorMessage && (
@@ -129,7 +150,7 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
                   validateEmail(e.target.value);
                 }}
                 className="w-full text-left focus:outline-none"
-                style={{ border: 'none', outline: 'none' }}
+                style={{ border: "none", outline: "none" }}
               />
             </p>
             {emailErrorMessage && (
@@ -175,9 +196,9 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl }) => {
               aria-label="Update"
               onClick={handleUpdate}
               className="w-full px-4 py-2 text-sm text-white transition-all duration-300 ease-in-out bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              disabled={nameErrorMessage || emailErrorMessage}
+              disabled={nameErrorMessage || emailErrorMessage || isLoading}
             >
-              Cập nhật
+              {isLoading ? "Đang cập nhật..." : "Cập nhật"}
             </button>
           </div>
         ) : (
@@ -207,6 +228,7 @@ ProfileSection.propTypes = {
   phoneNumber: PropTypes.string,
   email: PropTypes.string,
   profileImageUrl: PropTypes.string,
+  onUpdateSuccess: PropTypes.func.isRequired,
 };
 
 export default ProfileSection;
