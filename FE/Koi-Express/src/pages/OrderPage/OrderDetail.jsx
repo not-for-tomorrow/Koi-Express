@@ -13,9 +13,7 @@ import OrderDetailModal from "./OrderDetailModal";
 
 const OrderDetail = () => {
   const { orderId } = useParams(); // Extract orderId from the URL
-  const location = useLocation(); // Get the location object
-  const order = location.state; // Get the passed order from state
-
+  const [order, setOrder] = useState(null); // Store the order data fetched from API
   const [pickupLocation, setPickupLocation] = useState(null);
   const [deliveryLocation, setDeliveryLocation] = useState(null);
   const [distance, setDistance] = useState(0);
@@ -25,11 +23,32 @@ const OrderDetail = () => {
   const MAX_RETRIES = 5; // Set a maximum number of retries to avoid infinite loops
   const RETRY_DELAY = 3000; // Retry every 3 seconds
 
+  // Fetch order details from API
+  useEffect(() => {
+    const fetchOrderDetails = async () => {
+      const token = localStorage.getItem("token"); // Retrieve the token from localStorage
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/orders/${orderId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Include the token in the request headers
+            },
+          }
+        );
+        setOrder(response.data.order); // Set order data from API response
+      } catch (error) {
+        console.error("Error fetching order details:", error);
+      }
+    };
+    fetchOrderDetails();
+  }, [orderId]);
+
   // Function to get latitude and longitude for an address using LocationIQ API
   const geocodeAddress = async (address) => {
     try {
       const response = await axios.get(
-        "https://us1.locationiq.com/v1/search.php", // Example: using LocationIQ's geocode API
+        "https://us1.locationiq.com/v1/search.php",
         {
           params: {
             key: "pk.57eb525ef1bdb7826a61cf49564f8a86", // Replace with your API key
@@ -51,42 +70,40 @@ const OrderDetail = () => {
   };
 
   const fetchLocations = async () => {
-    if (order && order.originLocation && order.destinationLocation) {
-      setIsLoading(true); // Set loading to true while fetching coordinates
+    if (!pickupLocation && order?.originLocation) {
       const pickupCoords = await geocodeAddress(order.originLocation);
-      const deliveryCoords = await geocodeAddress(order.destinationLocation);
       setPickupLocation(pickupCoords);
-      setDeliveryLocation(deliveryCoords);
-      setIsLoading(false); // Set loading to false after fetching coordinates
     }
+    if (!deliveryLocation && order?.destinationLocation) {
+      const deliveryCoords = await geocodeAddress(order.destinationLocation);
+      setDeliveryLocation(deliveryCoords);
+    }
+    setIsLoading(false);
   };
 
   useEffect(() => {
     const retryFetchLocations = async () => {
       if (pickupLocation && deliveryLocation) {
-        // Stop polling when both locations are available
         clearInterval(intervalId);
       } else if (retryCount < MAX_RETRIES) {
         await fetchLocations();
-        setRetryCount(retryCount + 1); // Increment retry count after each attempt
+        setRetryCount(retryCount + 1);
       } else {
         console.error("Max retries reached. Could not fetch locations.");
-        clearInterval(intervalId); // Stop retrying after max retries
+        clearInterval(intervalId);
       }
     };
 
-    const intervalId = setInterval(retryFetchLocations, RETRY_DELAY); // Polling logic
+    const intervalId = setInterval(retryFetchLocations, RETRY_DELAY);
 
-    return () => clearInterval(intervalId); // Clean up the interval on unmount
-  }, [retryCount, pickupLocation, deliveryLocation]);
+    return () => clearInterval(intervalId);
+  }, [retryCount, pickupLocation, deliveryLocation, order]);
 
-  // AutoFitBounds functionality embedded in OrderDetail
   const AutoFitBounds = ({ pickupLocation, deliveryLocation }) => {
-    const map = useMap(); // Get the map instance
+    const map = useMap();
 
     useEffect(() => {
       if (pickupLocation && deliveryLocation) {
-        // Fit the map bounds to show both pickup and delivery locations
         const bounds = [
           [pickupLocation.lat, pickupLocation.lng],
           [deliveryLocation.lat, deliveryLocation.lng],
@@ -117,7 +134,7 @@ const OrderDetail = () => {
             }}
           >
             <TileLayer
-              url="https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=pk.57eb525ef1bdb7826a61cf49564f8a86" // LocationIQ tiles
+              url="https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=pk.57eb525ef1bdb7826a61cf49564f8a86"
               attribution='&copy; <a href="https://locationiq.com">LocationIQ</a> contributors'
             />
             <Marker position={pickupLocation} />
@@ -127,12 +144,10 @@ const OrderDetail = () => {
               deliveryLocation={deliveryLocation}
               setDistance={setDistance}
             />
-            {/* Auto-fit the bounds of the map to the locations */}
             <AutoFitBounds
               pickupLocation={pickupLocation}
               deliveryLocation={deliveryLocation}
             />
-            {/* Add FitBoundsButton for viewing full route */}
             <FitBoundsButton
               pickupLocation={pickupLocation}
               deliveryLocation={deliveryLocation}

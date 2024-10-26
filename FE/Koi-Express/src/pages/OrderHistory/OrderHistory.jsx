@@ -46,7 +46,9 @@ const OrderHistory = () => {
   const goToOrderDetail = (order) => {
     if (order && order.orderId) {
       navigate(`/appkoiexpress/history/detail/${order.orderId}`, {
-        state: order,
+        state: {
+          orderId: order.orderId,
+        },
       });
     } else {
       console.error("Order or Order ID is missing");

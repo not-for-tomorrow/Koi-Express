@@ -1,146 +1,183 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
-import {
-  MapContainer as LeafletMap,
-  TileLayer,
-  Marker,
-  useMap,
-} from "react-leaflet";
-import RoutingControl from "./RoutingControl";
-import FitBoundsButton from "./FitBoundsButton";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import OrderDetailModal from "./OrderDetailModal";
+import { useLocation } from "react-router-dom";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import "leaflet-routing-machine";
+import OrderDetailModal from "./OrderDetailModal"; // Import the modal component
+import { useParams } from "react-router-dom";
+
+const LOCATIONIQ_KEY = "pk.57eb525ef1bdb7826a61cf49564f8a86";
 
 const OrderDetail = () => {
-  const { orderId } = useParams(); // Extract orderId from the URL
-  const location = useLocation(); // Get the location object
-  const order = location.state; // Get the passed order from state
+  const location = useLocation();
+  const { orderId } = useParams(); // Get orderId from the URL params
+  const orderIdFromLocation = location.state?.orderId || orderId;
+  const [orderData, setOrderData] = useState(null);
+  const [distance, setDistance] = useState("");
+  const [map, setMap] = useState(null);
+  const [routeBounds, setRouteBounds] = useState(null);
 
-  const [pickupLocation, setPickupLocation] = useState(null);
-  const [deliveryLocation, setDeliveryLocation] = useState(null);
-  const [distance, setDistance] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [retryCount, setRetryCount] = useState(0); // Track retry attempts
-
-  const MAX_RETRIES = 5; // Set a maximum number of retries to avoid infinite loops
-  const RETRY_DELAY = 3000; // Retry every 3 seconds
-
-  // Function to get latitude and longitude for an address using LocationIQ API
-  const geocodeAddress = async (address) => {
-    try {
-      const response = await axios.get(
-        "https://us1.locationiq.com/v1/search.php", // Example: using LocationIQ's geocode API
-        {
-          params: {
-            key: "pk.57eb525ef1bdb7826a61cf49564f8a86", // Replace with your API key
-            q: address,
-            format: "json",
-            limit: 1,
-          },
-        }
-      );
-      if (response.data && response.data.length > 0) {
-        const location = response.data[0];
-        return { lat: parseFloat(location.lat), lng: parseFloat(location.lon) };
-      }
-      return null;
-    } catch (error) {
-      console.error("Error geocoding address:", error);
-      return null;
-    }
-  };
-
-  const fetchLocations = async () => {
-    if (order && order.originLocation && order.destinationLocation) {
-      setIsLoading(true); // Set loading to true while fetching coordinates
-      const pickupCoords = await geocodeAddress(order.originLocation);
-      const deliveryCoords = await geocodeAddress(order.destinationLocation);
-      setPickupLocation(pickupCoords);
-      setDeliveryLocation(deliveryCoords);
-      setIsLoading(false); // Set loading to false after fetching coordinates
-    }
-  };
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const retryFetchLocations = async () => {
-      if (pickupLocation && deliveryLocation) {
-        // Stop polling when both locations are available
-        clearInterval(intervalId);
-      } else if (retryCount < MAX_RETRIES) {
-        await fetchLocations();
-        setRetryCount(retryCount + 1); // Increment retry count after each attempt
-      } else {
-        console.error("Max retries reached. Could not fetch locations.");
-        clearInterval(intervalId); // Stop retrying after max retries
+    const fetchOrderData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/orders/${orderIdFromLocation}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setOrderData(response.data);
+      } catch (error) {
+        console.error("Failed to fetch order data:", error);
       }
     };
 
-    const intervalId = setInterval(retryFetchLocations, RETRY_DELAY); // Polling logic
+    fetchOrderData();
+  }, [orderIdFromLocation, token]);
 
-    return () => clearInterval(intervalId); // Clean up the interval on unmount
-  }, [retryCount, pickupLocation, deliveryLocation]);
-
-  // AutoFitBounds functionality embedded in OrderDetail
-  const AutoFitBounds = ({ pickupLocation, deliveryLocation }) => {
-    const map = useMap(); // Get the map instance
-
-    useEffect(() => {
-      if (pickupLocation && deliveryLocation) {
-        // Fit the map bounds to show both pickup and delivery locations
-        const bounds = [
-          [pickupLocation.lat, pickupLocation.lng],
-          [deliveryLocation.lat, deliveryLocation.lng],
-        ];
-        map.fitBounds(bounds, { padding: [50, 50] });
+  useEffect(() => {
+    if (
+      orderData?.order?.originLocation &&
+      orderData?.order?.destinationLocation
+    ) {
+      // Hủy bỏ bản đồ cũ nếu đã có (tránh chồng lấp)
+      if (map) {
+        map.remove();
       }
-    }, [pickupLocation, deliveryLocation, map]);
 
-    return null;
+      const { originLocation, destinationLocation } = orderData.order;
+
+      const fetchCoordinates = async () => {
+        try {
+          const pickupResponse = await axios.get(
+            `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${originLocation}&format=json`
+          );
+          const deliveryResponse = await axios.get(
+            `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${destinationLocation}&format=json`
+          );
+
+          const pickup = pickupResponse.data[0];
+          const delivery = deliveryResponse.data[0];
+
+          const newMap = L.map("map").setView([pickup.lat, pickup.lon], 10);
+          setMap(newMap);
+
+          L.tileLayer(
+            `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`,
+            {
+              attribution:
+                '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
+            }
+          ).addTo(newMap);
+
+          L.marker([pickup.lat, pickup.lon]).addTo(newMap);
+          L.marker([delivery.lat, delivery.lon]).addTo(newMap);
+
+          const routingService = L.Routing.osrmv1();
+          routingService.route(
+            [
+              L.Routing.waypoint(L.latLng(pickup.lat, pickup.lon)),
+              L.Routing.waypoint(L.latLng(delivery.lat, delivery.lon)),
+            ],
+            (err, routes) => {
+              if (!err && routes && routes[0]) {
+                const route = routes[0];
+                setDistance(
+                  (route.summary.totalDistance / 1000).toFixed(2) + " km"
+                );
+
+                const routePolyline = L.polyline(route.coordinates, {
+                  color: "red",
+                  weight: 4,
+                }).addTo(newMap);
+                const bounds = routePolyline.getBounds();
+                setRouteBounds(bounds);
+
+                newMap.fitBounds(bounds);
+              } else {
+                console.error("Failed to calculate route:", err);
+              }
+            }
+          );
+        } catch (error) {
+          console.error("Failed to fetch coordinates:", error);
+        }
+      };
+
+      fetchCoordinates();
+    }
+  }, [orderData]);
+
+  const handleFitBounds = () => {
+    if (map && routeBounds) {
+      map.fitBounds(routeBounds);
+    }
   };
 
-  return (
-    <div className="flex h-screen">
-      {/* Sidebar Order Details Section */}
-      <OrderDetailModal orderId={orderId} order={order} distance={distance} />
+  if (!orderData) return <div>Loading...</div>;
 
-      {/* Full-Screen Map Section */}
-      <div className="relative w-2/3 h-screen" style={{ zIndex: 1 }}>
-        {!isLoading && pickupLocation && deliveryLocation ? (
-          <LeafletMap
-            center={pickupLocation}
-            zoom={13}
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            <TileLayer
-              url="https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=pk.57eb525ef1bdb7826a61cf49564f8a86" // LocationIQ tiles
-              attribution='&copy; <a href="https://locationiq.com">LocationIQ</a> contributors'
-            />
-            <Marker position={pickupLocation} />
-            <Marker position={deliveryLocation} />
-            <RoutingControl
-              pickupLocation={pickupLocation}
-              deliveryLocation={deliveryLocation}
-              setDistance={setDistance}
-            />
-            {/* Auto-fit the bounds of the map to the locations */}
-            <AutoFitBounds
-              pickupLocation={pickupLocation}
-              deliveryLocation={deliveryLocation}
-            />
-            {/* Add FitBoundsButton for viewing full route */}
-            <FitBoundsButton
-              pickupLocation={pickupLocation}
-              deliveryLocation={deliveryLocation}
-            />
-          </LeafletMap>
-        ) : (
-          <p>Loading map...</p>
-        )}
+  const {
+    order: {
+      originLocation,
+      destinationLocation,
+      status,
+      paymentMethod,
+      orderDetail: {
+        senderName,
+        senderPhone,
+        recipientName,
+        recipientPhone,
+        distanceFee,
+        commitmentFee,
+      },
+    },
+    customer: { fullName },
+  } = orderData;
+
+  return (
+    <div className="flex min-h-screen bg-white">
+      <div className="w-1/3">
+        <OrderDetailModal
+          orderId={orderIdFromLocation}
+          fullName={fullName}
+          originLocation={originLocation}
+          destinationLocation={destinationLocation}
+          senderName={senderName}
+          senderPhone={senderPhone}
+          recipientName={recipientName}
+          recipientPhone={recipientPhone}
+          distance={distance}
+          status={status}
+          paymentMethod={paymentMethod}
+          distanceFee={distanceFee}
+          commitmentFee={commitmentFee}
+        />
+      </div>
+
+      <div className="w-2/3 relative">
+        <div id="map" className="absolute top-0 left-0 w-full h-full"></div>
+        <button
+          onClick={handleFitBounds}
+          style={{
+            position: "absolute",
+            top: "10px",
+            right: "10px",
+            zIndex: 1000,
+            padding: "10px",
+            backgroundColor: "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Xem toàn bộ tuyến đường
+        </button>
       </div>
     </div>
   );
