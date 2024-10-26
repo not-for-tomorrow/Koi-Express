@@ -22,7 +22,7 @@ export default function Header() {
 
   return (
     <div
-      className="sticky top-0 z-20 w-full mb-5 bg-white "
+      className="sticky top-0 z-[9999] w-full mb-5 bg-white "
       style={{ opacity: opacity }}
     >
       <div className="flex justify-between items-center max-w-[1300px] mx-auto px-4">

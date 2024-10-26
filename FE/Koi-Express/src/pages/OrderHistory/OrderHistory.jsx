@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const OrderHistory = () => {
   const [isTimeFilterExpanded, setIsTimeFilterExpanded] = useState(false);
@@ -12,6 +13,7 @@ const OrderHistory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [orders, setOrders] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -40,6 +42,16 @@ const OrderHistory = () => {
 
     fetchOrders();
   }, []);
+
+  const goToOrderDetail = (order) => {
+    if (order && order.orderId) {
+      navigate(`/appkoiexpress/history/detail/${order.orderId}`, {
+        state: order,
+      });
+    } else {
+      console.error("Order or Order ID is missing");
+    }
+  };
 
   const handleTimeFilterClick = () => {
     setTempSelectedTimeFilter(selectedTimeFilter);
@@ -220,8 +232,8 @@ const OrderHistory = () => {
                   onClick={() => setSelectedTab(tab)}
                   className={`px-4 py-2 rounded-full transition duration-300 text-sm ${
                     selectedTab === tab
-                      ? "font-bold shadow-md"
-                      : "text-blue-700"
+                      ? "font-bold shadow-md bg-blue-100 text-blue-900"
+                      : "text-blue-700 bg-transparent"
                   }`}
                   style={{
                     backgroundColor:
@@ -249,7 +261,11 @@ const OrderHistory = () => {
               <div className="relative">
                 <button
                   onClick={handleTimeFilterClick}
-                  className="flex items-center p-2 text-sm text-blue-700 transition duration-300 bg-blue-100 rounded-lg shadow-sm hover:bg-blue-200"
+                  className={`flex items-center p-2 text-sm transition duration-300 rounded-lg shadow-sm ${
+                    isTimeFilterExpanded
+                      ? "bg-blue-100 text-blue-900"
+                      : "text-blue-700 bg-transparent"
+                  }`}
                 >
                   <span>{displayDateRange || "Tất cả"}</span>
                 </button>
@@ -357,11 +373,11 @@ const OrderHistory = () => {
                     const statusColor =
                       statusColors[getVietnameseStatus(order.status)] ||
                       defaultStatusColor;
-
                     return (
                       <tr
                         key={index}
-                        className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
+                        className="transition duration-300 border-b border-gray-200 cursor-pointer hover:bg-blue-50"
+                        onClick={() => goToOrderDetail(order)} // Correctly pass the entire order object
                       >
                         <td className="p-2 font-semibold text-blue-600">
                           {order.orderId}
@@ -377,7 +393,7 @@ const OrderHistory = () => {
                         </td>
                         <td className="p-2 text-sm font-medium text-blue-600">
                           {order.totalFee !== null
-                            ? `đ ${order.totalFee.toLocaleString("vi-VN")}`
+                            ? `₫ ${order.totalFee.toLocaleString("vi-VN")}`
                             : "N/A"}
                         </td>
                         <td className="p-2 text-center">
@@ -386,6 +402,10 @@ const OrderHistory = () => {
                             style={{
                               backgroundColor: statusColor.background,
                               color: statusColor.text,
+                              minWidth: "120px", // Đảm bảo kích thước tối thiểu cho trạng thái đồng nhất
+                              textAlign: "center", // Căn giữa văn bản
+                              padding: "6px 12px", // Đồng bộ padding
+                              whiteSpace: "nowrap", // Ngăn trạng thái xuống dòng
                             }}
                           >
                             {getVietnameseStatus(order.status)}

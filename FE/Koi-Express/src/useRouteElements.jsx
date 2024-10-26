@@ -6,7 +6,8 @@ import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import AppHomePages from "./pages/AppHomePages/AppHomePages";
 import OtpModal from "./pages/OTP/OtpModal";
-import Salepage from "./pages/Salepage/Salepage";
+import Salepage from "./Salepage/Salepage";
+import DeliveringStaffpage from "./DeliveringStaffpage/DeliveringStaffpage";
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
@@ -27,7 +28,7 @@ export default function useRouteElements() {
       element: <Register />,
     },
     {
-      path: "/apphomepage/*",
+      path: "/appkoiexpress/*",
       element: <AppHomePages />,
     },
     {
@@ -37,6 +38,10 @@ export default function useRouteElements() {
     {
       path: "/salepage/*",
       element: <Salepage />,
+    },
+    {
+      path: "/deliveringstaffpage/*",
+      element: <DeliveringStaffpage />,
     },
   ]);
   return routeElements;

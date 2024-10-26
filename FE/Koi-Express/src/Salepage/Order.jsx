@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Order = () => {
   const [isTimeFilterExpanded, setIsTimeFilterExpanded] = useState(false);
@@ -7,12 +8,12 @@ const Order = () => {
   const [tempSelectedTimeFilter, setTempSelectedTimeFilter] = useState("all");
   const [customDateRange, setCustomDateRange] = useState({ from: "", to: "" });
   const [displayDateRange, setDisplayDateRange] = useState("");
-  const [selectedTab, setSelectedTab] = useState("Chờ xác nhận");
+  const [selectedTab, setSelectedTab] = useState("Tất cả");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [orders, setOrders] = useState([]);
-  const [customerNames, setCustomerNames] = useState({}); // To store customer names
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -24,14 +25,14 @@ const Order = () => {
         }
 
         const response = await axios.get(
-          "http://localhost:8080/api/orders/history",
+          "http://localhost:8080/api/orders/all-orders", // Updated API endpoint
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        setOrders(response.data.result || []); // Update orders from API response
+        setOrders(response.data.result.content || []); // Update to match API structure
         setLoading(false);
       } catch (err) {
         setError(err.message || "Failed to fetch orders");
@@ -42,42 +43,16 @@ const Order = () => {
     fetchOrders();
   }, []);
 
-  // Fetch customer name for each order
-  useEffect(() => {
-    const fetchCustomerNames = async () => {
-      const token = localStorage.getItem("token");
-      const newCustomerNames = { ...customerNames }; // Copy current state
-
-      for (const order of orders) {
-        if (!newCustomerNames[order.customer.customerId]) {
-          // If the customer name is not already in state
-          try {
-            const response = await axios.get(
-              `http://localhost:8080/api/manager/id/${order.customer.customerId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-            newCustomerNames[order.customer.customerId] =
-              response.data.fullName || "N/A"; // Store the customer's full name
-          } catch (err) {
-            console.error(
-              `Failed to fetch customer name for ID ${order.customer.customerId}`,
-              err
-            );
-            newCustomerNames[order.customer.customerId] = "N/A"; // Fallback
-          }
-        }
-      }
-      setCustomerNames(newCustomerNames); // Update the state with new names
-    };
-
-    if (orders.length > 0) {
-      fetchCustomerNames();
+  const goToOrderDetail = (orderWrapper) => {
+    const order = orderWrapper.order;
+    if (order && order.orderId) {
+      navigate(`/salepage/allorder/detail/${order.orderId}`, {
+        state: orderWrapper,
+      });
+    } else {
+      console.error("Order or Order ID is missing");
     }
-  }, [orders]);
+  };
 
   const handleTimeFilterClick = () => {
     setTempSelectedTimeFilter(selectedTimeFilter);
@@ -145,14 +120,15 @@ const Order = () => {
     // Filter by selected tab (status)
     if (selectedTab !== "Tất cả") {
       filteredOrders = filteredOrders.filter(
-        (order) => getVietnameseStatus(order.status) === selectedTab
+        (orderWrapper) =>
+          getVietnameseStatus(orderWrapper.order.status) === selectedTab
       );
     }
 
     // Filter by selected time filter (today, this week, etc.)
     if (selectedTimeFilter !== "all") {
-      filteredOrders = filteredOrders.filter((order) => {
-        const orderDate = new Date(order.createdAt);
+      filteredOrders = filteredOrders.filter((orderWrapper) => {
+        const orderDate = new Date(orderWrapper.order.createdAt);
         if (selectedTimeFilter === "today") {
           const today = new Date();
           return orderDate.toDateString() === today.toDateString();
@@ -182,7 +158,8 @@ const Order = () => {
 
     // Filter by search query
     if (searchQuery) {
-      filteredOrders = filteredOrders.filter((order) => {
+      filteredOrders = filteredOrders.filter((orderWrapper) => {
+        const order = orderWrapper.order;
         const orderId = order.orderId ? order.orderId.toString() : ""; // Convert orderId to a string
         const originLocation = order.originLocation
           ? order.originLocation.toLowerCase()
@@ -247,34 +224,32 @@ const Order = () => {
           <div className="sticky top-0 z-20 bg-white">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-gray-800">
-                Tổng đơn hàng
+                Danh sách đơn hàng
               </h1>
             </div>
 
             <div className="flex mb-6 space-x-4 overflow-x-auto">
-              {Object.keys(statusColors)
-                .filter((tab) => tab !== "Tất cả") // Bỏ "Tất cả" khỏi danh sách
-                .map((tab, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedTab(tab)}
-                    className={`px-4 py-2 rounded-full transition duration-300 text-sm ${
+              {Object.keys(statusColors).map((tab, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedTab(tab)}
+                  className={`px-4 py-2 rounded-full transition duration-300 text-sm ${
+                    selectedTab === tab
+                      ? "font-bold shadow-md bg-blue-100 text-blue-900"
+                      : "text-blue-700 bg-transparent"
+                  }`}
+                  style={{
+                    backgroundColor:
                       selectedTab === tab
-                        ? "font-bold shadow-md"
-                        : "text-blue-700"
-                    }`}
-                    style={{
-                      backgroundColor:
-                        selectedTab === tab
-                          ? statusColors[tab].background
-                          : "transparent",
-                      color:
-                        selectedTab === tab ? statusColors[tab].text : "black",
-                    }}
-                  >
-                    {tab}
-                  </button>
-                ))}
+                        ? statusColors[tab].background
+                        : "transparent",
+                    color:
+                      selectedTab === tab ? statusColors[tab].text : "black",
+                  }}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
 
             <div className="flex items-center mb-6 space-x-6">
@@ -289,7 +264,11 @@ const Order = () => {
               <div className="relative">
                 <button
                   onClick={handleTimeFilterClick}
-                  className="flex items-center p-2 text-sm text-blue-700 transition duration-300 bg-blue-100 rounded-lg shadow-sm hover:bg-blue-200"
+                  className={`flex items-center p-2 text-sm transition duration-300 rounded-lg shadow-sm ${
+                    isTimeFilterExpanded
+                      ? "bg-blue-100 text-blue-900"
+                      : "text-blue-700 bg-transparent"
+                  }`}
                 >
                   <span>{displayDateRange || "Tất cả"}</span>
                 </button>
@@ -383,7 +362,10 @@ const Order = () => {
                 <thead className="sticky top-0 z-10 bg-blue-100">
                   <tr className="text-blue-900 border-b border-blue-200">
                     <th className="p-2 font-semibold w-1/8">Mã đơn hàng</th>
-                    <th className="p-2 font-semibold w-1/8">Tên khách hàng</th> {/* New Column */}
+                    <th className="w-1/8 p-2 font-semibold">
+                      Tên khách hàng
+                    </th>{" "}
+                    {/* New column for customer full name */}
                     <th className="w-1/4 p-2 font-semibold">Điểm lấy hàng</th>
                     <th className="w-1/3 p-2 font-semibold">Điểm giao hàng</th>
                     <th className="p-2 font-semibold w-1/10">Thời gian tạo</th>
@@ -394,21 +376,25 @@ const Order = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filterOrders().map((order, index) => {
+                  {filterOrders().map((orderWrapper, index) => {
+                    const order = orderWrapper.order;
+                    const customer = orderWrapper.customer; // Access customer data
                     const statusColor =
                       statusColors[getVietnameseStatus(order.status)] ||
                       defaultStatusColor;
-
                     return (
                       <tr
                         key={index}
-                        className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
+                        className="transition duration-300 border-b border-gray-200 cursor-pointer hover:bg-blue-50"
+                        onClick={() => goToOrderDetail(orderWrapper)} // Correctly pass the entire order object
                       >
                         <td className="p-2 font-semibold text-blue-600">
                           {order.orderId}
                         </td>
                         <td className="p-2 text-sm text-gray-700">
-                          {customerNames[order.customer.customerId] || "N/A"} {/* Display customer name */}
+                          {" "}
+                          {/* Customer full name */}
+                          {customer.fullName}
                         </td>
                         <td className="p-2 text-sm text-gray-700">
                           {order.originLocation}
@@ -421,7 +407,7 @@ const Order = () => {
                         </td>
                         <td className="p-2 text-sm font-medium text-blue-600">
                           {order.totalFee !== null
-                            ? `đ ${order.totalFee.toLocaleString("vi-VN")}`
+                            ? `₫ ${order.totalFee.toLocaleString("vi-VN")}`
                             : "N/A"}
                         </td>
                         <td className="p-2 text-center">
@@ -430,6 +416,10 @@ const Order = () => {
                             style={{
                               backgroundColor: statusColor.background,
                               color: statusColor.text,
+                              minWidth: "120px", // Ensure consistent status button size
+                              textAlign: "center",
+                              padding: "6px 12px",
+                              whiteSpace: "nowrap", // Prevent text wrapping
                             }}
                           >
                             {getVietnameseStatus(order.status)}
