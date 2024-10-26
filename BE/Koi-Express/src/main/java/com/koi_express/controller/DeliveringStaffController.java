@@ -7,10 +7,6 @@ import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.service.deliveringStaff.DeliveringStaffService;
-import com.koi_express.service.image.ShipmentInspectionImageService;
-import com.koi_express.service.order.OrderService;
-import com.koi_express.service.order.price.KoiInvoiceCalculator;
-import com.koi_express.service.payment.VNPayService;
 import com.koi_express.service.verification.S3Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,11 +30,7 @@ public class DeliveringStaffController {
     public DeliveringStaffController(
             S3Service s3Service,
             DeliveringStaffService deliveringStaffService,
-            JwtUtil jwtUtil,
-            ShipmentInspectionImageService shipmentInspectionImageService,
-            KoiInvoiceCalculator koiInvoiceCalculator,
-            VNPayService vnpayService,
-            OrderService orderService) {
+            JwtUtil jwtUtil) {
         this.s3Service = s3Service;
         this.deliveringStaffService = deliveringStaffService;
         this.jwtUtil = jwtUtil;
@@ -122,4 +114,27 @@ public class DeliveringStaffController {
                             HttpStatus.INTERNAL_SERVER_ERROR.value(), "File upload failed", e.getMessage()));
         }
     }
+
+    @PostMapping("/complete-delivery/{orderId}")
+    public ResponseEntity<ApiResponse<String>> completeDelivery(
+            @PathVariable Long orderId, @RequestHeader("Authorization") String token) {
+
+        try {
+            // Clean the token and extract the delivering staff ID
+            String cleanedToken = jwtUtil.cleanToken(token);
+            String deliveringStaffIdStr = jwtUtil.extractUserId(cleanedToken, "DELIVERING_STAFF");
+            Long deliveringStaffId = Long.parseLong(deliveringStaffIdStr);
+
+            // Call the service to complete the delivery
+            ApiResponse<String> response = deliveringStaffService.completeDelivery(orderId, deliveringStaffId);
+
+            return ResponseEntity.status(response.getCode()).body(response);
+        } catch (Exception e) {
+            logger.error("Error completing delivery for order ID: {}", orderId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to complete delivery", e.getMessage()));
+        }
+    }
+
 }

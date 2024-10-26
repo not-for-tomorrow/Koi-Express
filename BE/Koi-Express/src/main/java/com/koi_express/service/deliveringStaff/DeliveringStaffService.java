@@ -5,11 +5,14 @@ import java.util.List;
 
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.entity.shipment.Shipments;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.enums.ShipmentStatus;
+import com.koi_express.enums.StaffStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
+import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.repository.ShipmentsRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -24,14 +27,17 @@ public class DeliveringStaffService {
     private final OrderRepository orderRepository;
     private final ShipmentsRepository shipmentsRepository;
     private final PickupTimeCalculator pickupTimeCalculator;
+    private final DeliveringStaffRepository deliveringStaffRepository;
 
     // Constructor injection
     public DeliveringStaffService(OrderRepository orderRepository,
                                   ShipmentsRepository shipmentsRepository,
-                                  PickupTimeCalculator pickupTimeCalculator) {
+                                  PickupTimeCalculator pickupTimeCalculator,
+                                  DeliveringStaffRepository deliveringStaffRepository) {
         this.orderRepository = orderRepository;
         this.shipmentsRepository = shipmentsRepository;
         this.pickupTimeCalculator = pickupTimeCalculator;
+        this.deliveringStaffRepository = deliveringStaffRepository;
     }
 
     @Transactional(readOnly = true)
@@ -78,4 +84,40 @@ public class DeliveringStaffService {
         log.info("Shipment created for order ID: {}", orderId);
         return new ApiResponse<>(HttpStatus.OK.value(), "Order status updated to Picking Up", null);
     }
+
+    @Transactional
+    public ApiResponse<String> completeDelivery(Long orderId, Long deliveringStaffId) {
+        log.info("Completing delivery for order ID: {} by staff ID: {}", orderId, deliveringStaffId);
+
+        // Fetch the order and check if it exists
+        Orders order = orderRepository.findById(orderId).orElseThrow(() -> {
+            log.error("Order with ID: {} not found", orderId);
+            return new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found with ID: " + orderId);
+        });
+
+        // Check if the order is assigned to the specified delivering staff and is in-transit
+        if (!order.getDeliveringStaff().getStaffId().equals(deliveringStaffId)) {
+            log.error("Order ID: {} is not assigned to staff ID: {}", orderId, deliveringStaffId);
+            throw new AppException(ErrorCode.ORDER_NOT_ASSIGNED, "Order is not assigned to this staff member");
+        }
+
+        if (order.getStatus() != OrderStatus.IN_TRANSIT) {
+            log.error("Order ID: {} is not in transit, current status: {}", orderId, order.getStatus());
+            throw new AppException(ErrorCode.ORDER_NOT_IN_TRANSIT, "Order is not currently in transit");
+        }
+
+        // Update order status to DELIVERED
+        order.setStatus(OrderStatus.DELIVERED);
+        orderRepository.save(order);
+
+        // Update delivering staff status to AVAILABLE
+        DeliveringStaff staff = order.getDeliveringStaff();
+        staff.setStatus(StaffStatus.AVAILABLE);
+        deliveringStaffRepository.save(staff);
+
+        log.info("Order ID: {} has been delivered, staff ID: {} status updated to AVAILABLE", orderId, deliveringStaffId);
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "Order marked as delivered, delivering staff available", null);
+    }
+
 }

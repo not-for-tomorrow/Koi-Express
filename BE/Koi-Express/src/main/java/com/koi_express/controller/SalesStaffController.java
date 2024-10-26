@@ -22,6 +22,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/sales")
+@PreAuthorize("hasRole('SALES_STAFF')")
 public class SalesStaffController {
 
     private static final Logger logger = LoggerFactory.getLogger(SalesStaffController.class);
@@ -35,7 +36,6 @@ public class SalesStaffController {
     @Autowired
     private ManageCustomerService manageCustomerService;
 
-    @PreAuthorize("hasRole('SALES_STAFF')")
     @GetMapping("/orders/pending")
     public ResponseEntity<Page<Orders>> getPendingOrders(
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
@@ -48,7 +48,6 @@ public class SalesStaffController {
         return new ResponseEntity<>(pendingOrders, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('SALES_STAFF')")
     @PutMapping("/accept/{orderId}")
     public ResponseEntity<ApiResponse<String>> acceptOrder(
             @PathVariable Long orderId, @RequestHeader("Authorization") String token) {

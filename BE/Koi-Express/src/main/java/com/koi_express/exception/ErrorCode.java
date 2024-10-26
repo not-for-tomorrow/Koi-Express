@@ -18,6 +18,7 @@ public enum ErrorCode {
     ORDER_INVALID(1015, "Order has invalid status"),
     ORDER_NOT_ASSIGNED(1016, "Order not assigned to staff"),
     ORDER_RETRIEVAL_FAILED(1017, "Order retrieval failed"),
+    ORDER_NOT_IN_TRANSIT(1018, "Order not in transit"),
     ;
 
     ErrorCode(int code, String message) {
