@@ -1,5 +1,8 @@
 package com.koi_express.exception;
 
+import lombok.Getter;
+
+@Getter
 public enum ErrorCode {
     USER_EXISTED(1001, "PhoneNumber already registered"),
     PASSWORD_INCORRECT(1002, "Invalid password"),
@@ -18,6 +21,7 @@ public enum ErrorCode {
     ORDER_INVALID(1015, "Order has invalid status"),
     ORDER_NOT_ASSIGNED(1016, "Order not assigned to staff"),
     ORDER_RETRIEVAL_FAILED(1017, "Order retrieval failed"),
+    ORDER_NOT_IN_TRANSIT(1018, "Order not in transit"),
     ;
 
     ErrorCode(int code, String message) {
@@ -25,14 +29,7 @@ public enum ErrorCode {
         this.message = message;
     }
 
-    private int code;
-    private String message;
+    private final int code;
+    private final String message;
 
-    public int getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
 }

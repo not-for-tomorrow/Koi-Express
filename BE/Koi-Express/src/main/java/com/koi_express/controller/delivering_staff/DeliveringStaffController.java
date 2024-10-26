@@ -1,16 +1,15 @@
-package com.koi_express.controller;
+package com.koi_express.controller.delivering_staff;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
-import com.koi_express.JWT.JwtUtil;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
-import com.koi_express.service.deliveringStaff.DeliveringStaffService;
-import com.koi_express.service.image.ShipmentInspectionImageService;
-import com.koi_express.service.order.OrderService;
-import com.koi_express.service.order.price.KoiInvoiceCalculator;
-import com.koi_express.service.payment.VNPayService;
+import com.koi_express.service.delivering_staff.DeliveringStaffService;
 import com.koi_express.service.verification.S3Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class DeliveringStaffController {
 
     private static final Logger logger = LoggerFactory.getLogger(DeliveringStaffController.class);
+    private static final String FILE_UPLOAD_FAILED = "File upload failed";
 
     private final DeliveringStaffService deliveringStaffService;
     private final S3Service s3Service;
@@ -34,11 +34,7 @@ public class DeliveringStaffController {
     public DeliveringStaffController(
             S3Service s3Service,
             DeliveringStaffService deliveringStaffService,
-            JwtUtil jwtUtil,
-            ShipmentInspectionImageService shipmentInspectionImageService,
-            KoiInvoiceCalculator koiInvoiceCalculator,
-            VNPayService vnpayService,
-            OrderService orderService) {
+            JwtUtil jwtUtil) {
         this.s3Service = s3Service;
         this.deliveringStaffService = deliveringStaffService;
         this.jwtUtil = jwtUtil;
@@ -88,38 +84,66 @@ public class DeliveringStaffController {
             @PathVariable String staffId,
             @PathVariable String orderDate,
             @PathVariable String category) {
+
         if (file.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "File is empty", null));
         }
 
         try {
-            File tempFile = new File(System.getProperty("java.io.tmpdir") + "/" + file.getOriginalFilename());
-            file.transferTo(tempFile);
+            Path tempFilePath = Paths.get(System.getProperty("java.io.tmpdir"), file.getOriginalFilename());
+            file.transferTo(tempFilePath.toFile());
 
             logger.info("Uploading file to S3...");
-            String fileUrl = s3Service.uploadFile(staffId, orderDate, category, tempFile);
+            String fileUrl = s3Service.uploadFile(staffId, orderDate, category, tempFilePath.toFile());
 
             if (fileUrl == null || fileUrl.isEmpty()) {
                 logger.error("File URL not generated.");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "File upload failed", null));
+                        .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), FILE_UPLOAD_FAILED, null));
             }
 
             logger.info("File uploaded to S3 successfully. URL: {}", fileUrl);
 
-            boolean deleted = tempFile.delete();
-            if (!deleted) {
-                logger.warn("Temporary file {} could not be deleted", tempFile.getAbsolutePath());
-            }
+            deleteTemporaryFile(tempFilePath);
 
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "File uploaded successfully", fileUrl));
 
         } catch (Exception e) {
-            logger.error("File upload failed", e);
+            logger.error(FILE_UPLOAD_FAILED, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(
-                            HttpStatus.INTERNAL_SERVER_ERROR.value(), "File upload failed", e.getMessage()));
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), FILE_UPLOAD_FAILED, e.getMessage()));
         }
     }
+
+    private void deleteTemporaryFile(Path filePath) {
+        try {
+            Files.delete(filePath);
+            logger.info("Temporary file {} deleted successfully", filePath);
+        } catch (IOException e) {
+            logger.warn("Failed to delete temporary file {} due to: {}", filePath, e.getMessage(), e);
+        }
+    }
+
+    @PostMapping("/complete-delivery/{orderId}")
+    public ResponseEntity<ApiResponse<String>> completeDelivery(
+            @PathVariable Long orderId, @RequestHeader("Authorization") String token) {
+
+        try {
+            String cleanedToken = jwtUtil.cleanToken(token);
+            String deliveringStaffIdStr = jwtUtil.extractUserId(cleanedToken, "DELIVERING_STAFF");
+            Long deliveringStaffId = Long.parseLong(deliveringStaffIdStr);
+
+            ApiResponse<String> response = deliveringStaffService.completeDelivery(orderId, deliveringStaffId);
+
+            return ResponseEntity.status(response.getCode()).body(response);
+        } catch (Exception e) {
+            logger.error("Error completing delivery for order ID: {}", orderId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to complete delivery", e.getMessage()));
+        }
+    }
+
 }

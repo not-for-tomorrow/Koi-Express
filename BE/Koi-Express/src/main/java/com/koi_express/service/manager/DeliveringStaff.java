@@ -2,7 +2,6 @@ package com.koi_express.service.manager;
 
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.enums.DeliveringStaffLevel;
 import com.koi_express.enums.Role;
 import com.koi_express.enums.StaffStatus;
@@ -10,7 +9,6 @@ import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.service.verification.EmailService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,16 +18,17 @@ import java.util.List;
 @Service
 public class DeliveringStaff {
 
-    @Autowired
-    private DeliveringStaffRepository deliveringStaffRepository;
+    private final DeliveringStaffRepository deliveringStaffRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public DeliveringStaff(DeliveringStaffRepository deliveringStaffRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
+        this.deliveringStaffRepository = deliveringStaffRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+    }
 
-    @Autowired
-    private EmailService emailService;
-
-    public ApiResponse<?> createDeliveringStaffAccount(CreateStaffRequest createStaffRequest) {
+    public ApiResponse<String> createDeliveringStaffAccount(CreateStaffRequest createStaffRequest) {
         if (deliveringStaffRepository.existsByPhoneNumber(createStaffRequest.getPhoneNumber())) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
@@ -54,8 +53,7 @@ public class DeliveringStaff {
 
         emailService.sendAccountCreatedEmail(deliveringStaff, createStaffRequest.getPassword(), true);
 
-        return new ApiResponse<>(
-                HttpStatus.OK.value(), "Delivering staff account created successfully", deliveringStaff);
+        return new ApiResponse<>(HttpStatus.CREATED.value(), "Delivering staff account created successfully", null);
     }
 
     public List<com.koi_express.entity.shipment.DeliveringStaff> getAllAccountsByRole(Role role) {

@@ -5,16 +5,13 @@ import java.util.Optional;
 
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.AuthProvider;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import lombok.NonNull;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CustomersRepository extends JpaRepository<Customers, Long> {
-
-    Optional<Customers> findByEmail(String email);
 
     Optional<Customers> findByEmailAndAuthProvider(String email, AuthProvider authProvider);
 
@@ -24,9 +21,6 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
 
     boolean existsByPhoneNumber(String phoneNumber);
 
-    boolean existsByEmailAndAuthProvider(String email, AuthProvider authProvider);
-
-    Page<Customers> findAll(Pageable pageable);
-
-    List<Customers> findAll(Sort sort);
+    @NonNull
+    List<Customers> findAll(@NonNull Sort sort);
 }

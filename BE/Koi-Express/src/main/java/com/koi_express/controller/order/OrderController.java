@@ -3,7 +3,7 @@ package com.koi_express.controller.order;
 import java.util.List;
 import java.util.Map;
 
-import com.koi_express.JWT.JwtUtil;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -15,10 +15,6 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,14 +26,15 @@ public class OrderController {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
-    @Autowired
-    private OrderService orderService;
+    private final OrderService orderService;
+    private final OrderSessionManager sessionManager;
+    private final JwtUtil jwtUtil;
 
-    @Autowired
-    private OrderSessionManager sessionManager;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    public OrderController(OrderService orderService, OrderSessionManager sessionManager, JwtUtil jwtUtil) {
+        this.orderService = orderService;
+        this.sessionManager = sessionManager;
+        this.jwtUtil = jwtUtil;
+    }
 
     @PostMapping("/create")
     public ApiResponse<Map<String, Object>> createOrder(
@@ -66,8 +63,7 @@ public class OrderController {
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('SALES_STAFF')")
     @GetMapping(value = "/all-orders", produces = "application/json")
-    public ResponseEntity<ApiResponse<List<OrderWithCustomerDTO>>> getAllOrders(
-            HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<List<OrderWithCustomerDTO>>> getAllOrders() {
 
         ApiResponse<List<OrderWithCustomerDTO>> response = orderService.getAllOrders();
         if (response.getResult() == null || response.getResult().isEmpty()) {

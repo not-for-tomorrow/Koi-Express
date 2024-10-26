@@ -1,4 +1,4 @@
-package com.koi_express.controller;
+package com.koi_express.controller.manager;
 
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -7,17 +7,16 @@ import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.manager.ManagerService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 @RestController
@@ -36,31 +35,23 @@ public class ManagerController {
     }
 
     @PostMapping("/create-sales-staff")
-    public ResponseEntity<ApiResponse<?>> createSalesStaff(
-            @RequestBody @Valid CreateStaffRequest createStaffRequest, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<ApiResponse<String>> createSalesStaff(
+            @RequestBody @Valid CreateStaffRequest createStaffRequest) {
 
-        String token = httpServletRequest.getHeader("Authorization").substring(7);
-
-        ApiResponse<?> response = managerService.createSalesStaffAccount(createStaffRequest);
+        ApiResponse<String> response = managerService.createSalesStaffAccount(createStaffRequest);
         return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @PostMapping("/create-delivering-staff")
-    public ResponseEntity<ApiResponse<?>> createDeliveringStaff(
-            @RequestBody @Valid CreateStaffRequest createDeliveringStaffRequest,
-            HttpServletRequest httpServletRequest) {
+    public ResponseEntity<ApiResponse<String>> createDeliveringStaff(
+            @RequestBody @Valid CreateStaffRequest createDeliveringStaffRequest) {
 
-        String token = httpServletRequest.getHeader("Authorization").substring(7);
-
-        ApiResponse<?> response = managerService.createDeliveringStaffAccount(createDeliveringStaffRequest);
+        ApiResponse<String> response = managerService.createDeliveringStaffAccount(createDeliveringStaffRequest);
         return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @GetMapping( "/customers")
-    public ResponseEntity<ApiResponse<List<Customers>>> getAllCustomers(
-            HttpServletRequest httpServletRequest) {
-
-        String token = httpServletRequest.getHeader("Authorization").substring(7);
+    public ResponseEntity<ApiResponse<List<Customers>>> getAllCustomers() {
 
         ApiResponse<List<Customers>> customersPage = manageCustomerService.getAllCustomers();
 
@@ -69,9 +60,7 @@ public class ManagerController {
 
     @GetMapping("/id/{customerId}")
     public ResponseEntity<ApiResponse<Customers>> getCustomerById(
-            HttpServletRequest httpServletRequest, @PathVariable Long customerId) {
-
-        String token = httpServletRequest.getHeader("Authorization").substring(7);
+            @PathVariable Long customerId) {
 
         Customers customers = managerService.getCustomerById(customerId);
         return new ResponseEntity<>(
@@ -80,9 +69,7 @@ public class ManagerController {
 
     @GetMapping("/phone/{phoneNumber}")
     public ResponseEntity<Customers> getCustomerByPhoneNumber(
-            HttpServletRequest httpServletRequest, @PathVariable String phoneNumber) {
-
-        String token = httpServletRequest.getHeader("Authorization").substring(7);
+            @PathVariable String phoneNumber) {
 
         Customers customers = managerService.findByPhoneNumber(phoneNumber);
         return ResponseEntity.ok(customers);
@@ -90,9 +77,7 @@ public class ManagerController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<ApiResponse<String>> deleteCustomer(
-            HttpServletRequest httpServletRequest, @PathVariable Long id) {
-
-        String token = httpServletRequest.getHeader("Authorization").substring(7);
+            @PathVariable Long id) {
 
         managerService.deleteCustomer(id);
         return new ResponseEntity<>(
@@ -101,12 +86,9 @@ public class ManagerController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse<String>> updateCustomer(
-            HttpServletRequest httpServletRequest,
             @PathVariable Long id,
             @RequestParam String fullName,
             @RequestParam String address) {
-
-        String token = httpServletRequest.getHeader("Authorization").substring(7);
 
         managerService.updateCustomer(id, fullName, address);
         return new ResponseEntity<>(
@@ -125,5 +107,63 @@ public class ManagerController {
 
         List<DeliveringStaff> deliveringStaffAccounts = managerService.getAllDeliveringStaffAccounts();
         return new ResponseEntity<>(deliveringStaffAccounts, HttpStatus.OK);
+    }
+
+    @GetMapping("/revenue/daily")
+    public BigDecimal getDailyRevenue(@RequestParam LocalDate date) {
+        return managerService.calculateDailyRevenue(date);
+    }
+
+    @GetMapping("/revenue/weekly")
+    public BigDecimal getWeeklyRevenue(@RequestParam int year, @RequestParam int week) {
+        return managerService.calculateWeeklyRevenue(year, week);
+    }
+
+    @GetMapping("/revenue/monthly")
+    public BigDecimal getMonthlyRevenue(@RequestParam YearMonth month) {
+        return managerService.calculateMonthlyRevenue(month);
+    }
+
+    @GetMapping("/revenue/yearly")
+    public BigDecimal getYearlyRevenue(@RequestParam int year) {
+        return managerService.calculateYearlyRevenue(year);
+    }
+
+    // Top Customer by Order Frequency
+    @GetMapping("/top-customer")
+    public Customers getTopCustomer() {
+        return managerService.findTopCustomer();
+    }
+
+    // Growth Comparison
+    @GetMapping("/growth/weekly")
+    public BigDecimal getWeeklyGrowth(@RequestParam int year, @RequestParam int currentWeek) {
+        return managerService.calculateWeeklyGrowth(year, currentWeek);
+    }
+
+    @GetMapping("/growth/monthly")
+    public BigDecimal getMonthlyGrowth(@RequestParam YearMonth currentMonth) {
+        return managerService.calculateMonthlyGrowth(currentMonth);
+    }
+
+    @GetMapping("/growth/yearly")
+    public BigDecimal getYearlyGrowth(@RequestParam int currentYear) {
+        return managerService.calculateYearlyGrowth(currentYear);
+    }
+
+    // Highest Revenue by Day, Week, Month, Year
+    @GetMapping("/highest-revenue/day")
+    public LocalDate getHighestRevenueDay() {
+        return managerService.getHighestRevenueDay();
+    }
+
+    @GetMapping("/highest-revenue/month")
+    public YearMonth getHighestRevenueMonth() {
+        return managerService.getHighestRevenueMonth();
+    }
+
+    @GetMapping("/highest-revenue/year")
+    public int getHighestRevenueYear() {
+        return managerService.getHighestRevenueYear();
     }
 }

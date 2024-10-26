@@ -1,5 +1,10 @@
 package com.koi_express.exception;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class AppException extends RuntimeException {
 
     public AppException(ErrorCode errorCode) {
@@ -17,13 +22,6 @@ public class AppException extends RuntimeException {
         this.errorCode = errorCode;
     }
 
-    private ErrorCode errorCode;
+    private final ErrorCode errorCode;
 
-    public ErrorCode getErrorCode() {
-        return errorCode;
-    }
-
-    public void setErrorCode(ErrorCode errorCode) {
-        this.errorCode = errorCode;
-    }
 }

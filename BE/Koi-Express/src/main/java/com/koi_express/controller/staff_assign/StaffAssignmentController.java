@@ -1,9 +1,8 @@
-package com.koi_express.controller;
+package com.koi_express.controller.staff_assign;
 
 import com.koi_express.dto.request.AssignOrderRequest;
 import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.service.staffAssignment.StaffAssignmentService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.koi_express.service.staff_assignment.StaffAssignmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +11,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/assignment")
 public class StaffAssignmentController {
 
-    @Autowired
-    private StaffAssignmentService staffAssignmentService;
+    private final StaffAssignmentService staffAssignmentService;
+
+    public StaffAssignmentController(StaffAssignmentService staffAssignmentService) {
+        this.staffAssignmentService = staffAssignmentService;
+    }
 
     @PostMapping("/assign")
     public ResponseEntity<ApiResponse<String>> assignOrder(@RequestBody AssignOrderRequest request) {

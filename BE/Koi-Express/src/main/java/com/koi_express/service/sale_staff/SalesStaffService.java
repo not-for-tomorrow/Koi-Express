@@ -1,14 +1,12 @@
-package com.koi_express.service.saleStaff;
+package com.koi_express.service.sale_staff;
 
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
-import com.koi_express.repository.OrderRepository;
 import com.koi_express.repository.SalesStaffRepository;
 import com.koi_express.service.order.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,14 +16,13 @@ public class SalesStaffService {
 
     private static final Logger logger = LoggerFactory.getLogger(SalesStaffService.class);
 
-    @Autowired
-    private SalesStaffRepository salesStaffRepository;
+    private final SalesStaffRepository salesStaffRepository;
+    private final OrderService orderService;
 
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private OrderService orderService;
+    public SalesStaffService(SalesStaffRepository salesStaffRepository, OrderService orderService) {
+        this.salesStaffRepository = salesStaffRepository;
+        this.orderService = orderService;
+    }
 
     public Page<Orders> getPendingOrders(Pageable pageable) {
         logger.info("Fetching pending orders for sales staff.");

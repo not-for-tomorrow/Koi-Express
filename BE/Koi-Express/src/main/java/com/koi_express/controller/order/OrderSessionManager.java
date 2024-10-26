@@ -37,6 +37,7 @@ public class OrderSessionManager {
     }
 
     // Lấy dữ liệu session của order
+    @SuppressWarnings("unchecked")
     public Map<String, Object> retrieveSessionData(HttpSession session, String role, String userId) {
         String sessionKey = getSessionKey(role, userId);
         Map<String, Object> sessionData = (Map<String, Object>) session.getAttribute(sessionKey);
@@ -59,6 +60,7 @@ public class OrderSessionManager {
     }
 
     // Lấy dữ liệu tính toán từ session
+    @SuppressWarnings("unchecked")
     public Map<String, BigDecimal> retrieveCalculationSessionData(HttpSession session, String role, String userId) {
         String sessionKey = getSessionKey(role, userId) + "_calculation";
         Map<String, BigDecimal> calculationData = (Map<String, BigDecimal>) session.getAttribute(sessionKey);
@@ -91,17 +93,13 @@ public class OrderSessionManager {
     }
 
     private String getSessionKey(String role, String userId) {
-        switch (role) {
-            case "CUSTOMER":
-                return "customer_" + userId;
-            case "SALES_STAFF":
-                return "staff_" + userId;
-            case "DELIVERING_STAFF":
-                return "staff_" + userId;
-            case "MANAGER":
-                return "account_" + userId;
-            default:
-                throw new IllegalArgumentException("Invalid role: " + role);
-        }
+        return switch (role) {
+            case "CUSTOMER" -> "customer_" + userId;
+            case "SALES_STAFF" -> "sales_staff_" + userId;
+            case "DELIVERING_STAFF" -> "delivering_staff_" + userId;
+            case "MANAGER" -> "account_" + userId;
+            default -> throw new IllegalArgumentException("Invalid role: " + role);
+        };
     }
+
 }

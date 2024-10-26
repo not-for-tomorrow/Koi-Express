@@ -6,6 +6,7 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.koi_express.dto.response.ApiResponse;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Service;
 public class KoiInvoiceCalculator {
 
     private static final Logger logger = Logger.getLogger(KoiInvoiceCalculator.class.getName());
-    private static final Locale VIETNAM_LOCALE = new Locale("vi", "VN");
+    private static final Locale VIETNAM_LOCALE = Locale.of("vi", "VN");
     private static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(VIETNAM_LOCALE);
 
     @Value("${invoice.specializedVehicleFee:150000}") // Fee for specialized vehicle
@@ -29,19 +30,16 @@ public class KoiInvoiceCalculator {
     @Value("${invoice.insuranceRate:0.05}") // 5% insurance rate
     private double insuranceRate;
 
-    private final KoiPriceCalculator koiPriceCalculator;
     private final CareFee careFeeCalculator;
     private final PackagingFeeCalculator packagingFeeCalculator;
 
     // Constructor-based injection
     public KoiInvoiceCalculator(
-            KoiPriceCalculator koiPriceCalculator,
             CareFee careFeeCalculator,
             PackagingFeeCalculator packagingFeeCalculator,
             @Value("${invoice.specializedVehicleFee:150000}") int specializedVehicleFee,
             @Value("${invoice.vatRate:0.10}") double vatRate,
             @Value("${invoice.insuranceRate:0.05}") double insuranceRate) {
-        this.koiPriceCalculator = koiPriceCalculator;
         this.careFeeCalculator = careFeeCalculator;
         this.packagingFeeCalculator = packagingFeeCalculator;
         this.specializedVehicleFee = specializedVehicleFee;
@@ -55,7 +53,7 @@ public class KoiInvoiceCalculator {
 
         CareFee.Size size = convertLengthToSize(koiSize);
 
-        BigDecimal koiFee = koiPriceCalculator.calculateTotalPrice(koiType, quantity, koiSize);
+        BigDecimal koiFee = KoiPriceCalculator.calculateTotalPrice(koiType, quantity, koiSize);
         BigDecimal careFee = careFeeCalculator.calculateCareFee(koiType, size, quantity);
         BigDecimal packagingFee = packagingFeeCalculator.calculateFee(quantity, koiSize);
         BigDecimal remainingTransportationFee = calculateRemainingTransportationFee(distanceFee, commitmentFee);
@@ -75,9 +73,13 @@ public class KoiInvoiceCalculator {
         feeDetails.put("vat", vat.setScale(0, RoundingMode.HALF_UP));
         feeDetails.put("totalFee", totalFee.setScale(0, RoundingMode.HALF_UP));
 
-        logger.info(String.format(
-                "Total price for %d %s koi: %s", quantity, koiType.name(), CURRENCY_FORMAT.format(totalFee)));
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info(String.format(
+                    "Total price for %d %s koi: %s", quantity, koiType.name(), CURRENCY_FORMAT.format(totalFee)));
+        }
+
         return new ApiResponse<>(200, "Total price calculated successfully", feeDetails);
+
     }
 
     private BigDecimal calculateRemainingTransportationFee(BigDecimal distanceFee, BigDecimal commitmentFee) {

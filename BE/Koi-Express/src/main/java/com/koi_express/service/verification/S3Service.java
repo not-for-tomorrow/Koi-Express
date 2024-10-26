@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import com.koi_express.exception.S3UploadException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -32,7 +33,7 @@ public class S3Service {
             String month = String.format("%02d", date.getMonthValue());
             String day = String.format("%02d", date.getDayOfMonth());
 
-            String fileName = UUID.randomUUID().toString() + "_" + file.getName();
+            String fileName = UUID.randomUUID() + "_" + file.getName();
             String keyName =
                     String.format("customer/%s/%s/%s/%s/%s/%s", customerId, year, month, day, category, fileName);
 
@@ -46,8 +47,15 @@ public class S3Service {
                     .toExternalForm();
 
         } catch (S3Exception e) {
-            logger.severe("S3 upload failed: " + e.awsErrorDetails().errorMessage());
-            throw new RuntimeException("Error uploading file to S3", e);
+            String errorMsg = String.format("Failed to upload file '%s' for customer '%s' on '%s' in category '%s'. S3 Error: %s",
+                    file.getName(), customerId, orderDate, category, e.awsErrorDetails().errorMessage());
+            logger.severe(errorMsg);
+            throw new S3UploadException(errorMsg, e);
+        } catch (Exception e) {
+            String errorMsg = String.format("Unexpected error while uploading file '%s' for customer '%s' on '%s' in category '%s'.",
+                    file.getName(), customerId, orderDate, category);
+            logger.severe(errorMsg);
+            throw new S3UploadException(errorMsg, e);
         }
     }
 }

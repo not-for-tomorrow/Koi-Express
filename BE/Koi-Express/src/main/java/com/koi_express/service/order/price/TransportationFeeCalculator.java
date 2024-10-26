@@ -6,9 +6,9 @@ import java.math.RoundingMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class TransportationFeeCalculator {
 
     private static final Logger logger = LoggerFactory.getLogger(TransportationFeeCalculator.class);
@@ -73,9 +73,15 @@ public class TransportationFeeCalculator {
     }
 
     public BigDecimal calculateCommitmentFee(BigDecimal kilometers) {
+        if (kilometers.compareTo(BigDecimal.TEN) < 0) {
+            logger.info("Commitment fee not applicable for distances below 10 km.");
+            return BigDecimal.ZERO;
+        }
+
         BigDecimal totalFee = calculateTotalFee(kilometers);
         BigDecimal commitmentFee = totalFee.multiply(BigDecimal.valueOf(0.30));
-        logger.info(String.format("Commitment Fee for %.2f km: %.2f VND", kilometers, commitmentFee));
+        logger.info("Commitment Fee for {} km: {} VND", kilometers, commitmentFee);
         return commitmentFee.setScale(0, RoundingMode.HALF_UP);
     }
+
 }

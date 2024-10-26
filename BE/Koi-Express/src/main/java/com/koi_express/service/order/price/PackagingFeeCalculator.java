@@ -6,14 +6,13 @@ import java.math.RoundingMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class PackagingFeeCalculator {
 
     private static final Logger logger = LoggerFactory.getLogger(PackagingFeeCalculator.class);
 
-    // Load packaging fees from configuration
     @Value("${packaging.fee.small:15000}")
     private BigDecimal smallFishFee;
 

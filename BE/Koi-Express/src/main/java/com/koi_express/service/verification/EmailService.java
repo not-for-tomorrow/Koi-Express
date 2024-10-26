@@ -18,7 +18,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -30,26 +29,54 @@ public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    @Autowired
-    private JavaMailSender javaMailSender;
+    private final JavaMailSender javaMailSender;
+
+    public EmailService(JavaMailSender javaMailSender) {
+        this.javaMailSender = javaMailSender;
+    }
 
     private static final String TEMPLATE_ORDER_CONFIRMATION = "Order Confirmation.html";
     private static final String TEMPLATE_PAYMENT_LINK = "Payment Link.html";
     private static final String TEMPLATE_ACCOUNT_CONFIRMATION = "Account Confirmation.html";
     private static final String TEMPLATE_INVOICE = "Invoice.html";
 
+    public static final String FULL_NAME_PLACEHOLDER = "{{FullName}}";
+    public static final String CUSTOMER_NAME_PLACEHOLDER = "{{CustomerName}}";
+    public static final String ORDER_ID_PLACEHOLDER = "{{OrderID}}";
+    public static final String ORDER_DATE_PLACEHOLDER = "{{OrderDate}}";
+    public static final String ADDRESS_PLACEHOLDER = "{{Address}}";
+    public static final String TOTAL_AMOUNT_PLACEHOLDER = "{{TotalAmount}}";
+    public static final String TRACK_ORDER_LINK_PLACEHOLDER = "{{TrackOrderLink}}";
+
+    public static final String STAFF_ID_PLACEHOLDER = "{{StaffId}}";
+    public static final String EMAIL_PLACEHOLDER = "{{Email}}";
+    public static final String PHONE_NUMBER_PLACEHOLDER = "{{PhoneNumber}}";
+    public static final String PASSWORD_PLACEHOLDER = "{{Password}}";
+    public static final String ROLE_PLACEHOLDER = "{{Role}}";
+    public static final String LEVEL_PLACEHOLDER = "{{Level}}";
+    public static final String CREATED_AT_PLACEHOLDER = "{{CreatedAt}}";
+
+    public static final String INVOICE_ID_PLACEHOLDER = "{{InvoiceID}}";
+    public static final String KOI_QUANTITY_PLACEHOLDER = "{{KoiQuantity}}";
+    public static final String SUBTOTAL_PLACEHOLDER = "{{Subtotal}}";
+    public static final String CARE_FEE_PLACEHOLDER = "{{CareFee}}";
+    public static final String INSURANCE_FEE_PLACEHOLDER = "{{InsuranceFee}}";
+    public static final String PACKAGING_FEE_PLACEHOLDER = "{{PackagingFee}}";
+    public static final String VAT_PLACEHOLDER = "{{VAT}}";
+
+
     @Async
-    public void sendOrderConfirmationEmail(String recipientEmail, Orders order) throws IOException {
+    public void sendOrderConfirmationEmail(String recipientEmail, Orders order) {
         try {
             String template = loadEmailTemplate(TEMPLATE_ORDER_CONFIRMATION);
 
             Map<String, String> placeholders = new HashMap<>();
-            placeholders.put("{{CustomerName}}", order.getCustomer().getFullName());
-            placeholders.put("{{OrderID}}", String.valueOf(order.getOrderId()));
-            placeholders.put("{{OrderDate}}", order.getCreatedAt().toString());
-            placeholders.put("{{Address}}", order.getDestinationLocation());
-            placeholders.put("{{TotalAmount}}", String.format("%.2f", order.getTotalFee()));
-            placeholders.put("{{TrackOrderLink}}", "https://koiexpress.com/track-order/" + order.getOrderId());
+            placeholders.put(CUSTOMER_NAME_PLACEHOLDER, order.getCustomer().getFullName());
+            placeholders.put(ORDER_ID_PLACEHOLDER, String.valueOf(order.getOrderId()));
+            placeholders.put(ORDER_DATE_PLACEHOLDER, order.getCreatedAt().toString());
+            placeholders.put(ADDRESS_PLACEHOLDER, order.getDestinationLocation());
+            placeholders.put(TOTAL_AMOUNT_PLACEHOLDER, String.format("%.2f", order.getTotalFee()));
+            placeholders.put(TRACK_ORDER_LINK_PLACEHOLDER, "https://koiexpress.com/track-order/" + order.getOrderId());
 
             sendEmail(recipientEmail, "Order Confirmation - Koi Express", template, placeholders);
         } catch (Exception e) {
@@ -64,10 +91,10 @@ public class EmailService {
             String template = loadEmailTemplate(TEMPLATE_PAYMENT_LINK);
 
             Map<String, String> placeholders = new HashMap<>();
-            placeholders.put("{{CustomerName}}", order.getCustomer().getFullName());
-            placeholders.put("{{OrderID}}", String.valueOf(order.getOrderId()));
+            placeholders.put(CUSTOMER_NAME_PLACEHOLDER, order.getCustomer().getFullName());
+            placeholders.put(ORDER_ID_PLACEHOLDER, String.valueOf(order.getOrderId()));
             placeholders.put("{{PaymentLink}}", paymentLink);
-            placeholders.put("{{TotalAmount}}", String.format("%.2f", order.getTotalFee()));
+            placeholders.put(TOTAL_AMOUNT_PLACEHOLDER, String.format("%.2f", order.getTotalFee()));
 
             sendEmail(recipientEmail, "Payment for your Order - Koi Express", template, placeholders);
         } catch (Exception e) {
@@ -84,23 +111,23 @@ public class EmailService {
             Map<String, String> placeholders = new HashMap<>();
             if (isDeliveringStaff) {
                 DeliveringStaff deliveringStaff = (DeliveringStaff) account;
-                placeholders.put("{{FullName}}", deliveringStaff.getFullName());
-                placeholders.put("{{StaffId}}", String.valueOf(deliveringStaff.getId()));
-                placeholders.put("{{Email}}", deliveringStaff.getEmail());
-                placeholders.put("{{PhoneNumber}}", deliveringStaff.getPhoneNumber());
-                placeholders.put("{{Password}}", rawPassword);
-                placeholders.put("{{Role}}", deliveringStaff.getRole().toString());
-                placeholders.put("{{Level}}", deliveringStaff.getLevel().name());
-                placeholders.put("{{CreatedAt}}", deliveringStaff.getCreatedAt().toString());
+                placeholders.put(FULL_NAME_PLACEHOLDER, deliveringStaff.getFullName());
+                placeholders.put(STAFF_ID_PLACEHOLDER, String.valueOf(deliveringStaff.getId()));
+                placeholders.put(EMAIL_PLACEHOLDER, deliveringStaff.getEmail());
+                placeholders.put(PHONE_NUMBER_PLACEHOLDER, deliveringStaff.getPhoneNumber());
+                placeholders.put(PASSWORD_PLACEHOLDER, rawPassword);
+                placeholders.put(ROLE_PLACEHOLDER, deliveringStaff.getRole().toString());
+                placeholders.put(LEVEL_PLACEHOLDER, deliveringStaff.getLevel().name());
+                placeholders.put(CREATED_AT_PLACEHOLDER, deliveringStaff.getCreatedAt().toString());
             } else {
                 SystemAccount systemAccount = (SystemAccount) account;
-                placeholders.put("{{FullName}}", systemAccount.getFullName());
-                placeholders.put("{{StaffId}}", String.valueOf(systemAccount.getId()));
-                placeholders.put("{{Email}}", systemAccount.getEmail());
-                placeholders.put("{{PhoneNumber}}", systemAccount.getPhoneNumber());
-                placeholders.put("{{Password}}", rawPassword);
-                placeholders.put("{{Role}}", systemAccount.getRole().toString());
-                placeholders.put("{{CreatedAt}}", systemAccount.getCreatedAt().toString());
+                placeholders.put(FULL_NAME_PLACEHOLDER, systemAccount.getFullName());
+                placeholders.put(STAFF_ID_PLACEHOLDER, String.valueOf(systemAccount.getId()));
+                placeholders.put(EMAIL_PLACEHOLDER, systemAccount.getEmail());
+                placeholders.put(PHONE_NUMBER_PLACEHOLDER, systemAccount.getPhoneNumber());
+                placeholders.put(PASSWORD_PLACEHOLDER, rawPassword);
+                placeholders.put(ROLE_PLACEHOLDER, systemAccount.getRole().toString());
+                placeholders.put(CREATED_AT_PLACEHOLDER, systemAccount.getCreatedAt().toString());
             }
 
             sendEmail(
@@ -117,22 +144,22 @@ public class EmailService {
     @Async
     public void sendInvoiceEmail(String recipientEmail, Orders order, Map<String, BigDecimal> calculationData) {
         try {
-            String template = loadEmailTemplate(TEMPLATE_INVOICE); // Sử dụng template hóa đơn
+            String template = loadEmailTemplate(TEMPLATE_INVOICE);
 
             Map<String, String> placeholders = new HashMap<>();
-            placeholders.put("{{CustomerName}}", order.getCustomer().getFullName());
-            placeholders.put("{{InvoiceID}}", String.valueOf(order.getOrderId()));
-            placeholders.put("{{OrderID}}", String.valueOf(order.getOrderId()));
+            placeholders.put(CUSTOMER_NAME_PLACEHOLDER, order.getCustomer().getFullName());
+            placeholders.put(INVOICE_ID_PLACEHOLDER, String.valueOf(order.getOrderId()));
+            placeholders.put(ORDER_ID_PLACEHOLDER, String.valueOf(order.getOrderId()));
             placeholders.put("{{InvoiceDate}}", order.getCreatedAt().toString());
-            placeholders.put("{{Address}}", order.getDestinationLocation());
+            placeholders.put(ADDRESS_PLACEHOLDER, order.getDestinationLocation());
             placeholders.put(
-                    "{{KoiQuantity}}", String.valueOf(order.getOrderDetail().getKoiQuantity()));
-            placeholders.put("{{Subtotal}}", String.format("%.2f", calculationData.get("subtotal")));
-            placeholders.put("{{CareFee}}", String.format("%.2f", calculationData.get("careFee")));
-            placeholders.put("{{InsuranceFee}}", String.format("%.2f", calculationData.get("insuranceFee")));
-            placeholders.put("{{PackagingFee}}", String.format("%.2f", calculationData.get("packagingFee")));
-            placeholders.put("{{VAT}}", String.format("%.2f", calculationData.get("vat")));
-            placeholders.put("{{TotalAmount}}", String.format("%.2f", calculationData.get("totalFee")));
+                    KOI_QUANTITY_PLACEHOLDER, String.valueOf(order.getOrderDetail().getKoiQuantity()));
+            placeholders.put(SUBTOTAL_PLACEHOLDER, String.format("%.2f", calculationData.get("subtotal")));
+            placeholders.put(CARE_FEE_PLACEHOLDER, String.format("%.2f", calculationData.get("careFee")));
+            placeholders.put(INSURANCE_FEE_PLACEHOLDER, String.format("%.2f", calculationData.get("insuranceFee")));
+            placeholders.put(PACKAGING_FEE_PLACEHOLDER, String.format("%.2f", calculationData.get("packagingFee")));
+            placeholders.put(VAT_PLACEHOLDER, String.format("%.2f", calculationData.get("vat")));
+            placeholders.put(TOTAL_AMOUNT_PLACEHOLDER, String.format("%.2f", calculationData.get("totalFee")));
 
             sendEmail(recipientEmail, "Invoice - Koi Express", template, placeholders);
         } catch (Exception e) {
@@ -158,7 +185,7 @@ public class EmailService {
     }
 
     private void sendEmail(String recipientEmail, String subject, String template, Map<String, String> placeholders)
-            throws IOException, MessagingException {
+            throws MessagingException {
         String populatedTemplate = replacePlaceholders(template, placeholders);
 
         MimeMessage message = javaMailSender.createMimeMessage();

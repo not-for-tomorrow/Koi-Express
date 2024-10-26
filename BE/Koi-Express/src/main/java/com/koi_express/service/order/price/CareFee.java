@@ -1,6 +1,7 @@
 package com.koi_express.service.order.price;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,19 +25,19 @@ public class CareFee {
 
     public CareFee() {
         // Japan Koi Pricing
-        priceTable.put("KOI_NHAT_BAN:LESS_THAN_30_CM", BigDecimal.valueOf(50000));
-        priceTable.put("KOI_NHAT_BAN:SIZE_30_TO_50_CM", BigDecimal.valueOf(80000));
-        priceTable.put("KOI_NHAT_BAN:GREATER_THAN_50_CM", BigDecimal.valueOf(120000));
+        priceTable.put(generateKey(KoiType.KOI_NHAT_BAN, Size.LESS_THAN_30_CM), BigDecimal.valueOf(50000));
+        priceTable.put(generateKey(KoiType.KOI_NHAT_BAN, Size.SIZE_30_TO_50_CM), BigDecimal.valueOf(80000));
+        priceTable.put(generateKey(KoiType.KOI_NHAT_BAN, Size.GREATER_THAN_50_CM), BigDecimal.valueOf(120000));
 
         // Vietnam Koi Pricing
-        priceTable.put("KOI_VIET_NAM:LESS_THAN_30_CM", BigDecimal.valueOf(30000));
-        priceTable.put("KOI_VIET_NAM:SIZE_30_TO_50_CM", BigDecimal.valueOf(60000));
-        priceTable.put("KOI_VIET_NAM:GREATER_THAN_50_CM", BigDecimal.valueOf(100000));
+        priceTable.put(generateKey(KoiType.KOI_VIET_NAM, Size.LESS_THAN_30_CM), BigDecimal.valueOf(30000));
+        priceTable.put(generateKey(KoiType.KOI_VIET_NAM, Size.SIZE_30_TO_50_CM), BigDecimal.valueOf(60000));
+        priceTable.put(generateKey(KoiType.KOI_VIET_NAM, Size.GREATER_THAN_50_CM), BigDecimal.valueOf(100000));
 
         // Europe Koi Pricing
-        priceTable.put("KOI_CHAU_AU:LESS_THAN_30_CM", BigDecimal.valueOf(50000));
-        priceTable.put("KOI_CHAU_AU:SIZE_30_TO_50_CM", BigDecimal.valueOf(80000));
-        priceTable.put("KOI_CHAU_AU:GREATER_THAN_50_CM", BigDecimal.valueOf(120000));
+        priceTable.put(generateKey(KoiType.KOI_CHAU_AU, Size.LESS_THAN_30_CM), BigDecimal.valueOf(50000));
+        priceTable.put(generateKey(KoiType.KOI_CHAU_AU, Size.SIZE_30_TO_50_CM), BigDecimal.valueOf(80000));
+        priceTable.put(generateKey(KoiType.KOI_CHAU_AU, Size.GREATER_THAN_50_CM), BigDecimal.valueOf(120000));
     }
 
     public BigDecimal calculateCareFee(KoiType type, Size size, int quantity) {
@@ -56,9 +57,12 @@ public class CareFee {
             throw new IllegalArgumentException("Price not available for this combination");
         }
 
-        // Multiply the fee per fish by the quantity using BigDecimal.multiply()
         BigDecimal totalFee = feePerFish.multiply(BigDecimal.valueOf(quantity));
         logger.info("Care fee for {} koi of type {} and size {}: {} VND", quantity, type, size, totalFee);
-        return totalFee.setScale(0, BigDecimal.ROUND_HALF_UP);
+        return totalFee.setScale(0, RoundingMode.HALF_UP);
+    }
+
+    private String generateKey(KoiType type, Size size) {
+        return String.format("%s:%s", type.name(), size.name());
     }
 }

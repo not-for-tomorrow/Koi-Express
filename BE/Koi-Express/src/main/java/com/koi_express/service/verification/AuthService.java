@@ -2,19 +2,17 @@ package com.koi_express.service.verification;
 
 import java.util.Optional;
 
-import com.koi_express.JWT.JwtUtil;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.request.LoginRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.customer.User;
-import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.CustomersRepository;
 import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.repository.SystemAccountRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,20 +20,23 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
 
-    @Autowired
-    private CustomersRepository customersRepository;
+    private final CustomersRepository customersRepository;
+    private final SystemAccountRepository systemAccountRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final DeliveringStaffRepository deliveringStaffRepository;
 
-    @Autowired
-    private SystemAccountRepository systemAccountRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private DeliveringStaffRepository deliveringStaffRepository;
+    public AuthService(CustomersRepository customersRepository,
+                       SystemAccountRepository systemAccountRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtUtil jwtUtil,
+                       DeliveringStaffRepository deliveringStaffRepository) {
+        this.customersRepository = customersRepository;
+        this.systemAccountRepository = systemAccountRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+        this.deliveringStaffRepository = deliveringStaffRepository;
+    }
 
     public ApiResponse<String> authenticateUser(LoginRequest loginRequest) {
         Optional<? extends User> userOptional = findUserByPhoneNumber(loginRequest.getPhoneNumber());
@@ -68,11 +69,6 @@ public class AuthService {
             return systemAccount;
         }
 
-        Optional<DeliveringStaff> deliveringStaff = deliveringStaffRepository.findByPhoneNumber(phoneNumber);
-        if (deliveringStaff.isPresent()) {
-            return deliveringStaff;
-        }
-
-        return Optional.empty();
+        return deliveringStaffRepository.findByPhoneNumber(phoneNumber);
     }
 }
