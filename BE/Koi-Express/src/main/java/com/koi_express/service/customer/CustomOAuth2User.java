@@ -3,9 +3,11 @@ package com.koi_express.service.customer;
 import java.util.Collection;
 import java.util.Map;
 
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+@Getter
 public class CustomOAuth2User implements OAuth2User {
 
     private final OAuth2User oAuth2User;
@@ -31,13 +33,5 @@ public class CustomOAuth2User implements OAuth2User {
     @Override
     public String getName() {
         return oAuth2User.getName();
-    }
-
-    public String getJwtToken() {
-        return jwtToken;
-    }
-
-    public String getCustomerId() {
-        return customerId;
     }
 }

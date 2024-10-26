@@ -2,13 +2,12 @@ package com.koi_express.service.customer;
 
 import java.util.Optional;
 
-import com.koi_express.JWT.JwtUtil;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
 import com.koi_express.repository.CustomersRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -19,10 +18,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    @Autowired
     private final CustomersRepository customersRepository;
-
-    @Autowired
     private final JwtUtil jwtUtil;
 
     public CustomOAuth2UserService(CustomersRepository customersRepository, JwtUtil jwtUtil) {
@@ -34,10 +30,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        // Get the registration ID (Google, Facebook, etc.)
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
 
-        // Get common attributes
         String email = oAuth2User.getAttribute("email");
         if (email == null || email.isEmpty()) {
             throw new OAuth2AuthenticationException("Email not found from OAuth2 provider");
@@ -57,7 +51,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Optional<Customers> existingCustomer = customersRepository.findByEmailAndAuthProvider(email, authProvider);
         Customers customer;
 
-        if (!existingCustomer.isPresent()) {
+        if (existingCustomer.isEmpty()) {
 
             customer = new Customers();
             customer.setEmail(email);

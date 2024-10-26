@@ -1,10 +1,9 @@
-package com.koi_express.service.staffAssignment;
+package com.koi_express.service.staff_assignment;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.entity.staff.StaffAssignment;
@@ -18,8 +17,6 @@ import com.koi_express.repository.OrderRepository;
 import com.koi_express.repository.PendingOrderRepository;
 import com.koi_express.repository.StaffAssignmentRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,22 +25,25 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class StaffAssignmentService {
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
+    private final StaffAssignmentRepository staffAssignmentRepository;
+    private final DeliveringStaffRepository deliveringStaffRepository;
+    private final PendingOrderRepository pendingOrderRepository;
 
-    @Autowired
-    private StaffAssignmentRepository staffAssignmentRepository;
-
-    @Autowired
-    private DeliveringStaffRepository deliveringStaffRepository;
-
-    @Autowired
-    private PendingOrderRepository pendingOrderRepository;
+    public StaffAssignmentService(OrderRepository orderRepository,
+                                  StaffAssignmentRepository staffAssignmentRepository,
+                                  DeliveringStaffRepository deliveringStaffRepository,
+                                  PendingOrderRepository pendingOrderRepository) {
+        this.orderRepository = orderRepository;
+        this.staffAssignmentRepository = staffAssignmentRepository;
+        this.deliveringStaffRepository = deliveringStaffRepository;
+        this.pendingOrderRepository = pendingOrderRepository;
+    }
 
     private Long lastAssignedStaffId = null;
 
     @Transactional
-    public String assignOrder(Long orderId) throws Exception {
+    public String assignOrder(Long orderId) {
 
         Orders order = orderRepository
                 .findById(orderId)
@@ -109,7 +109,7 @@ public class StaffAssignmentService {
         if (lastAssignedStaffId == null
                 || availableStaff.stream().noneMatch(staff -> staff.getStaffId().equals(lastAssignedStaffId))) {
             log.info("Returning first staff in list as lastAssignedStaffId is invalid or null");
-            return availableStaff.get(0);
+            return availableStaff.getFirst();
         }
 
         for (int i = 0; i < availableStaff.size(); i++) {
@@ -118,25 +118,9 @@ public class StaffAssignmentService {
             }
         }
 
-        return availableStaff.get(0);
+        return availableStaff.getFirst();
     }
 
-    // lưu đơn hàng vào danh sách đợi khi không có nhân viên nào sẵn sàng
-    public ApiResponse<String> savePendingOrder(Orders order) {
-        if (order.getDeliveringStaff() != null || order.getStatus() == OrderStatus.DELIVERED) {
-            log.error(
-                    "Order ID: {} cannot be added to pending list, it's already assigned or delivered",
-                    order.getOrderId());
-            throw new AppException(ErrorCode.ORDER_INVALID, "Order cannot be added to pending list.");
-        }
-
-        pendingOrderRepository.save(order);
-        log.info("Order ID: {} has been added to pending list", order.getOrderId());
-        return new ApiResponse<>(
-                HttpStatus.OK.value(), "Order is added to pending list due to no available staff", null);
-    }
-
-    // kiểm tra đơn hàng chờ và gán nhân viên cho đơn hàng
     @Scheduled(fixedRate = 60000)
     public void assignPendingOrders() {
         List<DeliveringStaff> availableStaff = deliveringStaffRepository.findByStatus(StaffStatus.AVAILABLE);
@@ -144,7 +128,7 @@ public class StaffAssignmentService {
         if (!availableStaff.isEmpty()) {
             List<Orders> pendingOrders = pendingOrderRepository.findAll();
             for (Orders order : pendingOrders) {
-                DeliveringStaff assignedStaff = availableStaff.remove(0);
+                DeliveringStaff assignedStaff = availableStaff.removeFirst();
                 log.info(
                         "Assigning staff ID: {} to pending order ID: {}",
                         assignedStaff.getStaffId(),

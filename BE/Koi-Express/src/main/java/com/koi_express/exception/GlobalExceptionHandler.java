@@ -5,6 +5,8 @@ import java.util.Map;
 
 import com.koi_express.dto.response.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -15,10 +17,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(value = RuntimeException.class)
-    ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception) {
-        ApiResponse response = new ApiResponse();
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(value = RuntimeException.class)
+    public ResponseEntity<ApiResponse<Void>> handleRuntimeException(RuntimeException exception) {
+        logger.error("Runtime exception occurred: {}", exception.getMessage(), exception);
+        ApiResponse<Void> response = new ApiResponse<>();
         response.setCode(1001);
         response.setMessage(exception.getMessage());
 
@@ -26,10 +30,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = AppException.class)
-    ResponseEntity<ApiResponse> handlingAppException(AppException exception) {
+    public ResponseEntity<ApiResponse<Void>> handleAppException(AppException exception) {
+        logger.warn("Application exception occurred: {}", exception.getMessage(), exception);
         ErrorCode errorCode = exception.getErrorCode();
-        ApiResponse response = new ApiResponse();
-
+        ApiResponse<Void> response = new ApiResponse<>();
         response.setCode(errorCode.getCode());
         response.setMessage(errorCode.getMessage());
 
@@ -37,15 +41,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
+        ex.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
 
-        ApiResponse response = new ApiResponse();
+        logger.info("Validation error(s) occurred: {}", errors);
+        ApiResponse<Map<String, String>> response = new ApiResponse<>();
         response.setCode(HttpStatus.BAD_REQUEST.value());
         response.setMessage("Validation failed");
         response.setResult(errors);
@@ -54,10 +59,22 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ApiResponse> handleEntityNotFound(EntityNotFoundException ex) {
-        ApiResponse response = new ApiResponse();
+    public ResponseEntity<ApiResponse<Void>> handleEntityNotFound(EntityNotFoundException ex) {
+        logger.info("Entity not found: {}", ex.getMessage());
+        ApiResponse<Void> response = new ApiResponse<>();
         response.setCode(HttpStatus.NOT_FOUND.value());
         response.setMessage("Resource not found");
+
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleAllExceptions(Exception ex) {
+        logger.error("Unexpected exception occurred: {}", ex.getMessage(), ex);
+        ApiResponse<Void> response = new ApiResponse<>();
+        response.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.setMessage("An unexpected error occurred. Please try again later.");
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

@@ -1,19 +1,20 @@
 package com.koi_express.service.manager;
 
-import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.Role;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
+import com.koi_express.repository.OrderRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 @Service
@@ -21,35 +22,40 @@ public class ManagerService {
 
     private static final Logger logger = LoggerFactory.getLogger(ManagerService.class);
 
-    @Autowired
-    private ManageCustomerService manageCustomerService;
+    private final ManageCustomerService manageCustomerService;
+    private final SystemAccount systemAccountService;
+    private final DeliveringStaff deliveringStaffService;
+    private final OrderRepository orderRepository;
 
-    @Autowired
-    private SystemAccount systemAccountService;
-
-    @Autowired
-    private DeliveringStaff deliveringStaffService;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    public ManagerService(
+            ManageCustomerService manageCustomerService,
+            SystemAccount systemAccountService,
+            DeliveringStaff deliveringStaffService,
+            OrderRepository orderRepository
+    ) {
+        this.manageCustomerService = manageCustomerService;
+        this.systemAccountService = systemAccountService;
+        this.deliveringStaffService = deliveringStaffService;
+        this.orderRepository = orderRepository;
+    }
 
     public Customers findByPhoneNumber(String phoneNumber) {
         return manageCustomerService.findByPhoneNumber(phoneNumber);
     }
 
-    public boolean deleteCustomer(Long id) {
-        return manageCustomerService.deleteCustomer(id);
+    public void deleteCustomer(Long id) {
+        manageCustomerService.deleteCustomer(id);
     }
 
     public Customers getCustomerById(Long customerId) {
         return manageCustomerService.getCustomerById(customerId);
     }
 
-    public Customers updateCustomer(Long id, String fullName, String address) {
-        return manageCustomerService.updateCustomer(id, fullName, address);
+    public void updateCustomer(Long id, String fullName, String address) {
+        manageCustomerService.updateCustomer(id, fullName, address);
     }
 
-    public ApiResponse<?> createSalesStaffAccount(CreateStaffRequest createStaffRequest) {
+    public ApiResponse<String> createSalesStaffAccount(CreateStaffRequest createStaffRequest) {
 
         createStaffRequest.setRole(Role.SALES_STAFF);
 
@@ -57,11 +63,11 @@ public class ManagerService {
             throw new AppException(
                     ErrorCode.INVALID_ROLE, "Invalid role for sales staff: " + createStaffRequest.getRole());
         }
+
         return systemAccountService.createSalesStaffAccount(createStaffRequest);
     }
 
-    // Separate method for creating delivering staff account
-    public ApiResponse<?> createDeliveringStaffAccount(CreateStaffRequest createStaffRequest) {
+    public ApiResponse<String> createDeliveringStaffAccount(CreateStaffRequest createStaffRequest) {
 
         logger.info("Role being set for new Delivering Staff: {}", createStaffRequest.getRole());
 
@@ -76,5 +82,70 @@ public class ManagerService {
 
     public List<com.koi_express.entity.shipment.DeliveringStaff> getAllDeliveringStaffAccounts() {
         return deliveringStaffService.getAllAccountsByRole(Role.DELIVERING_STAFF);
+    }
+
+    public BigDecimal calculateDailyRevenue(LocalDate date) {
+        return orderRepository.findTotalRevenueByDate(date).orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal calculateWeeklyRevenue(int year, int week) {
+        return orderRepository.findTotalRevenueByWeek(year, week).orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal calculateMonthlyRevenue(YearMonth month) {
+        return orderRepository.findTotalRevenueByMonth(month.getYear(), month.getMonthValue()).orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal calculateYearlyRevenue(int year) {
+        return orderRepository.findTotalRevenueByYear(year).orElse(BigDecimal.ZERO);
+    }
+
+    // Top Customer by Order Frequency
+    public Customers findTopCustomer() {
+        return orderRepository.findCustomerWithMostOrders().orElse(null);
+    }
+
+    // Growth Calculations
+    public BigDecimal calculateWeeklyGrowth(int year, int currentWeek) {
+        BigDecimal currentWeekRevenue = calculateWeeklyRevenue(year, currentWeek);
+        // Calculate the previous week, considering the transition between years
+        int previousYear = (currentWeek == 1) ? year - 1 : year;
+        int previousWeek = (currentWeek == 1) ? 52 : currentWeek - 1; // Assuming 52 weeks per year
+        BigDecimal previousWeekRevenue = calculateWeeklyRevenue(previousYear, previousWeek);
+        return calculateGrowth(currentWeekRevenue, previousWeekRevenue);
+    }
+
+    public BigDecimal calculateMonthlyGrowth(YearMonth currentMonth) {
+        YearMonth previousMonth = currentMonth.minusMonths(1); // Automatically handles year transition
+        BigDecimal currentMonthRevenue = calculateMonthlyRevenue(currentMonth);
+        BigDecimal previousMonthRevenue = calculateMonthlyRevenue(previousMonth);
+        return calculateGrowth(currentMonthRevenue, previousMonthRevenue);
+    }
+
+    public BigDecimal calculateYearlyGrowth(int currentYear) {
+        int previousYear = currentYear - 1;
+        BigDecimal currentYearRevenue = calculateYearlyRevenue(currentYear);
+        BigDecimal previousYearRevenue = calculateYearlyRevenue(previousYear);
+        return calculateGrowth(currentYearRevenue, previousYearRevenue);
+    }
+
+    private BigDecimal calculateGrowth(BigDecimal current, BigDecimal previous) {
+        if (previous.compareTo(BigDecimal.ZERO) == 0) {
+            return BigDecimal.ZERO;
+        }
+        return (current.subtract(previous)).divide(previous, 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+    }
+
+    // Highest Revenue Calculations
+    public LocalDate getHighestRevenueDay() {
+        return orderRepository.findHighestRevenueDay().orElse(null);
+    }
+
+    public YearMonth getHighestRevenueMonth() {
+        return orderRepository.findHighestRevenueMonth().orElse(null);
+    }
+
+    public int getHighestRevenueYear() {
+        return orderRepository.findHighestRevenueYear().orElse(0);
     }
 }

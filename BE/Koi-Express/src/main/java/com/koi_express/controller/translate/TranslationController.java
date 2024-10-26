@@ -1,7 +1,7 @@
-package com.koi_express.controller;
+package com.koi_express.controller.translate;
 
+import com.koi_express.exception.TranslationException;
 import com.koi_express.service.verification.TranslationService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -11,8 +11,11 @@ import java.util.Map;
 @RequestMapping("/api/translation")
 public class TranslationController {
 
-    @Autowired
-    private TranslationService translationService;
+    private final TranslationService translationService;
+
+    public TranslationController(TranslationService translationService) {
+        this.translationService = translationService;
+    }
 
     @PostMapping
     public Map<String, String> translateContent(@RequestBody Map<String, String> content,
@@ -20,7 +23,11 @@ public class TranslationController {
         Map<String, String> translatedContent = new HashMap<>();
 
         content.forEach((key, text) -> {
-            translatedContent.put(key, translationService.translateText(text, targetLanguage));
+            try {
+                translatedContent.put(key, translationService.translateText(text, targetLanguage));
+            } catch (TranslationException e) {
+                throw new RuntimeException(e);
+            }
         });
 
         return translatedContent;

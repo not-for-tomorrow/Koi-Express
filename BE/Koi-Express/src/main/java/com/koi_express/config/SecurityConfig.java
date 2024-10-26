@@ -1,15 +1,14 @@
 package com.koi_express.config;
 
-import com.koi_express.JWT.JwtFilter;
+import com.koi_express.jwt.JwtFilter;
 import com.koi_express.service.customer.CustomOAuth2UserService;
-import com.koi_express.service.customer.CustomerDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,22 +22,19 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtFilter jwtFilter;
+    private final JwtFilter jwtFilter;
 
     private final CustomOAuth2UserService customOAuth2UserService;
 
-    private final CustomerDetailsService customerDetailsService;
-
     public SecurityConfig(
-            CustomOAuth2UserService customOAuth2UserService, CustomerDetailsService customerDetailsService) {
+            CustomOAuth2UserService customOAuth2UserService, JwtFilter jwtFilter) {
         this.customOAuth2UserService = customOAuth2UserService;
-        this.customerDetailsService = customerDetailsService;
+        this.jwtFilter = jwtFilter;
     }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(

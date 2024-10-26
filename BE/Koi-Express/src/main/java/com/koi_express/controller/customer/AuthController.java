@@ -1,9 +1,9 @@
-package com.koi_express.controller;
+package com.koi_express.controller.customer;
 
 import java.security.SecureRandom;
 import java.util.stream.Collectors;
 
-import com.koi_express.JWT.JwtUtil;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.request.LoginRequest;
 import com.koi_express.dto.request.RegisterRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -14,17 +14,22 @@ import com.koi_express.service.customer.CustomerService;
 import com.koi_express.service.verification.AuthService;
 import com.koi_express.service.verification.OtpService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final CustomerService customerService;
     private final OtpService otpService;
@@ -41,11 +46,11 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<?>> registerCustomer(
+    public ResponseEntity<ApiResponse<String>> registerCustomer(
             @RequestBody @Valid RegisterRequest registerRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getAllErrors().stream()
-                    .map(e -> e.getDefaultMessage())
+                    .map(ObjectError::getDefaultMessage)
                     .collect(Collectors.joining(", "));
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
@@ -58,7 +63,7 @@ public class AuthController {
         String otp = String.format("%04d", new SecureRandom().nextInt(10000));
         otpService.saveOtp(formattedPhoneNumber, otp);
 
-        System.out.println("Generated OTP for " + originalPhoneNumber + ": " + otp);
+        logger.info("Generated OTP for {}: {}", originalPhoneNumber, otp);
 
         otpService.sendOtp(formattedPhoneNumber, otp);
 
@@ -105,7 +110,7 @@ public class AuthController {
 
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getAllErrors().stream()
-                    .map(e -> e.getDefaultMessage())
+                    .map(ObjectError::getDefaultMessage)
                     .collect(Collectors.joining(", "));
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));

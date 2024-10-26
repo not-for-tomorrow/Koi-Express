@@ -1,4 +1,4 @@
-package com.koi_express.service.deliveringStaff;
+package com.koi_express.service.delivering_staff;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,20 +50,7 @@ public class DeliveringStaffService {
     public ApiResponse<String> pickupOrder(Long orderId, Long deliveringStaffId) {
         log.info("Attempting to pick up order with ID: {} by staff with ID: {}", orderId, deliveringStaffId);
 
-        Orders order = orderRepository.findById(orderId).orElseThrow(() -> {
-            log.error("Order with ID: {} not found", orderId);
-            return new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found with ID: " + orderId);
-        });
-
-        if (!order.getDeliveringStaff().getStaffId().equals(deliveringStaffId)) {
-            log.error("Order ID: {} is not assigned to staff ID: {}", orderId, deliveringStaffId);
-            throw new AppException(ErrorCode.ORDER_NOT_ASSIGNED, "Order is not assigned to this staff member");
-        }
-
-        if (order.getStatus() != OrderStatus.ASSIGNED) {
-            log.error("Order ID: {} is not in ASSIGNED status, current status: {}", orderId, order.getStatus());
-            throw new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order is not in ASSIGNED status");
-        }
+        Orders order = validateOrderAssignment(orderId, deliveringStaffId);
 
         order.setStatus(OrderStatus.PICKING_UP);
         orderRepository.save(order);
@@ -89,28 +76,11 @@ public class DeliveringStaffService {
     public ApiResponse<String> completeDelivery(Long orderId, Long deliveringStaffId) {
         log.info("Completing delivery for order ID: {} by staff ID: {}", orderId, deliveringStaffId);
 
-        // Fetch the order and check if it exists
-        Orders order = orderRepository.findById(orderId).orElseThrow(() -> {
-            log.error("Order with ID: {} not found", orderId);
-            return new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found with ID: " + orderId);
-        });
+        Orders order = validateOrderAssignment(orderId, deliveringStaffId);
 
-        // Check if the order is assigned to the specified delivering staff and is in-transit
-        if (!order.getDeliveringStaff().getStaffId().equals(deliveringStaffId)) {
-            log.error("Order ID: {} is not assigned to staff ID: {}", orderId, deliveringStaffId);
-            throw new AppException(ErrorCode.ORDER_NOT_ASSIGNED, "Order is not assigned to this staff member");
-        }
-
-        if (order.getStatus() != OrderStatus.IN_TRANSIT) {
-            log.error("Order ID: {} is not in transit, current status: {}", orderId, order.getStatus());
-            throw new AppException(ErrorCode.ORDER_NOT_IN_TRANSIT, "Order is not currently in transit");
-        }
-
-        // Update order status to DELIVERED
         order.setStatus(OrderStatus.DELIVERED);
         orderRepository.save(order);
 
-        // Update delivering staff status to AVAILABLE
         DeliveringStaff staff = order.getDeliveringStaff();
         staff.setStatus(StaffStatus.AVAILABLE);
         deliveringStaffRepository.save(staff);
@@ -118,6 +88,25 @@ public class DeliveringStaffService {
         log.info("Order ID: {} has been delivered, staff ID: {} status updated to AVAILABLE", orderId, deliveringStaffId);
 
         return new ApiResponse<>(HttpStatus.OK.value(), "Order marked as delivered, delivering staff available", null);
+    }
+
+    private Orders validateOrderAssignment(Long orderId, Long deliveringStaffId) {
+        Orders order = orderRepository.findById(orderId).orElseThrow(() -> {
+            log.error("Order with ID: {} not found", orderId);
+            return new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found with ID: " + orderId);
+        });
+
+        if (!order.getDeliveringStaff().getStaffId().equals(deliveringStaffId)) {
+            log.error("Order ID: {} is not assigned to staff ID: {}", orderId, deliveringStaffId);
+            throw new AppException(ErrorCode.ORDER_NOT_ASSIGNED, "Order is not assigned to this staff member");
+        }
+
+        if (order.getStatus() != OrderStatus.IN_TRANSIT) {
+            log.error("Order ID: {} is not in the required status, current status: {}", orderId, order.getStatus());
+            throw new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order is not in the required status");
+        }
+
+        return order;
     }
 
 }

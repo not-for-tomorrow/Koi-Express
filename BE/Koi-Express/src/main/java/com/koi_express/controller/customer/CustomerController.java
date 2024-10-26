@@ -1,12 +1,14 @@
-package com.koi_express.controller;
+package com.koi_express.controller.customer;
 
-import com.koi_express.JWT.JwtUtil;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.request.UpdateRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.dto.response.BasicInfoResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.service.customer.CustomerService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
+
+    private static final Logger logger = LoggerFactory.getLogger(CustomerController.class);
 
     private final CustomerService customerService;
     private final JwtUtil jwtUtil;
@@ -43,7 +47,7 @@ public class CustomerController {
         String jwt = token.substring(7);
         String customerId = jwtUtil.extractCustomerId(jwt);
 
-        System.out.println("Extracted customerId: " + customerId);
+        logger.info("Extracted customerId: {}", customerId);
 
         try {
             Long parsedCustomerId = Long.parseLong(customerId);

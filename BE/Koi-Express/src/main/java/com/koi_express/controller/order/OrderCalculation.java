@@ -3,7 +3,7 @@ package com.koi_express.controller.order;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import com.koi_express.JWT.JwtUtil;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.enums.KoiType;
 import com.koi_express.service.order.price.KoiInvoiceCalculator;
@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,14 +24,15 @@ public class OrderCalculation {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderCalculation.class);
 
-    @Autowired
-    private KoiInvoiceCalculator koiInvoiceCalculator;
+    private final KoiInvoiceCalculator koiInvoiceCalculator;
+    private final OrderSessionManager sessionManager;
+    private final JwtUtil jwtUtil;
 
-    @Autowired
-    private OrderSessionManager sessionManager;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    public OrderCalculation(KoiInvoiceCalculator koiInvoiceCalculator, OrderSessionManager sessionManager, JwtUtil jwtUtil) {
+        this.koiInvoiceCalculator = koiInvoiceCalculator;
+        this.sessionManager = sessionManager;
+        this.jwtUtil = jwtUtil;
+    }
 
     @PostMapping("/calculate-total-fee")
     public ResponseEntity<ApiResponse<Map<String, BigDecimal>>> calculateTotalFee(

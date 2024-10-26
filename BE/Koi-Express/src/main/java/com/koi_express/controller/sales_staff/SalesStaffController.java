@@ -1,15 +1,13 @@
-package com.koi_express.controller;
+package com.koi_express.controller.sales_staff;
 
-import com.koi_express.JWT.JwtUtil;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.service.manager.ManageCustomerService;
-import com.koi_express.service.saleStaff.SalesStaffService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.koi_express.service.sale_staff.SalesStaffService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,14 +25,15 @@ public class SalesStaffController {
 
     private static final Logger logger = LoggerFactory.getLogger(SalesStaffController.class);
 
-    @Autowired
-    private SalesStaffService salesStaffService;
+    private final SalesStaffService salesStaffService;
+    private final ManageCustomerService manageCustomerService;
+    private final JwtUtil jwtUtil;
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private ManageCustomerService manageCustomerService;
+    public SalesStaffController(SalesStaffService salesStaffService, ManageCustomerService manageCustomerService, JwtUtil jwtUtil) {
+        this.salesStaffService = salesStaffService;
+        this.manageCustomerService = manageCustomerService;
+        this.jwtUtil = jwtUtil;
+    }
 
     @GetMapping("/orders/pending")
     public ResponseEntity<Page<Orders>> getPendingOrders(
@@ -74,10 +73,7 @@ public class SalesStaffController {
     }
 
     @GetMapping( "/customers")
-    public ResponseEntity<ApiResponse<List<Customers>>> getAllCustomers(
-            HttpServletRequest httpServletRequest) {
-
-        String token = httpServletRequest.getHeader("Authorization").substring(7);
+    public ResponseEntity<ApiResponse<List<Customers>>> getAllCustomers() {
 
         ApiResponse<List<Customers>> customersPage = manageCustomerService.getAllCustomers();
 

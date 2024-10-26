@@ -7,7 +7,6 @@ import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.SystemAccountRepository;
 import com.koi_express.service.verification.EmailService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,16 +16,17 @@ import java.util.List;
 @Service
 public class SystemAccount {
 
-    @Autowired
-    private SystemAccountRepository systemAccountRepository;
+    private final SystemAccountRepository systemAccountRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public SystemAccount(SystemAccountRepository systemAccountRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
+        this.systemAccountRepository = systemAccountRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+    }
 
-    @Autowired
-    private EmailService emailService;
-
-    public ApiResponse<?> createSalesStaffAccount(CreateStaffRequest createStaffRequest) {
+    public ApiResponse<String> createSalesStaffAccount(CreateStaffRequest createStaffRequest) {
         if (systemAccountRepository.existsByEmail(createStaffRequest.getEmail())) {
             throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
@@ -45,7 +45,7 @@ public class SystemAccount {
 
         emailService.sendAccountCreatedEmail(salesStaff, createStaffRequest.getPassword(), false);
 
-        return new ApiResponse<>(HttpStatus.OK.value(), "Sales staff account created successfully", salesStaff);
+        return new ApiResponse<>(HttpStatus.CREATED.value(), "Sales staff account created successfully", null);
     }
 
     public List<com.koi_express.entity.account.SystemAccount> getAllAccountsByRole(Role role) {

@@ -1,9 +1,9 @@
 package com.koi_express.service.verification;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import com.koi_express.exception.TranslationException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -14,13 +14,24 @@ import java.util.Map;
 public class TranslationService {
 
     private final RestTemplate restTemplate;
+    private final String libreTranslateUrl;
 
-    public TranslationService(RestTemplate restTemplate) {
+    public TranslationService(RestTemplate restTemplate, @Value("${libretranslate.url:https://libretranslate.com/translate}") String libreTranslateUrl) {
         this.restTemplate = restTemplate;
+        this.libreTranslateUrl = libreTranslateUrl;
     }
 
-    public String translateText(String text, String targetLanguage) {
-        String url = "https://libretranslate.com/translate";
+    public String translateText(String text, String targetLanguage) throws TranslationException {
+        if (text == null || text.trim().isEmpty()) {
+            throw new IllegalArgumentException("Text to translate must not be null or empty.");
+        }
+
+        if (targetLanguage == null || targetLanguage.trim().isEmpty()) {
+            throw new IllegalArgumentException("Target language must not be null or empty.");
+        }
+
+        String url = libreTranslateUrl + "/translate";
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -31,8 +42,23 @@ public class TranslationService {
         requestBody.put("format", "text");
 
         HttpEntity<Map<String, String>> request = new HttpEntity<>(requestBody, headers);
-        ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
 
-        return response.getBody() != null ? (String) response.getBody().get("translatedText") : "Translation Error";
+        try {
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    request,
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null && responseBody.containsKey("translatedText")) {
+                return (String) responseBody.get("translatedText");
+            } else {
+                throw new TranslationException("Invalid response from translation service.");
+            }
+        } catch (Exception e) {
+            throw new TranslationException("Error during translation: " + e.getMessage(), e);
+        }
     }
 }
