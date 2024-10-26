@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.koi_express.JWT.JwtUtil;
+import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
@@ -11,6 +12,7 @@ import com.koi_express.repository.ManagerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,9 +26,9 @@ public class ManageCustomerService {
 
     private static final Logger logger = LoggerFactory.getLogger(ManageCustomerService.class);
 
-    public List<Customers> getAllCustomers() {
+    public ApiResponse<List<Customers>> getAllCustomers() {
 
-        return managerRepository.findAll();
+        return new ApiResponse<>(HttpStatus.OK.value(), "Customers fetched successfully.", managerRepository.findAll());
     }
 
     public Customers findByPhoneNumber(String phoneNumber) {

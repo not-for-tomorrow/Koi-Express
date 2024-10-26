@@ -2,8 +2,11 @@ package com.koi_express.controller;
 
 import com.koi_express.JWT.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.saleStaff.SalesStaffService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +18,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/sales/orders")
+@RequestMapping("/api/sales")
 public class SalesStaffController {
 
     private static final Logger logger = LoggerFactory.getLogger(SalesStaffController.class);
@@ -27,8 +32,11 @@ public class SalesStaffController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private ManageCustomerService manageCustomerService;
+
     @PreAuthorize("hasRole('SALES_STAFF')")
-    @GetMapping("/pending")
+    @GetMapping("/orders/pending")
     public ResponseEntity<Page<Orders>> getPendingOrders(
             @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 
@@ -64,5 +72,16 @@ public class SalesStaffController {
                     new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error accepting order", null);
             return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping( "/customers")
+    public ResponseEntity<ApiResponse<List<Customers>>> getAllCustomers(
+            HttpServletRequest httpServletRequest) {
+
+        String token = httpServletRequest.getHeader("Authorization").substring(7);
+
+        ApiResponse<List<Customers>> customersPage = manageCustomerService.getAllCustomers();
+
+        return new ResponseEntity<>(customersPage, HttpStatus.OK);
     }
 }

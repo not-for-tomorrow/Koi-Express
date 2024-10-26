@@ -56,13 +56,13 @@ public class ManagerController {
         return ResponseEntity.status(response.getCode()).body(response);
     }
 
-    @GetMapping(value = "/customers")
-    public ResponseEntity<List<Customers>> getAllCustomers(
+    @GetMapping( "/customers")
+    public ResponseEntity<ApiResponse<List<Customers>>> getAllCustomers(
             HttpServletRequest httpServletRequest) {
 
         String token = httpServletRequest.getHeader("Authorization").substring(7);
 
-        List<Customers> customersPage = manageCustomerService.getAllCustomers();
+        ApiResponse<List<Customers>> customersPage = manageCustomerService.getAllCustomers();
 
         return new ResponseEntity<>(customersPage, HttpStatus.OK);
     }
