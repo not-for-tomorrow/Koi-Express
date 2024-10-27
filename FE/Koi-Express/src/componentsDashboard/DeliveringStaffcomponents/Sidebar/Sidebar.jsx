@@ -3,7 +3,7 @@ import { IoMdClose } from "react-icons/io";
 import { IoReorderThreeOutline } from "react-icons/io5";
 import { navItems, logoutItem } from "./IconsData";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../UserContext/UserContext"; // Import UserContext
+import { UserContext } from "../../UserContext"; // Import UserContext
 
 const Sidebar = () => {
   const [click, setClick] = useState(false);
