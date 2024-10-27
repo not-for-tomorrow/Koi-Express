@@ -6,6 +6,7 @@ import CustomerAccount from "./CustomerAccount";
 import AcceptOrder from "./AcceptOrder";
 import { UserProvider } from "../componentsDashboard/Salecomponents/UserContext/UserContext"; // Import UserProvider
 import OrderDetail from "./OrderDetail/OrderDetail";
+import OrderDetailForAccept from "./OrderDetailForAccept/OrderDetail";
 
 const Salepage = () => {
   return (
@@ -20,11 +21,16 @@ const Salepage = () => {
           <div className="flex-grow h-full bg-gray-100">
             <Routes>
               <Route path="/" element={<AcceptOrder />} />
+              <Route path="/accept" element={<AcceptOrder />} />
               <Route path="/allorder" element={<Order />} />
               <Route path="/customeraccount" element={<CustomerAccount />} />
               <Route
                 path="/allorder/detail/:orderId"
                 element={<OrderDetail />}
+              />
+              <Route
+                path="/accept/detail/:orderId"
+                element={<OrderDetailForAccept />}
               />
             </Routes>
           </div>

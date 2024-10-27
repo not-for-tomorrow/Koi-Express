@@ -6,38 +6,49 @@ const CustomerAccount = () => {
   const [error, setError] = useState(null);
   const [customers, setCustomers] = useState([]);
 
-  // Mock data for customers
+  const getToken = () => {
+    return localStorage.getItem("token");
+  };
+
   useEffect(() => {
-    const mockCustomers = [
-      {
-        customerId: 1,
-        fullName: "Nguyen Van A",
-        email: "nguyenvana@example.com",
-        phone: "0123456789",
-        createdAt: "2024-01-10T10:30:00Z",
-      },
-      {
-        customerId: 2,
-        fullName: "Tran Thi B",
-        email: "tranthib@example.com",
-        phone: "0987654321",
-        createdAt: "2024-02-15T15:00:00Z",
-      },
-      {
-        customerId: 3,
-        fullName: "Le Van C",
-        email: "levanc@example.com",
-        phone: "0334567890",
-        createdAt: "2024-03-20T09:45:00Z",
-      },
-    ];
-    setCustomers(mockCustomers);
+    const fetchCustomers = async () => {
+      setLoading(true);
+      setError(null);
+
+      const token = getToken();
+
+      if (!token) {
+        setError("No token found");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:8080/api/manager/customers", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch customers");
+        }
+
+        const data = await response.json();
+        setCustomers(data.result); // Adjusted to match the structure of the response
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCustomers();
   }, []);
 
   const filterCustomers = () => {
-    if (!searchQuery) {
-      return customers;
-    }
+    if (!searchQuery) return customers;
     return customers.filter((customer) =>
       customer.fullName.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -101,7 +112,7 @@ const CustomerAccount = () => {
                         {customer.email}
                       </td>
                       <td className="p-2 text-sm text-gray-700">
-                        {customer.phone}
+                        {customer.phoneNumber || "N/A"}
                       </td>
                       <td className="p-2 text-sm text-gray-700">
                         {new Date(customer.createdAt).toLocaleString("vi-VN")}

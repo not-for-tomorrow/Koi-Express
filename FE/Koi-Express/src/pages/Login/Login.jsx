@@ -51,6 +51,9 @@ const Login = () => {
             case "DELIVERING_STAFF":
               navigate("/deliveringstaffpage");
               break;
+              case "MANAGER":
+                navigate("/managerpage");
+                break;
             default:
               setError("Role not recognized.");
           }

@@ -14,20 +14,24 @@ const Sidebar = () => {
   const user = useContext(UserContext);
 
   const handleItemClick = (item) => {
-    setActiveItem(item.id);
+    setActiveItem(item.id); // Chỉ thay đổi activeItem cho các mục trong navItems
+    // Điều hướng dựa trên item.title
     switch (item.title) {
-      case "Tài khoản khách hàng":
-        navigate("/salepage/customeraccount");
-        break;
       case "Tổng đơn hàng":
-        navigate("/salepage/allorder");
+        navigate("/managerpage");
         break;
-      case "Duyệt đơn hàng":
-        navigate("/salepage");
+        case "Tổng khách hàng":
+        navigate("/managerpage/customeraccount");
         break;
-      case "Logout":
-        navigate("/login");
-        break;
+        case "Tổng nhân viên sale":
+          navigate("/managerpage/salestaffaccount");
+          break;
+          case "Tổng nhân viên giao hàng":
+            navigate("/managerpage/deliveringstaffaccount");
+            break;
+        case "Logout":
+          navigate("/login");
+          break;
       default:
         break;
     }
