@@ -7,6 +7,9 @@ import OrderDetail from "../OrderPage/OrderDetail";
 import Profile from "../Profile/Profile";
 
 const AppHomePages = () => {
+
+    console.log("AppHomePages loaded");
+
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
