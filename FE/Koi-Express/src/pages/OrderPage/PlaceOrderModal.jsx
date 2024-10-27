@@ -1,10 +1,21 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const PlaceOrderModal = ({ onClose, commitmentFee, paymentUrl }) => {
+  const navigate = useNavigate();
+
   const handleConfirm = () => {
-    // Open the payment URL in a new tab if it's available
     if (paymentUrl) {
-      window.open(paymentUrl, "_blank");
+      const newTab = window.open(paymentUrl, "_blank");
+
+      // Listen for the message from the new tab (assuming your backend sends it after payment)
+      window.addEventListener("message", (event) => {
+        if (event.data === "Payment Success") {
+          // Close the payment tab and navigate to the success page
+          newTab.close();
+          navigate("/payment-success");
+        }
+      });
     } else {
       console.error("Payment URL is not available.");
     }

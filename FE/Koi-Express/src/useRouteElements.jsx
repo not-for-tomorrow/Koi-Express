@@ -8,6 +8,7 @@ import AppHomePages from "./pages/AppHomePages/AppHomePages";
 import OtpModal from "./pages/OTP/OtpModal";
 import Salepage from "./Salepage/Salepage";
 import DeliveringStaffpage from "./DeliveringStaffpage/DeliveringStaffpage";
+import ManagerPage from "./ManagerPage/ManagerPage";
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
@@ -42,6 +43,10 @@ export default function useRouteElements() {
     {
       path: "/deliveringstaffpage/*",
       element: <DeliveringStaffpage />,
+    },
+    {
+      path: "/managerpage/*",
+      element: <ManagerPage />,
     },
   ]);
   return routeElements;

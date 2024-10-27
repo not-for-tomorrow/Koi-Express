@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { IoMdClose } from "react-icons/io";
 import { IoReorderThreeOutline } from "react-icons/io5";
-import { navItems } from "./IconsData";
+import { navItems, logoutItem } from "./IconsData";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../UserContext/UserContext"; // Import UserContext
 
@@ -48,10 +48,7 @@ const Sidebar = () => {
         </div>
 
         {!click ? (
-          <div
-            className="relative flex items-center justify-start p-4 bg-white"
-            style={{ height: "100px" }}
-          >
+          <div className="relative flex items-center justify-start p-4 bg-white" style={{ height: "100px" }}>
             <button
               onClick={() => setClick(true)}
               className="absolute top-2 right-2 text-gray-400 text-[20px] hover:text-black"
@@ -79,10 +76,12 @@ const Sidebar = () => {
           {navItems.map((item) => (
             <li
               key={item.id}
-              className={`flex items-center transition-all duration-300 cursor-pointer text-sm p-3 ${
-                activeItem === item.id ? "bg-gray-100 text-black" : "text-black"
-              } hover:bg-gray-100 ${
-                click ? "justify-center w-[60px]" : "justify-start"
+              className={`flex items-center transition-all duration-300 cursor-pointer text-sm ${
+                activeItem === item.id
+                  ? "bg-gray-200 border-gray-300 text-black"
+                  : "text-gray-500"
+              } hover:border hover:border-gray-300 hover:bg-gray-200 p-2 ${
+                click ? "justify-center w-[58px]" : "justify-start"
               }`}
               onClick={() => handleItemClick(item)}
             >
@@ -94,12 +93,33 @@ const Sidebar = () => {
                 {item.icons}
               </span>
               {!click && (
-                <span className="ml-3 text-[16px] hover:text-black transition-colors duration-300">
+                <span
+                  className={`ml-3 text-[16px] ${
+                    activeItem === item.id ? "text-black" : "text-gray-500"
+                  } hover:text-black transition-colors duration-300`}
+                >
                   {item.title}
                 </span>
               )}
             </li>
           ))}
+        </ul>
+
+        {/* Logout Item at the Bottom */}
+        <ul className="p-0 m-0 mt-auto">
+          <li
+            className="flex items-center p-2 text-sm text-gray-500 transition-all duration-300 cursor-pointer hover:border hover:border-gray-300 hover:bg-gray-200"
+            onClick={() => handleItemClick(logoutItem)}
+          >
+            <span className={`flex items-center ${click ? "justify-center w-full" : "mr-3"}`}>
+              {logoutItem.icons}
+            </span>
+            {!click && (
+              <span className="ml-3 text-[16px] text-gray-500 hover:text-black transition-colors duration-300">
+                {logoutItem.title}
+              </span>
+            )}
+          </li>
         </ul>
       </div>
     </div>
