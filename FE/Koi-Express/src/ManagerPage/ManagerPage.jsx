@@ -2,7 +2,7 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Sidebar from "../componentsDashboard/Managercomponents/Sidebar/Sidebar";
 import Order from "./Order";
-import { UserProvider } from "../componentsDashboard/Managercomponents/UserContext/UserContext";
+import { UserProvider } from "../componentsDashboard/UserContext";
 import SaleStaffAccount from "./SaleStaffAccount";
 import DeliveringStaffAccount from "./DeliveringStaffAccount";
 import CustomerAccount from "./CustomerAccount";

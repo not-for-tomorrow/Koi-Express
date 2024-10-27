@@ -4,7 +4,7 @@ import Sidebar from "../componentsDashboard/Salecomponents/Sidebar/Sidebar";
 import Order from "./Order";
 import CustomerAccount from "./CustomerAccount";
 import AcceptOrder from "./AcceptOrder";
-import { UserProvider } from "../componentsDashboard/Salecomponents/UserContext/UserContext"; // Import UserProvider
+import { UserProvider } from "../componentsDashboard/UserContext"; // Import UserProvider
 import OrderDetail from "./OrderDetail/OrderDetail";
 import OrderDetailForAccept from "./OrderDetailForAccept/OrderDetail";
 

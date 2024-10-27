@@ -2,7 +2,7 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Sidebar from "../componentsDashboard/DeliveringStaffcomponents/Sidebar/Sidebar";
 import Order from "./Order";
-import { UserProvider } from "../componentsDashboard/DeliveringStaffcomponents/UserContext/UserContext";
+import { UserProvider } from "../componentsDashboard/UserContext";
 
 const DeliveringStaffpage = () => {
   return (

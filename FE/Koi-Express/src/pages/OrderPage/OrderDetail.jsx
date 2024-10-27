@@ -10,6 +10,7 @@ import RoutingControl from "./RoutingControl";
 import FitBoundsButton from "./FitBoundsButton";
 import axios from "axios";
 import OrderDetailModal from "./OrderDetailModal";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 
 const OrderDetail = () => {
   const { orderId } = useParams(); // Extract orderId from the URL
@@ -154,7 +155,10 @@ const OrderDetail = () => {
             />
           </LeafletMap>
         ) : (
-          <p>Loading map...</p>
+          <div className="flex items-center justify-center min-h-screen">
+  <LoadingSpinner />
+</div>
+
         )}
       </div>
     </div>
