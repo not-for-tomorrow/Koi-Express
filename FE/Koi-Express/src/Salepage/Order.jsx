@@ -25,16 +25,21 @@ const Order = () => {
         }
 
         const response = await axios.get(
-          "http://localhost:8080/api/orders/all-orders", // Updated API endpoint
+          "http://localhost:8080/api/orders/all-orders",
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        setOrders(response.data.result.content || []); // Update to match API structure
+        setOrders(response.data.result || []); // Fix đúng cấu trúc dữ liệu
+        console.log(response.data.result); // Kiểm tra dữ liệu trả về
         setLoading(false);
       } catch (err) {
+        console.error(
+          "Failed to fetch orders: ",
+          err.response ? err.response.data : err.message
+        );
         setError(err.message || "Failed to fetch orders");
         setLoading(false);
       }
@@ -47,7 +52,9 @@ const Order = () => {
     const order = orderWrapper.order;
     if (order && order.orderId) {
       navigate(`/salepage/allorder/detail/${order.orderId}`, {
-        state: orderWrapper,
+        state: {
+          orderId: order.orderId,
+        },
       });
     } else {
       console.error("Order or Order ID is missing");

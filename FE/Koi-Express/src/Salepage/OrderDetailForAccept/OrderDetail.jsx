@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
-import OrderDetailModal from "./OrderDetailModal"; // Import the modal component
-import { useParams } from "react-router-dom";
+import OrderDetailModal from "./OrderDetailModal";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 
 const LOCATIONIQ_KEY = "pk.57eb525ef1bdb7826a61cf49564f8a86";
 
 const OrderDetail = () => {
   const location = useLocation();
-  const { orderId } = useParams(); // Get orderId from the URL params
-  const orderIdFromLocation = location.state?.orderId || orderId;
+  const { orderId } = useParams();
+  const orderIdFromLocation = location.state?.orderId || orderId || 54;
   const [orderData, setOrderData] = useState(null);
   const [distance, setDistance] = useState("");
   const [map, setMap] = useState(null);
@@ -26,9 +26,7 @@ const OrderDetail = () => {
         const response = await axios.get(
           `http://localhost:8080/api/orders/${orderIdFromLocation}`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
         setOrderData(response.data);
@@ -45,10 +43,7 @@ const OrderDetail = () => {
       orderData?.order?.originLocation &&
       orderData?.order?.destinationLocation
     ) {
-      // Hủy bỏ bản đồ cũ nếu đã có (tránh chồng lấp)
-      if (map) {
-        map.remove();
-      }
+      if (map) map.remove();
 
       const { originLocation, destinationLocation } = orderData.order;
 
@@ -92,7 +87,7 @@ const OrderDetail = () => {
                 );
 
                 const routePolyline = L.polyline(route.coordinates, {
-                  color: "red",
+                  color: "blue",
                   weight: 4,
                 }).addTo(newMap);
                 const bounds = routePolyline.getBounds();
@@ -119,7 +114,7 @@ const OrderDetail = () => {
     }
   };
 
-  if (!orderData) return <div>Loading...</div>;
+  if (!orderData) return <LoadingSpinner />;
 
   const {
     order: {

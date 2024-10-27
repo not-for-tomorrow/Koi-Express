@@ -113,7 +113,7 @@ const OrderDetailModal = ({
 
       <div className="flex-shrink-0 mt-6">
         <button className="w-full p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600">
-          <Link to="/salepage/allorder">Đóng</Link>
+          <Link to="/salepage">Đóng</Link>
         </button>
       </div>
     </div>
