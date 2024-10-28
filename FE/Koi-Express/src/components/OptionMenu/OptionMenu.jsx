@@ -1,11 +1,12 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function OptionMenu({ name, options }) {
   return (
     <div>
       <div className="relative group">
         <div className="flex px-10 py-8 cursor-pointer hover:text-[#fe5f00]">
-          <span className="font-semibold mr-1">{name}</span>
+          <span className="mr-1 font-semibold">{name}</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -22,14 +23,14 @@ export default function OptionMenu({ name, options }) {
           </svg>
         </div>
         <div className="absolute hidden left-10 group-hover:block bg-white z-[1]">
-          <ul className=" w-48 bg-gray-100">
+          <ul className="w-48 bg-gray-100">
             {options.map((option, index) => (
               <li
                 key={index}
                 className="px-4 py-4 hover:bg-gray-200 hover:text-[#fe5f00] cursor-pointer"
               >
-                <div className="flex justify-between">
-                  {option}
+                <Link to={option.path} className="flex justify-between">
+                  {option.label}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -44,7 +45,7 @@ export default function OptionMenu({ name, options }) {
                       d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
                     />
                   </svg>
-                </div>
+                </Link>
               </li>
             ))}
           </ul>

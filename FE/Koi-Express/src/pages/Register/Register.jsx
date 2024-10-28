@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import OtpModal from "../OTP/OtpModal";
 import "./Register.css";
+import logresKoiPic from "../../assets/images/banner/LogResKoiPic.webp";
 
 const Register = () => {
   const [fullName, setFullName] = useState("");
@@ -70,40 +71,26 @@ const Register = () => {
   };
 
   return (
-    <section className="registerpage bg-gray-50 min-h-screen flex items-center justify-center">
-      <div className="registercard bg-gray-100 flex rounded-2xl shadow-lg max-w-3xl p-5 items-center justify-start">
-        <div className="md:block hidden w-1/2 mr-auto">
+    <section className="flex items-center justify-center min-h-screen registerpage bg-gray-50">
+      <div className="flex items-center justify-start max-w-3xl p-5 bg-gray-100 shadow-lg registercard rounded-2xl">
+        <div className="hidden w-1/2 mr-auto md:block">
           <img
             className="rounded-2xl"
-            src="https://images.unsplash.com/photo-1616606103915-dea7be788566?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1887&q=80"
+            src={logresKoiPic}
             alt="Register Illustration"
           />
         </div>
 
-        <div className="md:w-1/2 px-8 md:px-16">
+        <div className="px-8 md:w-1/2 md:px-16">
           <h2 className="font-bold text-2xl text-[#002D74]">Register</h2>
 
           <form
             onSubmit={handleSubmit}
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-4" /* Use gap here if preferred */
             autoComplete="off"
           >
-            {/* Hidden fields to prevent autofill */}
             <input
-              type="text"
-              name="hidden-fullName"
-              style={{ display: "none" }}
-              autoComplete="fullName"
-            />
-            <input
-              type="password"
-              name="hidden-password"
-              style={{ display: "none" }}
-              autoComplete="new-password"
-            />
-
-            <input
-              className="p-2 mt-8 rounded-xl border"
+              className="p-2 border rounded-xl"
               type="text"
               id="full_name_no_autofill"
               name="register_full_name_custom"
@@ -117,7 +104,7 @@ const Register = () => {
               aria-autocomplete="none"
             />
             <input
-              className="p-2 mt-4 rounded-xl border"
+              className="p-2 border rounded-xl"
               type="email"
               name="register_email_custom"
               placeholder="Email Address"
@@ -127,7 +114,7 @@ const Register = () => {
               autoComplete="off"
             />
             <input
-              className="p-2 mt-4 rounded-xl border"
+              className="p-2 border rounded-xl"
               type="text"
               name="register_phone_number_custom"
               placeholder="Phone Number"
@@ -137,7 +124,7 @@ const Register = () => {
               autoComplete="off"
             />
             <input
-              className="p-2 rounded-xl border w-full"
+              className="w-full p-2 border rounded-xl"
               type="password"
               id="password_no_autofill"
               name="register_password_custom"
@@ -156,12 +143,12 @@ const Register = () => {
             </button>
           </form>
 
-          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+          {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
 
           <div className="mt-5 text-xs flex justify-between items-center text-[#002D74]">
             <p>Already have an account?</p>
             <Link to="/login">
-              <button className="py-2 px-5 bg-white border rounded-xl hover:scale-110 duration-300">
+              <button className="px-5 py-2 duration-300 bg-white border rounded-xl hover:scale-110">
                 Login
               </button>
             </Link>
