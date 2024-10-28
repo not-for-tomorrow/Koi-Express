@@ -1,11 +1,21 @@
 import React from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useMatch } from "react-router-dom";
 import { blogData } from "./BlogData";
 import BlogDetail from "./BlogDetail";
+import Breadcrumb from "./Breadcrumb";
 
 const Blog = () => {
+  // Check if the current route matches a blog detail path
+  const match = useMatch("/blog/:id");
+  const blogId = match?.params?.id;
+  
+  // Find the blog title if in detail view
+  const blogTitle = blogId ? blogData.find((blog) => blog.id === parseInt(blogId))?.title : null;
+
   return (
     <div className="container p-5 mx-auto max-w-7xl">
+      {/* Pass blog title if available */}
+      <Breadcrumb blogTitle={blogTitle} /> 
       <div className="space-y-8">
         <Routes>
           <Route
@@ -18,8 +28,6 @@ const Blog = () => {
                   <button className="px-4 py-2 font-semibold text-white bg-blue-500 rounded-full">Tất cả tin tức</button>
                   <button className="px-4 py-2 font-semibold bg-gray-200 rounded-full hover:bg-blue-500 hover:text-white">Khách hàng</button>
                   <button className="px-4 py-2 font-semibold bg-gray-200 rounded-full hover:bg-blue-500 hover:text-white">Tài xế</button>
-                  <button className="px-4 py-2 font-semibold bg-gray-200 rounded-full hover:bg-blue-500 hover:text-white">Ahamovers</button>
-                  <button className="px-4 py-2 font-semibold bg-gray-200 rounded-full hover:bg-blue-500 hover:text-white">Đối tác</button>
                   <button className="px-4 py-2 font-semibold bg-gray-200 rounded-full hover:bg-blue-500 hover:text-white">Đồng hành cùng Thương hiệu</button>
                 </div>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
