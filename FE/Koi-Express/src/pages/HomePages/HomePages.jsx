@@ -53,7 +53,7 @@ export default function HomePages() {
           </div>
           <img
             className="ml-6 w-[590px] h-[677px]"
-            src="/src/assets/images/Icons/Koi Express 1.webp"
+            src="/src/assets/images/Icons/KoiExpress1.webp"
             alt="kk"
           />
         </div>

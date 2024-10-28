@@ -98,8 +98,8 @@ const Sidebar = () => {
   return (
     <div className="flex items-start">
       <div
-        className={`h-screen shadow-2xl bg-white text-gray-400 text-[24px] transition-all duration-300 ${
-          click ? "w-[60px]" : "w-80"
+        className={`h-screen shadow-2xl bg-white text-gray-400 text-[24px] transition-all duration-200 ease-in-out ${
+          click ? "w-[48px]" : "w-64"
         } overflow-y-auto flex flex-col`}
       >
         {/* Sidebar header */}
