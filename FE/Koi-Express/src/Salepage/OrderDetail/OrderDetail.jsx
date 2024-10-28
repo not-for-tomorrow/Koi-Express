@@ -6,8 +6,9 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
 import OrderDetailModal from "./OrderDetailModal";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import { LOCATIONIQ_KEY } from "../../koi/api/api";
 
-const LOCATIONIQ_KEY = "pk.57eb525ef1bdb7826a61cf49564f8a86";
+
 const MAX_RETRIES = 5;
 const RETRY_DELAY_MS = 2000;
 
