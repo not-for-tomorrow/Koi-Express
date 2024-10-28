@@ -1,4 +1,5 @@
-import React from "react";
+// src/components/PlaceOrderModal.jsx
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const PlaceOrderModal = ({ onClose, commitmentFee, paymentUrl }) => {
@@ -6,50 +7,48 @@ const PlaceOrderModal = ({ onClose, commitmentFee, paymentUrl }) => {
 
   const handleConfirm = () => {
     if (paymentUrl) {
-      const newTab = window.open(paymentUrl, "_blank");
-
-      // Listen for the message from the new tab (assuming your backend sends it after payment)
-      window.addEventListener("message", (event) => {
-        if (event.data === "Payment Success") {
-          // Close the payment tab and navigate to the success page
-          newTab.close();
-          navigate("/payment-success");
-        }
-      });
+      // Open payment in a new tab if needed, or navigate directly for redirection.
+      window.location.href = paymentUrl; // Redirect to the payment URL
     } else {
       console.error("Payment URL is not available.");
     }
   };
 
+  // Use this if you get a message after payment, otherwise use handleConfirm directly
+  const handlePaymentSuccess = () => {
+    navigate("/payment-successful"); // Navigate to the success page after payment
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-gray-800 opacity-50"></div>
-      <div className="relative z-10 p-6 bg-white rounded-lg shadow-lg">
-        <h2 className="mb-4 text-xl font-semibold text-gray-800">
-          Để đặt đơn thành công bạn phải thanh toán tiền cam kết
-        </h2>
-        <p className="mb-6 text-2xl font-bold text-orange-500">
-          {Number(commitmentFee).toLocaleString("vi-VN", {
-            style: "currency",
-            currency: "VND",
-          })}
-        </p>
-        <div className="flex justify-end space-x-4">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
-          >
-            Hủy
-          </button>
-          <button
-            onClick={handleConfirm}
-            className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-          >
-            Thanh toán
-          </button>
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-gray-800 opacity-50"></div>
+        <div className="relative z-10 p-6 bg-white rounded-lg shadow-lg">
+          <h2 className="mb-4 text-xl font-semibold text-gray-800">
+            Để đặt đơn thành công bạn phải thanh toán tiền cam kết
+          </h2>
+          <p className="mb-6 text-2xl font-bold text-orange-500">
+            {Number(commitmentFee).toLocaleString("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            })}
+          </p>
+
+          <div className="flex justify-end space-x-4">
+            <button
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+            >
+              Hủy
+            </button>
+            <button
+                onClick={handleConfirm}
+                className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+            >
+              Thanh toán
+            </button>
+          </div>
         </div>
       </div>
-    </div>
   );
 };
 
