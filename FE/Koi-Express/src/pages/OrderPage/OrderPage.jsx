@@ -59,7 +59,7 @@ const OrderPage = () => {
           "https://us1.locationiq.com/v1/reverse.php",
           {
             params: {
-              key: "pk.57eb525ef1bdb7826a61cf49564f8a86",
+              key: "pk.6a63f388fbd716914de899f77dfb04c6",
               lat: lat,
               lon: lng,
               format: "json",
@@ -114,7 +114,7 @@ const OrderPage = () => {
           "https://us1.locationiq.com/v1/search.php",
           {
             params: {
-              key: "pk.57eb525ef1bdb7826a61cf49564f8a86",
+              key: "pk.6a63f388fbd716914de899f77dfb04c6",
               q: inputAddress,
               format: "json",
               limit: 5,
@@ -251,7 +251,7 @@ const OrderPage = () => {
                   }}
               >
                 <TileLayer
-                    url="https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=pk.57eb525ef1bdb7826a61cf49564f8a86"
+                    url="https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=pk.6a63f388fbd716914de899f77dfb04c6"
                     attribution='&copy; <a href="https://locationiq.com">LocationIQ</a> contributors'
                 />
                 {gpsLocation && <Marker position={gpsLocation}/>}

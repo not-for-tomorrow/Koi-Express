@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { paymentMethods } from "./IconsData"; // Import your icons data
+import { paymentMethods } from "./IconsData";
 
 const PaymentModal = ({
                         onClose,

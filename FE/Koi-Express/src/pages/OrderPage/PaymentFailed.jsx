@@ -1,8 +1,8 @@
-// src/components/OrderPage/PaymentSuccessful.jsx
+// src/components/OrderPage/PaymentFailed.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const PaymentSuccessful = () => {
+const PaymentFailed = () => {
     const navigate = useNavigate();
     const [countdown, setCountdown] = useState(5);
 
@@ -15,15 +15,15 @@ const PaymentSuccessful = () => {
     }, [countdown, navigate]);
 
     const handleBackToHome = () => {
-        navigate("/appkoiexpress");
+        navigate("/appkoiexpress"); // Redirect immediately to homepage
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-green-50">
+        <div className="flex items-center justify-center min-h-screen bg-red-50">
             <div className="p-8 bg-white rounded-lg shadow-lg text-center">
-                <h1 className="text-3xl font-bold text-green-600 mb-4">Thanh toán thành công!</h1>
+                <h1 className="text-3xl font-bold text-red-600 mb-4">Đặt đơn thất bại</h1>
                 <p className="text-lg text-gray-700 mb-6">
-                    Cảm ơn bạn đã hoàn tất thanh toán. Đơn hàng của bạn sẽ được xử lý ngay lập tức.
+                    Rất tiếc, thanh toán của bạn không thành công. Vui lòng thử lại hoặc liên hệ hỗ trợ.
                 </p>
                 <p>Tự động chuyển về trang chủ sau {countdown} giây.</p>
 
@@ -38,4 +38,4 @@ const PaymentSuccessful = () => {
     );
 };
 
-export default PaymentSuccessful;
+export default PaymentFailed;
