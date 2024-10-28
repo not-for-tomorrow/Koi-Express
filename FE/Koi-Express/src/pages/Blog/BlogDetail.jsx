@@ -1,3 +1,4 @@
+// BlogDetail.jsx
 import React from "react";
 import { useParams } from "react-router-dom";
 import { blogData } from "./BlogData";
@@ -14,7 +15,6 @@ const BlogDetail = () => {
       <span className="text-gray-500">{blog.date}</span>
       <img src={blog.image} alt={blog.title} className="w-full h-auto my-6" />
       <p className="text-lg leading-relaxed">{blog.content}</p>
-      {/* Add more detailed content here if needed */}
     </div>
   );
 };
