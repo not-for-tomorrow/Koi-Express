@@ -5,6 +5,7 @@ import OrderPage from "../OrderPage/OrderPage";
 import OrderHistory from "../OrderHistory/OrderHistory";
 import OrderDetail from "../OrderPage/OrderDetail";
 import Profile from "../Profile/Profile";
+import PaymentSuccessful from "../OrderPage/PaymentSuccessful";
 
 const AppHomePages = () => {
 
@@ -27,6 +28,7 @@ const AppHomePages = () => {
             element={<OrderDetail />}
           />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/payment-successful" element={<PaymentSuccessful  />} />
         </Routes>
       </div>
     </div>
