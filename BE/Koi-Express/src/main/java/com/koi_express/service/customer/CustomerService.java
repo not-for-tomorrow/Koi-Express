@@ -1,6 +1,7 @@
 package com.koi_express.service.customer;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import com.koi_express.dto.request.RegisterRequest;
 import com.koi_express.dto.request.UpdateRequest;
@@ -68,5 +69,13 @@ public class CustomerService {
 
         customersRepository.save(customer);
         return new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully", customer);
+    }
+
+    public Optional<Customers> findByEmailAndAuthProvider(String email, AuthProvider authProvider) {
+        return customersRepository.findByEmailAndAuthProvider(email, authProvider);
+    }
+
+    public Customers save(Customers customer) {
+        return customersRepository.save(customer);
     }
 }
