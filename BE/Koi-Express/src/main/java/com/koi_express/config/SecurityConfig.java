@@ -58,7 +58,7 @@ public class SecurityConfig {
                                 userInfo ->
                                         userInfo.userService(customOAuth2UserService) // Sử dụng CustomOAuth2UserService
                                 )
-                        .defaultSuccessUrl("http://localhost:5173/apphomepage", true)
+                        .defaultSuccessUrl("http://localhost:5173/appkoiexpress", true)
                         .failureUrl("/login?error=true"))
                 .logout(logout -> logout.logoutSuccessUrl("/login"))
                 .exceptionHandling(

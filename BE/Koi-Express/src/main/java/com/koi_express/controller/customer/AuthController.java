@@ -10,6 +10,7 @@ import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
+import com.koi_express.service.customer.CustomOAuth2UserService;
 import com.koi_express.service.customer.CustomerService;
 import com.koi_express.service.verification.AuthService;
 import com.koi_express.service.verification.OtpService;
@@ -127,15 +128,23 @@ public class AuthController {
 
     @GetMapping("/google")
     public ResponseEntity<ApiResponse<String>> googleLogin(@AuthenticationPrincipal OAuth2User oAuth2User) {
-        Customers customer = new Customers(); // Replace with actual user fetching logic
-        customer.setEmail(oAuth2User.getAttribute("email"));
-        customer.setFullName(oAuth2User.getAttribute("name"));
-        customer.setProviderId(oAuth2User.getAttribute("sub"));
-        customer.setRole(Role.CUSTOMER);
-        customer.setAuthProvider(AuthProvider.GOOGLE);
+
+        String email = oAuth2User.getAttribute("email");
+        String fullName = oAuth2User.getAttribute("name");
+        String providerId = oAuth2User.getAttribute("sub");
+
+        Customers customer = customerService.findByEmailAndAuthProvider(email, AuthProvider.GOOGLE)
+                .orElseGet(() -> {
+                    Customers newCustomer = new Customers();
+                    newCustomer.setEmail(email);
+                    newCustomer.setFullName(fullName);
+                    newCustomer.setProviderId(providerId);
+                    newCustomer.setRole(Role.CUSTOMER);
+                    newCustomer.setAuthProvider(AuthProvider.GOOGLE);
+                    return customerService.save(newCustomer);
+                });
 
         String token = jwtUtil.generateTokenOAuth2(customer);
-
         ApiResponse<String> response = new ApiResponse<>(HttpStatus.OK.value(), "Google login successful", token);
         return ResponseEntity.ok(response);
     }
