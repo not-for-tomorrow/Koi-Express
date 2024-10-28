@@ -112,3 +112,19 @@ export const fetchCustomerAccounts = async () => {
         throw new Error("Failed to fetch customer accounts");
     }
 };
+
+export const acceptOrderAPI = async (orderId) => {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Token not found. Please log in.");
+
+    const response = await axios.put(`${BASE_URL}/sales/accept/${orderId}`, null, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+    });
+
+    if (response.status !== 200) throw new Error("Failed to accept order");
+
+    return response.data;
+};
