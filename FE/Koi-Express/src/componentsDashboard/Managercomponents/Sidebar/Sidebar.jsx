@@ -30,7 +30,7 @@ const Sidebar = () => {
             navigate("/managerpage/deliveringstaffaccount");
             break;
         case "Logout":
-          navigate("/login");
+          navigate("/");
           break;
       default:
         break;

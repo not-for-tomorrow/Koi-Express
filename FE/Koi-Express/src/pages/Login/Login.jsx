@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FcGoogle } from "react-icons/fc"; // Google icon
-import { FaFacebook } from "react-icons/fa"; // Facebook icon
+import { FcGoogle } from "react-icons/fc";
+import { FaFacebook } from "react-icons/fa";
 import jwt_decode from "jwt-decode";
 import "./Login.css";
 
@@ -16,33 +16,42 @@ const Login = () => {
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Check if token and userInfo exist, and navigate to /appkoiexpress if they do
+    const token = localStorage.getItem("token");
+    const userInfo = localStorage.getItem("userInfo");
+    if (token && userInfo) {
+      navigate("/appkoiexpress");
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
+
     try {
       const response = await axios.post("http://localhost:8080/api/auth/login", {
         phoneNumber,
         password,
       });
-  
+
       if (response.status === 200) {
         const token = response.data.result;
-  
+
         if (token) {
-          localStorage.setItem("token", token); // Store the token in localStorage
+          localStorage.setItem("token", token);
           setSuccess("Login successful");
-  
+
           // Decode the token to get the role
           const decodedToken = jwt_decode(token);
           const role = decodedToken.role;
-  
+
           // Store userInfo only if the role is CUSTOMER
           if (role === "CUSTOMER") {
             const userInfoResponse = await axios.get("http://localhost:8080/api/customers/basic-info", {
               headers: { Authorization: `Bearer ${token}` },
             });
-  
+
             if (userInfoResponse.status === 200) {
               const userInfo = userInfoResponse.data.result;
               localStorage.setItem("userInfo", JSON.stringify(userInfo));
@@ -51,7 +60,7 @@ const Login = () => {
               return;
             }
           }
-  
+
           // Redirect based on the user's role
           switch (role) {
             case "CUSTOMER":
@@ -92,16 +101,13 @@ const Login = () => {
       setLoading(false);
     }
   };
-  
-  
 
   const handleGoogleLogin = () => {
     window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
 
   const handleFacebookLogin = () => {
-    window.location.href =
-      "http://localhost:8080/oauth2/authorization/facebook";
+    window.location.href = "http://localhost:8080/oauth2/authorization/facebook";
   };
 
   const handleRegister = () => {
@@ -153,17 +159,11 @@ const Login = () => {
                 onChange={() => setRememberMe(!rememberMe)}
                 id="rememberMe"
               />
-              <label
-                htmlFor="rememberMe"
-                className="ml-2 text-sm text-[#002D74]"
-              >
+              <label htmlFor="rememberMe" className="ml-2 text-sm text-[#002D74]">
                 Remember Me
               </label>
             </div>
-            <button
-              type="submit"
-              className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300"
-            >
+            <button type="submit" className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300">
               {loading ? "Loading..." : "Login"}
             </button>
           </form>
