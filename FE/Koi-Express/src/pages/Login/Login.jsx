@@ -19,43 +19,56 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
+
     try {
-      const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
-        {
-          phoneNumber,
-          password,
-        }
-      );
-  
+      const response = await axios.post("http://localhost:8080/api/auth/login", {
+        phoneNumber,
+        password,
+      });
+
       if (response.status === 200) {
-        const token = response.data.result; // Token is returned in the response
-  
+        const token = response.data.result;
+
         if (token) {
-          localStorage.setItem("token", token); // Store the token in localStorage
+          localStorage.setItem("token", token);
           setSuccess("Login successful");
-  
+
           // Decode the token to get the role
           const decodedToken = jwt_decode(token);
-          const role = decodedToken.role; // Assuming the role is stored in the token
-  
-          // Redirect based on the user's role
-          switch (role) {
-            case "CUSTOMER":
-              navigate("/appkoiexpress");
-              break;
-            case "SALES_STAFF":
-              navigate("/salepage");
-              break;
-            case "DELIVERING_STAFF":
-              navigate("/deliveringstaffpage");
-              break;
+          const role = decodedToken.role;
+
+          // Fetch user info with the token
+          const userInfoResponse = await axios.get("http://localhost:8080/api/customers/basic-info", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (userInfoResponse.status === 200) {
+            const userInfo = userInfoResponse.data.result;
+
+            // Store userInfo in localStorage
+            localStorage.setItem("userInfo", JSON.stringify(userInfo));
+
+            // Redirect based on the user's role
+            switch (role) {
+              case "CUSTOMER":
+                navigate("/appkoiexpress");
+                break;
+              case "SALES_STAFF":
+                navigate("/salepage");
+                break;
+              case "DELIVERING_STAFF":
+                navigate("/deliveringstaffpage");
+                break;
               case "MANAGER":
                 navigate("/managerpage");
                 break;
-            default:
-              setError("Role not recognized.");
+              default:
+                setError("Role not recognized.");
+            }
+          } else {
+            setError("Failed to retrieve user information.");
           }
         } else {
           setError("No token provided in the response.");
@@ -65,17 +78,13 @@ const Login = () => {
       if (err.response) {
         switch (err.response.status) {
           case 401:
-            setError(
-              "Invalid credentials. Please check your phone number and password."
-            );
+            setError("Invalid credentials. Please check your phone number and password.");
             break;
           case 500:
             setError("Server error. Please try again later.");
             break;
           default:
-            setError(
-              "Login failed: " + (err.response.data.message || "Unknown error")
-            );
+            setError("Login failed: " + (err.response.data.message || "Unknown error"));
         }
       } else {
         setError("An unexpected error occurred. Please try again.");
@@ -84,15 +93,13 @@ const Login = () => {
       setLoading(false);
     }
   };
-  
 
   const handleGoogleLogin = () => {
     window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
 
   const handleFacebookLogin = () => {
-    window.location.href =
-      "http://localhost:8080/oauth2/authorization/facebook";
+    window.location.href = "http://localhost:8080/oauth2/authorization/facebook";
   };
 
   const handleRegister = () => {
@@ -144,17 +151,11 @@ const Login = () => {
                 onChange={() => setRememberMe(!rememberMe)}
                 id="rememberMe"
               />
-              <label
-                htmlFor="rememberMe"
-                className="ml-2 text-sm text-[#002D74]"
-              >
+              <label htmlFor="rememberMe" className="ml-2 text-sm text-[#002D74]">
                 Remember Me
               </label>
             </div>
-            <button
-              type="submit"
-              className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300"
-            >
+            <button type="submit" className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300">
               {loading ? "Loading..." : "Login"}
             </button>
           </form>
