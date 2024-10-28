@@ -9,6 +9,9 @@ import OtpModal from "./pages/OTP/OtpModal";
 import Salepage from "./Salepage/Salepage";
 import DeliveringStaffpage from "./DeliveringStaffpage/DeliveringStaffpage";
 import ManagerPage from "./ManagerPage/ManagerPage";
+import LoginLayout from "./components/LogResLayout/LogResLayout";
+import RegisterLayout from "./components/LogResLayout/LogResLayout";
+import Blog from "./pages/Blog/Blog";
 
 export default function useRouteElements() {
   const routeElements = useRoutes([
@@ -22,11 +25,11 @@ export default function useRouteElements() {
     },
     {
       path: "/login",
-      element: <Login />,
+      element: <LoginLayout><Login /></LoginLayout>,
     },
     {
       path: "/register",
-      element: <Register />,
+      element: <RegisterLayout><Register /></RegisterLayout>,
     },
     {
       path: "/appkoiexpress/*",
@@ -47,6 +50,10 @@ export default function useRouteElements() {
     {
       path: "/managerpage/*",
       element: <ManagerPage />,
+    },
+    {
+      path: "/blog/*",
+      element: <MainLayout><Blog /></MainLayout>,
     },
   ]);
   return routeElements;

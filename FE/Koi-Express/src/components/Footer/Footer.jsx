@@ -12,26 +12,17 @@ export default function Footer() {
         <div className="flex justify-around w-full mt-5">
           <div>
             <ul>
-              <li className="mt-5 cursor-pointer text-2xl hover:text-amber-500 font-semibold">
+              <li className="mt-5 text-2xl font-semibold cursor-pointer hover:text-amber-500">
                 Dịch vụ
               </li>
               <li className="mt-6 cursor-pointer hover:text-amber-500 ">
-                Dịch vụ giao hàng
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Thuê xe điện
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Dịch vụ xe tải
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Dịch vụ doanh nghiệp
+                Dịch vụ giao cá koi
               </li>
             </ul>
           </div>
           <div>
             <ul>
-              <li className="mt-5 cursor-pointer text-2xl hover:text-amber-500 font-semibold">
+              <li className="mt-5 text-2xl font-semibold cursor-pointer hover:text-amber-500">
                 Công ty
               </li>
               <li className="mt-6 cursor-pointer hover:text-amber-500 ">
@@ -47,7 +38,7 @@ export default function Footer() {
           </div>
           <div>
             <ul>
-              <li className="mt-5 cursor-pointer text-2xl hover:text-amber-500 font-semibold">
+              <li className="mt-5 text-2xl font-semibold cursor-pointer hover:text-amber-500">
                 Khách hàng
               </li>
               <li className="mt-6 cursor-pointer hover:text-amber-500 ">
@@ -66,7 +57,7 @@ export default function Footer() {
           </div>
           <div>
             <ul>
-              <li className="mt-5 cursor-pointer text-2xl hover:text-amber-500 font-semibold">
+              <li className="mt-5 text-2xl font-semibold cursor-pointer hover:text-amber-500">
                 Hỗ trợ
               </li>
               <li className="mt-6 cursor-pointer hover:text-amber-500 ">
@@ -76,7 +67,7 @@ export default function Footer() {
           </div>
           <div>
             <ul>
-              <li className="mt-5 cursor-pointer text-2xl hover:text-amber-500 font-semibold">
+              <li className="mt-5 text-2xl font-semibold cursor-pointer hover:text-amber-500">
                 Tài xế
               </li>
               <li className="mt-6 cursor-pointer hover:text-amber-500 ">
@@ -95,7 +86,7 @@ export default function Footer() {
           </div>
           <div>
             <ul>
-              <li className="mt-5 cursor-pointer text-2xl hover:text-amber-500 font-semibold">
+              <li className="mt-5 text-2xl font-semibold cursor-pointer hover:text-amber-500">
                 Đường dẫn nhanh
               </li>
               <li className="mt-6 cursor-pointer hover:text-amber-500 ">
@@ -103,9 +94,6 @@ export default function Footer() {
               </li>
               <li className="mt-5 cursor-pointer hover:text-amber-500 ">
                 Trung tâm hỗ trợ tài xế
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Nền tảng nhà phát triển
               </li>
             </ul>
           </div>
@@ -121,7 +109,7 @@ export default function Footer() {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-5 mr-2 mb-1"
+              className="mb-1 mr-2 size-5"
             >
               <path
                 strokeLinecap="round"
@@ -148,7 +136,7 @@ export default function Footer() {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-5 mr-2 mb-1"
+              className="mb-1 mr-2 size-5"
             >
               <path
                 strokeLinecap="round"
@@ -175,7 +163,7 @@ export default function Footer() {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-5 mr-2 mb-1"
+              className="mb-1 mr-2 size-5"
             >
               <path
                 strokeLinecap="round"
