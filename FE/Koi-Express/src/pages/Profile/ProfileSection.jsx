@@ -22,10 +22,15 @@ const ProfileSection = ({ fullName, phoneNumber, email, profileImageUrl, onUpdat
   }, [fullName, email]);
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
+    // Remove token and user information from localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("userInfo");
     console.log("Logout button clicked");
-    navigate("/login");
+  
+    // Redirect to login page
+    navigate("/");
   };
+  
 
   const handleEdit = () => {
     setIsEditing(true);
