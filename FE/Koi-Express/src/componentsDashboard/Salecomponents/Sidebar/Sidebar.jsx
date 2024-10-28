@@ -26,7 +26,7 @@ const Sidebar = () => {
         navigate("/salepage");
         break;
       case "Logout":
-        navigate("/login");
+        navigate("/");
         break;
       default:
         break;

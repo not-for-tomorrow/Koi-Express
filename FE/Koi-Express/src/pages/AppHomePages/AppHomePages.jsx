@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import React from "react";
+import { Routes, Route } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import OrderPage from "../OrderPage/OrderPage";
 import OrderHistory from "../OrderHistory/OrderHistory";
@@ -7,19 +7,8 @@ import OrderDetail from "../OrderPage/OrderDetail";
 import Profile from "../Profile/Profile";
 
 const AppHomePages = () => {
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userInfo = localStorage.getItem("userInfo");
-
-    // Redirect to /login if token or user info is missing
-    if (!token || !userInfo) {
-      navigate("/login");
-    }
-  }, [navigate]);
-
-  console.log("AppHomePages loaded");
+    console.log("AppHomePages loaded");
 
   return (
     <div className="flex h-screen">
@@ -33,7 +22,10 @@ const AppHomePages = () => {
         <Routes>
           <Route path="/" element={<OrderPage />} />
           <Route path="/history" element={<OrderHistory />} />
-          <Route path="/history/detail/:orderId" element={<OrderDetail />} />
+          <Route
+            path="/history/detail/:orderId"
+            element={<OrderDetail />}
+          />
           <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>
