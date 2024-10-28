@@ -36,14 +36,12 @@ public class OrderDetail implements Serializable {
     String senderName;
 
     @NotEmpty(message = "Sender phone cannot be empty")
-    @Pattern(regexp = "^[+]?[0-9]{10,15}$", message = "Invalid phone number format")
     String senderPhone;
 
     @NotEmpty(message = "Recipient name cannot be empty")
     String recipientName;
 
     @NotEmpty(message = "Recipient phone cannot be empty")
-    @Pattern(regexp = "^[+]?[0-9]{10,15}$", message = "Invalid phone number format")
     String recipientPhone;
 
     @Enumerated(EnumType.STRING)

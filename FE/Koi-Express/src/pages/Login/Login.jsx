@@ -5,10 +5,12 @@ import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import jwt_decode from "jwt-decode";
 import "./Login.css";
+import logresKoiPic from "../../assets/images/banner/LogResKoiPic.webp";
 
 const Login = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -17,7 +19,6 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if token and userInfo exist, and navigate to /appkoiexpress if they do
     const token = localStorage.getItem("token");
     const userInfo = localStorage.getItem("userInfo");
     if (token && userInfo) {
@@ -42,11 +43,9 @@ const Login = () => {
           localStorage.setItem("token", token);
           setSuccess("Login successful");
 
-          // Decode the token to get the role
           const decodedToken = jwt_decode(token);
           const role = decodedToken.role;
 
-          // Store userInfo only if the role is CUSTOMER
           if (role === "CUSTOMER") {
             const userInfoResponse = await axios.get("http://localhost:8080/api/customers/basic-info", {
               headers: { Authorization: `Bearer ${token}` },
@@ -61,7 +60,6 @@ const Login = () => {
             }
           }
 
-          // Redirect based on the user's role
           switch (role) {
             case "CUSTOMER":
               navigate("/appkoiexpress");
@@ -115,10 +113,8 @@ const Login = () => {
   };
 
   return (
-    <section className="flex items-center justify-center min-h-screen loginpage bg-gray-50 ">
-      {/* login container */}
+    <section className="flex items-center justify-center min-h-screen loginpage bg-gray-50">
       <div className="flex items-center max-w-3xl p-5 bg-gray-100 shadow-lg logincard rounded-2xl">
-        {/* form */}
         <div className="px-8 md:w-1/2 md:px-16">
           <h2 className="font-bold text-2xl text-[#002D74]">Login</h2>
 
@@ -134,22 +130,27 @@ const Login = () => {
             <div className="relative">
               <input
                 className="w-full p-2 border rounded-xl"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new password"
+                autoComplete="new-password"
               />
               <svg
+                onClick={() => setShowPassword(!showPassword)}
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
                 height="16"
                 fill="gray"
-                className="absolute -translate-y-1/2 bi bi-eye top-1/2 right-3"
+                className="absolute -translate-y-1/2 cursor-pointer bi bi-eye top-1/2 right-3"
                 viewBox="0 0 16 16"
               >
-                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z" />
-                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z" />
+                <path
+                  d={showPassword
+                    ? "M13.359 5.66a5.726 5.726 0 0 0-1.362-.86.552.552 0 0 1-.231-.856.558.558 0 0 1 .856-.231c1.284.646 2.393 1.652 3.246 2.94C14.555 8.67 11.68 11.5 8 11.5s-6.555-2.83-7.874-4.487c.807-1.198 1.83-2.228 2.992-3.021A.558.558 0 0 1 3.666 4.5a.556.556 0 0 1 .859.231 5.764 5.764 0 0 0-.879.853C2.297 7.47 4.654 9.5 8 9.5s5.703-2.03 6.34-2.768z"
+                    : "M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"
+                  }
+                />
               </svg>
             </div>
             <div className="flex items-center">
@@ -216,7 +217,7 @@ const Login = () => {
         <div className="hidden w-1/2 md:block">
           <img
             className="rounded-2xl"
-            src="https://images.unsplash.com/photo-1616606103915-dea7be788566?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1887&q=80"
+            src={logresKoiPic}
             alt="Login Illustration"
           />
         </div>

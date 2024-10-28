@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 * {
   margin: 0;
   padding: 0;
@@ -26,4 +25,38 @@
   backdrop-filter: blur(6px);
   border: 2px solid rgba(255, 255, 255, 0.61);
   z-index: 999;
+  margin-top: -63px;
+  padding: 2rem; /* Add padding inside the card */
+}
+
+/* Styling for form inputs and button */
+.registercard form input,
+.registercard form button {
+  margin-top: 1rem; /* Adds consistent spacing between elements */
+  padding: 0.75rem; /* Ensures uniform padding */
+  border-radius: 0.5rem; /* Rounds the edges */
+}
+
+/* Styling specifically for the register button */
+.registercard form button {
+  background-color: #002D74;
+  color: white;
+  transition: transform 0.3s;
+  font-weight: bold;
+}
+
+.registercard form button:hover {
+  transform: scale(1.05); /* Slightly enlarge button on hover */
+}
+
+.registercard h2 {
+  margin-bottom: 1.5rem; /* Adds spacing under the header */
+  color: #002D74;
+}
+
+/* Error message styling */
+.registercard .error-message {
+  color: red;
+  font-size: 0.875rem; /* Slightly smaller font size */
+  margin-top: 0.5rem;
 }
