@@ -153,30 +153,30 @@ const Sidebar = () => {
 
         <ul className="flex flex-col p-0 m-0">
           {navItems.map((item) => (
-            <li
-              key={item.id}
-              className={`flex items-center transition-all duration-300 cursor-pointer text-sm ${
-                activeItem === item.id
-                  ? "bg-gray-200 border-gray-300 text-black"
-                  : "text-gray-500"
-              } hover:border hover:border-gray-300 hover:bg-gray-200 p-2 ${
-                click ? "justify-center w-[58px]" : "justify-start"
-              }`}
-              onClick={() => handleItemClick(item)}
-            >
-              <span
-                className={`flex items-center ${
-                  click ? "justify-center w-full" : "mr-3"
-                }`}
-              >
-                {item.icons}
-              </span>
-              {!click && (
-                <span className="ml-3 text-[16px] hover:text-black transition-colors duration-300">
-                  {item.title}
-                </span>
-              )}
-            </li>
+           <li
+           key={item.id}
+           className={`flex items-center transition-all duration-300 cursor-pointer text-sm ${
+             activeItem === item.id
+               ? "bg-gray-200 border-gray-300 text-black"
+               : "text-gray-500"
+           } hover:border hover:border-gray-300 hover:bg-gray-200 p-2 ${
+             click ? "justify-center w-[48px]" : "justify-start"
+           }`} // Set w-[48px] when collapsed for better alignment
+           onClick={() => handleItemClick(item)}
+         >
+           <span
+             className={`flex items-center ${
+               click ? "justify-center w-full" : "mr-3"
+             }`}
+           >
+             {item.icons}
+           </span>
+           {!click && (
+             <span className="ml-3 text-[16px] hover:text-black transition-colors duration-300">
+               {item.title}
+             </span>
+           )}
+         </li>
           ))}
         </ul>
       </div>

@@ -11,6 +11,7 @@ import FitBoundsButton from "./FitBoundsButton";
 import axios from "axios";
 import OrderDetailModal from "./OrderDetailModal";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import { LOCATIONIQ_KEY } from "../../koi/api/api";
 
 const OrderDetail = () => {
   const { orderId } = useParams(); // Extract orderId from the URL
@@ -52,7 +53,7 @@ const OrderDetail = () => {
         "https://us1.locationiq.com/v1/search.php",
         {
           params: {
-            key: "pk.57eb525ef1bdb7826a61cf49564f8a86", // Replace with your API key
+            key: LOCATIONIQ_KEY,
             q: address,
             format: "json",
             limit: 1,
@@ -135,9 +136,10 @@ const OrderDetail = () => {
             }}
           >
             <TileLayer
-              url="https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=pk.57eb525ef1bdb7826a61cf49564f8a86"
+              url={`https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`}
               attribution='&copy; <a href="https://locationiq.com">LocationIQ</a> contributors'
             />
+
             <Marker position={pickupLocation} />
             <Marker position={deliveryLocation} />
             <RoutingControl
@@ -156,9 +158,8 @@ const OrderDetail = () => {
           </LeafletMap>
         ) : (
           <div className="flex items-center justify-center min-h-screen">
-  <LoadingSpinner />
-</div>
-
+            <LoadingSpinner />
+          </div>
         )}
       </div>
     </div>
