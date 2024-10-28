@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -56,31 +57,40 @@ public class VNPayController {
     }
 
     @GetMapping("/vn-pay-callback")
-    public ResponseObject<String> payCallbackHandler(HttpServletRequest request) {
+    public ResponseEntity<Object> payCallbackHandler(HttpServletRequest request) {
         try {
             Map<String, String> vnpParams = request.getParameterMap().entrySet().stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
 
-            if (!vnpParams.containsKey("vnp_TxnRef")) {
-                return new ResponseObject<>(HttpStatus.BAD_REQUEST, "Missing transaction reference", null);
+            if (!vnpParams.containsKey("vnp_TxnRef") || !vnpParams.containsKey("vnp_ResponseCode")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing transaction reference or response code");
             }
 
             long orderId = Long.parseLong(vnpParams.get("vnp_TxnRef"));
-            logger.info("Received payment callback for order ID: {}", orderId);
+            String responseCode = vnpParams.get("vnp_ResponseCode");
 
+            logger.info("Received payment callback for order ID: {} with response code: {}", orderId, responseCode);
+
+            // Process the payment response from VNPAY
             ApiResponse<String> response = orderService.confirmCommitFeePayment(orderId, vnpParams);
 
-            if (response.getCode() == HttpStatus.OK.value()) {
-                logger.info("Payment success for order ID: {}", orderId);
-                return new ResponseObject<>(HttpStatus.OK, "Thanh toán thành công", "Payment Success");
+            // Check VNPAY response code
+            if ("00".equals(responseCode)) {
+                // Payment success, redirect to success URL
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .header("Location", System.getenv("RETURN_URL_SUCCESS"))
+                        .build();
             } else {
-                logger.warn("Payment verification failed for order ID: {}", orderId);
-                return new ResponseObject<>(
-                        HttpStatus.BAD_REQUEST, "Xác minh thanh toán thất bại", "Payment Verification Failed");
+                // Payment failed or canceled, redirect to failure URL
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .header("Location", System.getenv("RETURN_URL_FAILURE"))
+                        .build();
             }
         } catch (Exception e) {
             logger.error("Error handling payment callback", e);
-            return new ResponseObject<>(HttpStatus.INTERNAL_SERVER_ERROR, "Error handling payment callback", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error handling payment callback");
         }
     }
+
 }
