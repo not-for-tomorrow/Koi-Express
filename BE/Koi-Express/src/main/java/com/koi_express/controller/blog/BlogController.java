@@ -20,13 +20,6 @@ import java.util.List;
 public class BlogController {
 
     private final BlogService blogService;
-    private final S3Service s3Service;
-
-//    @PostMapping("/upload")
-//    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
-//        String imageUrl = s3Service.uploadFile("blogs", LocalDate.now().toString(), "images", file);
-//        return ResponseEntity.ok(imageUrl);
-//    }
 
     @PostMapping("/create-blog")
     @PreAuthorize("hasRole('SALES_STAFF')") // Assuming only managers can create blogs
@@ -44,7 +37,6 @@ public class BlogController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<Blog> getBlogById(@PathVariable Long id) {

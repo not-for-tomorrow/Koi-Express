@@ -28,4 +28,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
   CMD curl --fail http://localhost:8080/actuator/health || exit 1
 
 # Step 10: Run the application
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/koiexpress.jar"]

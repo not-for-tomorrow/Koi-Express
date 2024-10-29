@@ -55,6 +55,11 @@ public class StaffAssignmentService {
         }
 
         BigDecimal kilometers = order.getOrderDetail().getKilometers();
+        if (kilometers == null) {
+            log.error("Order ID {} has null kilometers in order details, cannot determine staff level", orderId);
+            throw new AppException(ErrorCode.MISSING_ORDER_DETAILS, "Order details missing kilometers for ID: " + orderId);
+        }
+
         DeliveringStaffLevel level = kilometers.compareTo(new BigDecimal(300)) < 0
                 ? DeliveringStaffLevel.LEVEL_1
                 : DeliveringStaffLevel.LEVEL_2;
@@ -64,6 +69,10 @@ public class StaffAssignmentService {
         log.info("Available staff count for level {}: {}", level, availableStaff.size());
 
         if (availableStaff.isEmpty()) {
+            log.info("No available staff found. Setting order status to SEARCHING_FOR_DELIVERY_STAFF");
+            order.setStatus(OrderStatus.SEARCHING_FOR_DELIVERY_STAFF);
+            orderRepository.save(order);
+            pendingOrderRepository.save(order);
             throw new AppException(ErrorCode.NO_AVAILABLE_STAFF);
         }
 
@@ -123,10 +132,11 @@ public class StaffAssignmentService {
 
     @Scheduled(fixedRate = 60000)
     public void assignPendingOrders() {
+        log.info("Checking for available staff to assign pending orders...");
+        List<Orders> pendingOrders = orderRepository.findByStatus(OrderStatus.SEARCHING_FOR_DELIVERY_STAFF);
         List<DeliveringStaff> availableStaff = deliveringStaffRepository.findByStatus(StaffStatus.AVAILABLE);
 
         if (!availableStaff.isEmpty()) {
-            List<Orders> pendingOrders = pendingOrderRepository.findAll();
             for (Orders order : pendingOrders) {
                 DeliveringStaff assignedStaff = availableStaff.removeFirst();
                 log.info(
@@ -137,7 +147,6 @@ public class StaffAssignmentService {
                 order.setDeliveringStaff(assignedStaff);
                 order.setStatus(OrderStatus.ASSIGNED);
                 orderRepository.save(order);
-                pendingOrderRepository.delete(order);
                 assignedStaff.setStatus(StaffStatus.DELIVERING);
                 deliveringStaffRepository.save(assignedStaff);
 
