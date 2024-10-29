@@ -128,3 +128,19 @@ export const acceptOrderAPI = async (orderId) => {
 
     return response.data;
 };
+
+export const pickupOrderAPI = async (orderId) => {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Token not found. Please log in.");
+
+    const response = await axios.put(`${BASE_URL}/delivering/orders/pickup/${orderId}`, null, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+    });
+
+    if (response.status !== 200) throw new Error("Failed to pickup order");
+
+    return response.data;
+};
