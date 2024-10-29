@@ -1,4 +1,3 @@
-// src/components/OrderPage/PaymentFailed.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,14 +7,14 @@ const PaymentFailed = () => {
 
     useEffect(() => {
         if (countdown === 0) {
-            navigate("/");
+            navigate("/appkoiexpress/history");
         }
         const timer = setInterval(() => setCountdown(prev => prev - 1), 1000);
         return () => clearInterval(timer);
     }, [countdown, navigate]);
 
     const handleBackToHome = () => {
-        navigate("/appkoiexpress"); // Redirect immediately to homepage
+        navigate("/appkoiexpress/history");
     };
 
     return (

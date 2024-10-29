@@ -8,14 +8,14 @@ const PaymentSuccessful = () => {
 
     useEffect(() => {
         if (countdown === 0) {
-            navigate("/");
+            navigate("/appkoiexpress/history");
         }
         const timer = setInterval(() => setCountdown(prev => prev - 1), 1000);
         return () => clearInterval(timer);
     }, [countdown, navigate]);
 
     const handleBackToHome = () => {
-        navigate("/appkoiexpress");
+        navigate("/appkoiexpress/history");
     };
 
     return (
