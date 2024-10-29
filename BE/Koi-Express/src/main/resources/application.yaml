@@ -9,9 +9,6 @@ spring:
         max-swallow-size: -1
       session:
         timeout: 30m
-      multipart:
-        max-file-size: 50MB
-        max-request-size: 50MB
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver

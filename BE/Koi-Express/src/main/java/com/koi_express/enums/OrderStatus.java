@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 public enum OrderStatus {
     PENDING("Chờ xác nhận"), // Đơn hàng đang chờ xác nhận từ sales-staff
     ACCEPTED("Đã xác nhận"), // Đơn hàng đã được sales-staff xác nhận
+    SEARCHING_FOR_DELIVERY_STAFF("Đang tìm nhân viên giao hàng"), // Đơn hàng đang chờ phân công nhân viên giao hàng
     ASSIGNED("Đã phân công"), // Đơn hàng đã được gán cho nhân viên giao hàng
     PICKING_UP("Chuẩn bị lấy hàng"), // Nhân viên đang chuẩn bị đến lấy hàng
     IN_TRANSIT("Đang giao"), // Đơn hàng đang trong quá trình vận chuyển

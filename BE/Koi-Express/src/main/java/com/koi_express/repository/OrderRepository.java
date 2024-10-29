@@ -56,4 +56,6 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
 
     @Query("SELECT YEAR(o.createdAt) FROM Orders o GROUP BY YEAR(o.createdAt) ORDER BY SUM(o.totalFee) DESC LIMIT 1")
     Optional<Integer> findHighestRevenueYear();
+
+    List<Orders> findByStatus(OrderStatus status);
 }
