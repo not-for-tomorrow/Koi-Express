@@ -34,6 +34,9 @@ public class Blog {
     @Column(unique = true, length = 255)
     String slug;
 
+    @Column
+    private String filePath;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     BlogStatus status = BlogStatus.DRAFT;

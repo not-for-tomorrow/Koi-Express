@@ -5,6 +5,7 @@ import com.koi_express.enums.BlogStatus;
 import com.koi_express.service.blog.BlogService;
 import com.koi_express.service.verification.S3Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,16 +22,29 @@ public class BlogController {
     private final BlogService blogService;
     private final S3Service s3Service;
 
-    @PostMapping("/upload")
-    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
-        String imageUrl = s3Service.uploadFile("blogs", LocalDate.now().toString(), "images", file);
-        return ResponseEntity.ok(imageUrl);
+//    @PostMapping("/upload")
+//    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+//        String imageUrl = s3Service.uploadFile("blogs", LocalDate.now().toString(), "images", file);
+//        return ResponseEntity.ok(imageUrl);
+//    }
+
+    @PostMapping("/create-blog")
+    @PreAuthorize("hasRole('MANAGER')") // Assuming only managers can create blogs
+    public ResponseEntity<Blog> createBlog(
+            @RequestParam("title") String title,
+            @RequestParam("content") String content,
+            @RequestParam("status") BlogStatus status,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "documentFile", required = false) MultipartFile documentFile) {
+
+        try {
+            Blog blog = blogService.createBlog(title, content, status, imageFile, documentFile);
+            return ResponseEntity.status(HttpStatus.CREATED).body(blog);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
-    @PostMapping
-    public ResponseEntity<Blog> createBlog(@RequestBody Blog blog) {
-        return ResponseEntity.ok(blogService.createBlog(blog));
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<Blog> getBlogById(@PathVariable Long id) {
@@ -51,4 +65,10 @@ public class BlogController {
         return ResponseEntity.ok(blogService.getBlogsByStatus(status));
     }
 
+    @GetMapping("/{slug}")
+    public ResponseEntity<Blog> getBlogBySlug(@PathVariable String slug) {
+        return blogService.getBlogBySlug(slug)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
