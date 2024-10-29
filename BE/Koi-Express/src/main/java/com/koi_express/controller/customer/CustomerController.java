@@ -7,6 +7,7 @@ import com.koi_express.dto.response.BasicInfoResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.service.customer.CustomerService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,18 +18,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/customers")
+@RequiredArgsConstructor
 public class CustomerController {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomerController.class);
 
     private final CustomerService customerService;
     private final JwtUtil jwtUtil;
-
-    @Autowired
-    public CustomerController(CustomerService customerService, JwtUtil jwtUtil) {
-        this.customerService = customerService;
-        this.jwtUtil = jwtUtil;
-    }
 
     @PutMapping("/update")
     public ResponseEntity<ApiResponse<Customers>> updateCustomer(

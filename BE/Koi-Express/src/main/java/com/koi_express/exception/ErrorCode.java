@@ -23,6 +23,8 @@ public enum ErrorCode {
     ORDER_RETRIEVAL_FAILED(1017, "Order retrieval failed"),
     ORDER_NOT_IN_TRANSIT(1018, "Order not in transit"),
     MISSING_ORDER_DETAILS(1019, "Order details missing"),
+    STAFF_NOT_FOUND(1020, "Staff not found"),
+    INVALID_LEVEL(1021, "Invalid level"),
     ;
 
     ErrorCode(int code, String message) {

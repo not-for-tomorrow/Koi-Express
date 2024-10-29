@@ -7,6 +7,7 @@ import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.service.order.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,16 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/orders")
+@RequiredArgsConstructor
 public class OrderPayment {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderPayment.class);
 
     private final OrderService orderService;
-
-    @Autowired
-    public OrderPayment(OrderService orderService) {
-        this.orderService = orderService;
-    }
 
     @PostMapping("/payment/commit-fee/callback")
     public ResponseEntity<ApiResponse<String>> confirmCommitFeePayment(HttpServletRequest request) {

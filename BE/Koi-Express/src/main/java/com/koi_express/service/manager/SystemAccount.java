@@ -7,6 +7,7 @@ import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.SystemAccountRepository;
 import com.koi_express.service.verification.EmailService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,17 +15,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class SystemAccount {
 
     private final SystemAccountRepository systemAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
-
-    public SystemAccount(SystemAccountRepository systemAccountRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
-        this.systemAccountRepository = systemAccountRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.emailService = emailService;
-    }
 
     public ApiResponse<String> createSalesStaffAccount(CreateStaffRequest createStaffRequest) {
         if (systemAccountRepository.existsByEmail(createStaffRequest.getEmail())) {

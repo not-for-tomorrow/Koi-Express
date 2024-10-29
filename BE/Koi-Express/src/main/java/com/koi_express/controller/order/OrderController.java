@@ -13,6 +13,7 @@ import com.koi_express.service.order.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/orders")
+@RequiredArgsConstructor
 public class OrderController {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
@@ -29,12 +31,6 @@ public class OrderController {
     private final OrderService orderService;
     private final OrderSessionManager sessionManager;
     private final JwtUtil jwtUtil;
-
-    public OrderController(OrderService orderService, OrderSessionManager sessionManager, JwtUtil jwtUtil) {
-        this.orderService = orderService;
-        this.sessionManager = sessionManager;
-        this.jwtUtil = jwtUtil;
-    }
 
     @PostMapping("/create")
     public ApiResponse<Map<String, Object>> createOrder(

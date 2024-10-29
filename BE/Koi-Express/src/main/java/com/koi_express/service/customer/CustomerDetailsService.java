@@ -9,24 +9,19 @@ import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.repository.CustomersRepository;
 import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.repository.SystemAccountRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class CustomerDetailsService implements UserDetailsService {
-
 
     private final CustomersRepository customersRepository;
     private final SystemAccountRepository systemAccountRepository;
     private final DeliveringStaffRepository deliveringStaffRepository;
-
-    public CustomerDetailsService(CustomersRepository customersRepository, SystemAccountRepository systemAccountRepository, DeliveringStaffRepository deliveringStaffRepository) {
-        this.customersRepository = customersRepository;
-        this.systemAccountRepository = systemAccountRepository;
-        this.deliveringStaffRepository = deliveringStaffRepository;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String phoneNumber) throws UsernameNotFoundException {

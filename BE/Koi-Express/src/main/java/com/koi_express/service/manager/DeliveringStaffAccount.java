@@ -2,13 +2,13 @@ package com.koi_express.service.manager;
 
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.enums.DeliveringStaffLevel;
 import com.koi_express.enums.Role;
 import com.koi_express.enums.StaffStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.service.verification.EmailService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,17 +16,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class DeliveringStaff {
+@RequiredArgsConstructor
+public class DeliveringStaffAccount {
 
     private final DeliveringStaffRepository deliveringStaffRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
-
-    public DeliveringStaff(DeliveringStaffRepository deliveringStaffRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
-        this.deliveringStaffRepository = deliveringStaffRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.emailService = emailService;
-    }
 
     public ApiResponse<String> createDeliveringStaffAccount(CreateStaffRequest createStaffRequest) {
         if (deliveringStaffRepository.existsByPhoneNumber(createStaffRequest.getPhoneNumber())) {
@@ -45,7 +40,7 @@ public class DeliveringStaff {
                         .averageRating(0.0)
                         .active(true)
                         .status(StaffStatus.AVAILABLE)
-                        .level(DeliveringStaffLevel.LEVEL_1)
+                        .level(createStaffRequest.getLevel())
                         .role(Role.DELIVERING_STAFF)
                         .build();
 

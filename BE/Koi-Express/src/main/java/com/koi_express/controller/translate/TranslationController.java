@@ -2,6 +2,7 @@ package com.koi_express.controller.translate;
 
 import com.koi_express.exception.TranslationException;
 import com.koi_express.service.verification.TranslationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -9,13 +10,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/translation")
+@RequiredArgsConstructor
 public class TranslationController {
 
     private final TranslationService translationService;
-
-    public TranslationController(TranslationService translationService) {
-        this.translationService = translationService;
-    }
 
     @PostMapping
     public Map<String, String> translateContent(@RequestBody Map<String, String> content,

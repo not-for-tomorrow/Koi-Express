@@ -4,21 +4,17 @@ import java.util.Collection;
 import java.util.Map;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 @Getter
+@RequiredArgsConstructor
 public class CustomOAuth2User implements OAuth2User {
 
     private final OAuth2User oAuth2User;
     private final String jwtToken;
     private final String customerId;
-
-    public CustomOAuth2User(OAuth2User oAuth2User, String jwtToken, String customerId) {
-        this.oAuth2User = oAuth2User;
-        this.jwtToken = jwtToken;
-        this.customerId = customerId;
-    }
 
     @Override
     public Map<String, Object> getAttributes() {

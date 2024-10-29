@@ -6,16 +6,14 @@ import java.util.Map;
 import com.koi_express.entity.order.Invoice;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.repository.InvoiceRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class InvoiceBuilder {
 
     private final InvoiceRepository invoiceRepository;
-
-    public InvoiceBuilder(InvoiceRepository invoiceRepository) {
-        this.invoiceRepository = invoiceRepository;
-    }
 
     public void updateInvoice(Orders order, Map<String, BigDecimal> fees) {
         Invoice invoice = new Invoice();

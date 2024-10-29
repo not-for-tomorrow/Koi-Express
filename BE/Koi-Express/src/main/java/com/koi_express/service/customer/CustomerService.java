@@ -12,22 +12,18 @@ import com.koi_express.enums.Role;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.CustomersRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class CustomerService {
 
     private final CustomersRepository customersRepository;
     private final PasswordEncoder passwordEncoder;
-
-    @Autowired
-    public CustomerService(CustomersRepository customersRepository, PasswordEncoder passwordEncoder) {
-        this.customersRepository = customersRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     public ApiResponse<Customers> registerCustomer(RegisterRequest registerRequest) {
 

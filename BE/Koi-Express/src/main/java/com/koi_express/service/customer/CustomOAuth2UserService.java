@@ -7,6 +7,7 @@ import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
 import com.koi_express.repository.CustomersRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -16,15 +17,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final CustomersRepository customersRepository;
     private final JwtUtil jwtUtil;
-
-    public CustomOAuth2UserService(CustomersRepository customersRepository, JwtUtil jwtUtil) {
-        this.customersRepository = customersRepository;
-        this.jwtUtil = jwtUtil;
-    }
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {

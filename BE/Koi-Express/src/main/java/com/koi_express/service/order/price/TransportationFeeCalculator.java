@@ -15,18 +15,21 @@ public class TransportationFeeCalculator {
 
     private final BigDecimal baseFeePerKm;
     private final BigDecimal fuelPrice;
-    private final BigDecimal shortDistanceFuelConsumption;
-    private final BigDecimal longDistanceFuelConsumption;
+    private final BigDecimal smallTruckFuelConsumption;
+    private final BigDecimal mediumTruckFuelConsumption;
+    private final BigDecimal largeTruckFuelConsumption;
 
     public TransportationFeeCalculator(
             @Value("${transportation.baseFeePerKm:5200}") BigDecimal baseFeePerKm,
             @Value("${transportation.fuelPrice:19000}") BigDecimal fuelPrice,
-            @Value("${transportation.shortDistanceFuelConsumption:11.0}") BigDecimal shortDistanceFuelConsumption,
-            @Value("${transportation.longDistanceFuelConsumption:14.0}") BigDecimal longDistanceFuelConsumption) {
+            @Value("${transportation.smallTruckFuelConsumption:9.0}") BigDecimal smallTruckFuelConsumption,
+            @Value("${transportation.mediumTruckFuelConsumption:14.0}") BigDecimal mediumTruckFuelConsumption,
+            @Value("${transportation.largeTruckFuelConsumption:21.0}") BigDecimal largeTruckFuelConsumption) {
         this.baseFeePerKm = baseFeePerKm;
         this.fuelPrice = fuelPrice;
-        this.shortDistanceFuelConsumption = shortDistanceFuelConsumption;
-        this.longDistanceFuelConsumption = longDistanceFuelConsumption;
+        this.smallTruckFuelConsumption = smallTruckFuelConsumption;
+        this.mediumTruckFuelConsumption = mediumTruckFuelConsumption;
+        this.largeTruckFuelConsumption = largeTruckFuelConsumption;
     }
 
     public BigDecimal calculateTotalFee(BigDecimal kilometers) {
@@ -53,9 +56,13 @@ public class TransportationFeeCalculator {
     }
 
     private BigDecimal getFuelConsumption(BigDecimal kilometers) {
-        return kilometers.compareTo(BigDecimal.valueOf(300)) <= 0
-                ? shortDistanceFuelConsumption
-                : longDistanceFuelConsumption;
+        if (kilometers.compareTo(BigDecimal.valueOf(300)) < 0) {
+            return smallTruckFuelConsumption; // 2-ton truck with 9 liters per 100 km
+        } else if (kilometers.compareTo(BigDecimal.valueOf(800)) < 0) {
+            return mediumTruckFuelConsumption; // 5-ton truck with 14 liters per 100 km
+        } else {
+            return largeTruckFuelConsumption; // 10-ton truck with 21 liters per 100 km
+        }
     }
 
     private BigDecimal calculateFuelCost(BigDecimal kilometers, BigDecimal fuelConsumption) {
@@ -83,5 +90,4 @@ public class TransportationFeeCalculator {
         logger.info("Commitment Fee for {} km: {} VND", kilometers, commitmentFee);
         return commitmentFee.setScale(0, RoundingMode.HALF_UP);
     }
-
 }

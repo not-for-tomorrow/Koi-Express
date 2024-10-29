@@ -8,17 +8,15 @@ import com.koi_express.entity.customer.Customers;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.ManagerRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ManageCustomerService {
 
     private final ManagerRepository managerRepository;
-
-    public ManageCustomerService(ManagerRepository managerRepository) {
-        this.managerRepository = managerRepository;
-    }
 
     public ApiResponse<List<Customers>> getAllCustomers() {
 
