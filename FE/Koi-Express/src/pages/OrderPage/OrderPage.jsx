@@ -4,10 +4,13 @@ import OrderForm from "./OrderForm";
 import OrderForm2 from "./OrderForm2";
 import ChatWindow from "../chat/ChatWindow.jsx";
 import ChatButton from "../chat/ChatButton.jsx";
-import { MapContainer as LeafletMap, TileLayer, Marker } from "react-leaflet";
+import {
+  MapContainer as LeafletMap,
+  TileLayer,
+  Marker,
+} from "react-leaflet";
 import RoutingControl from "./RoutingControl";
 import FitBoundsButton from "./FitBoundsButton";
-import { LOCATIONIQ_KEY } from "../../koi/api/api";
 
 const OrderPage = () => {
   const [pickupAddress, setPickupAddress] = useState("");
@@ -53,15 +56,15 @@ const OrderPage = () => {
   const reverseGeocode = async (lat, lng) => {
     try {
       const response = await axios.get(
-        "https://us1.locationiq.com/v1/reverse.php",
-        {
-          params: {
-            key: LOCATIONIQ_KEY,
-            lat: lat,
-            lon: lng,
-            format: "json",
-          },
-        }
+          "https://us1.locationiq.com/v1/reverse.php",
+          {
+            params: {
+              key: "pk.57eb525ef1bdb7826a61cf49564f8a86",
+              lat: lat,
+              lon: lng,
+              format: "json",
+            },
+          }
       );
       return response.data.display_name;
     } catch (error) {
@@ -73,23 +76,23 @@ const OrderPage = () => {
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const currentLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          setGpsLocation(currentLocation);
-          setPickupLocation(currentLocation);
+          async (position) => {
+            const currentLocation = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            setGpsLocation(currentLocation);
+            setPickupLocation(currentLocation);
 
-          const address = await reverseGeocode(
-            currentLocation.lat,
-            currentLocation.lng
-          );
-          setPickupAddress(address);
-        },
-        (error) => {
-          console.error("Error getting current GPS location:", error);
-        }
+            const address = await reverseGeocode(
+                currentLocation.lat,
+                currentLocation.lng
+            );
+            setPickupAddress(address);
+          },
+          (error) => {
+            console.error("Error getting current GPS location:", error);
+          }
       );
     } else {
       console.error("Geolocation is not supported by this browser.");
@@ -108,15 +111,15 @@ const OrderPage = () => {
   const fetchSuggestions = async (inputAddress, setSuggestions) => {
     try {
       const response = await axios.get(
-        "https://us1.locationiq.com/v1/search.php",
-        {
-          params: {
-            key: LOCATIONIQ_KEY,
-            q: inputAddress,
-            format: "json",
-            limit: 5,
-          },
-        }
+          "https://us1.locationiq.com/v1/search.php",
+          {
+            params: {
+              key: "pk.57eb525ef1bdb7826a61cf49564f8a86",
+              q: inputAddress,
+              format: "json",
+              limit: 5,
+            },
+          }
       );
       setSuggestions(response.data);
     } catch (error) {
@@ -185,117 +188,119 @@ const OrderPage = () => {
   }, [pickupLocation, deliveryLocation]);
 
   return (
-    <div className="relative flex h-screen">
-      {currentStep === 1 ? (
-        <OrderForm
-          pickupAddress={pickupAddress}
-          setPickupAddress={setPickupAddress}
-          deliveryAddress={deliveryAddress}
-          setDeliveryAddress={setDeliveryAddress}
-          pickupSuggestions={pickupSuggestions}
-          deliverySuggestions={deliverySuggestions}
-          handleAddressChange={handleAddressChange}
-          handleSelect={handleSelect}
-          distance={distance}
-          handleContinue={handleContinue}
-          pickupDetail={pickupDetail}
-          setPickupDetail={setPickupDetail}
-          deliveryDetail={deliveryDetail}
-          setDeliveryDetail={setDeliveryDetail}
-          senderName={senderName}
-          setSenderName={setSenderName}
-          senderPhone={senderPhone}
-          setSenderPhone={setSenderPhone}
-          recipientName={recipientName}
-          setRecipientName={setRecipientName}
-          recipientPhone={recipientPhone}
-          setRecipientPhone={setRecipientPhone}
-          isPickupConfirmed={isPickupConfirmed}
-          setIsPickupConfirmed={setIsPickupConfirmed}
-          isDeliveryConfirmed={isDeliveryConfirmed}
-          setIsDeliveryConfirmed={setIsDeliveryConfirmed}
-        />
-      ) : (
-        <OrderForm2
-          handleBack={handleBack}
-          basePrice={totalPrice}
-          pickupAddress={pickupAddress}
-          deliveryAddress={deliveryAddress}
-          pickupDetail={pickupDetail}
-          deliveryDetail={deliveryDetail}
-          senderName={senderName}
-          senderPhone={senderPhone}
-          recipientName={recipientName}
-          recipientPhone={recipientPhone}
-          isPickupConfirmed={isPickupConfirmed}
-          isDeliveryConfirmed={isDeliveryConfirmed}
-        />
-      )}
-
-      <div className="relative w-2/3 h-screen" style={{ zIndex: 1 }}>
-        {(pickupLocation || deliveryLocation) && (
-          <LeafletMap
-            center={pickupLocation || { lat: 10.8231, lng: 106.6297 }}
-            zoom={13}
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "relative",
-              zIndex: 1,
-            }}
-            whenCreated={(mapInstance) => {
-              mapRef.current = mapInstance;
-            }}
-          >
-            <TileLayer
-              url={`https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`}
-              attribution='&copy; <a href="https://locationiq.com">LocationIQ</a> contributors'
+      <div className="flex h-screen relative">
+        {currentStep === 1 ? (
+            <OrderForm
+                pickupAddress={pickupAddress}
+                setPickupAddress={setPickupAddress}
+                deliveryAddress={deliveryAddress}
+                setDeliveryAddress={setDeliveryAddress}
+                pickupSuggestions={pickupSuggestions}
+                deliverySuggestions={deliverySuggestions}
+                handleAddressChange={handleAddressChange}
+                handleSelect={handleSelect}
+                distance={distance}
+                handleContinue={handleContinue}
+                pickupDetail={pickupDetail}
+                setPickupDetail={setPickupDetail}
+                deliveryDetail={deliveryDetail}
+                setDeliveryDetail={setDeliveryDetail}
+                senderName={senderName}
+                setSenderName={setSenderName}
+                senderPhone={senderPhone}
+                setSenderPhone={setSenderPhone}
+                recipientName={recipientName}
+                setRecipientName={setRecipientName}
+                recipientPhone={recipientPhone}
+                setRecipientPhone={setRecipientPhone}
+                isPickupConfirmed={isPickupConfirmed}
+                setIsPickupConfirmed={setIsPickupConfirmed}
+                isDeliveryConfirmed={isDeliveryConfirmed}
+                setIsDeliveryConfirmed={setIsDeliveryConfirmed}
             />
-
-            {gpsLocation && <Marker position={gpsLocation} />}
-            {pickupLocation && !gpsLocation && (
-              <Marker position={pickupLocation} />
-            )}
-            {deliveryLocation && !gpsLocation && (
-              <Marker position={deliveryLocation} />
-            )}
-            <RoutingControl
-              pickupLocation={pickupLocation}
-              deliveryLocation={deliveryLocation}
-              setDistance={setDistance}
+        ) : (
+            <OrderForm2
+                handleBack={handleBack}
+                basePrice={totalPrice}
+                pickupAddress={pickupAddress}
+                deliveryAddress={deliveryAddress}
+                pickupDetail={pickupDetail}
+                deliveryDetail={deliveryDetail}
+                senderName={senderName}
+                senderPhone={senderPhone}
+                recipientName={recipientName}
+                recipientPhone={recipientPhone}
+                isPickupConfirmed={isPickupConfirmed}
+                isDeliveryConfirmed={isDeliveryConfirmed}
             />
-            <FitBoundsButton
-              pickupLocation={pickupLocation}
-              deliveryLocation={deliveryLocation}
-            />
-          </LeafletMap>
         )}
-      </div>
 
-      <div className="fixed bottom-10 right-5 flex items-center z-[9999]">
-        {/* Animated Text on the Left Side */}
-        {showText && (
-          <span className="px-3 py-1 mr-2 text-gray-800 bg-white rounded-lg shadow-lg animate-fade-slide-in">
+        <div className="relative w-2/3 h-screen" style={{zIndex: 1}}>
+          {(pickupLocation || deliveryLocation) && (
+              <LeafletMap
+                  center={pickupLocation || {lat: 10.8231, lng: 106.6297}}
+                  zoom={13}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    position: "relative",
+                    zIndex: 1,
+                  }}
+                  whenCreated={(mapInstance) => {
+                    mapRef.current = mapInstance;
+                  }}
+              >
+                <TileLayer
+                    url="https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=pk.57eb525ef1bdb7826a61cf49564f8a86"
+                    attribution='&copy; <a href="https://locationiq.com">LocationIQ</a> contributors'
+                />
+                {gpsLocation && <Marker position={gpsLocation}/>}
+                {pickupLocation && !gpsLocation && (
+                    <Marker position={pickupLocation}/>
+                )}
+                {deliveryLocation && !gpsLocation && (
+                    <Marker position={deliveryLocation}/>
+                )}
+                <RoutingControl
+                    pickupLocation={pickupLocation}
+                    deliveryLocation={deliveryLocation}
+                    setDistance={setDistance}
+                />
+                <FitBoundsButton
+                    pickupLocation={pickupLocation}
+                    deliveryLocation={deliveryLocation}
+                />
+              </LeafletMap>
+          )}
+        </div>
+
+        <div className="fixed bottom-10 right-5 flex items-center z-[9999]">
+          {/* Animated Text on the Left Side */}
+          {showText && (
+              <span
+                  className="bg-white text-gray-800 px-3 py-1 rounded-lg shadow-lg mr-2 animate-fade-slide-in"
+              >
             Hi there, welcome! 😊
           </span>
-        )}
+          )}
 
-        {/* Chat Button */}
-        <button
-          onClick={() => {
-            toggleChat();
-          }}
-          className="flex items-center justify-center w-12 h-12 text-white bg-blue-900 rounded-full shadow-lg"
-        >
-          <span className="text-lg">💬</span>
-        </button>
+          {/* Chat Button */}
+          <button
+              onClick={() => {
+                toggleChat();
+              }}
+              className="w-12 h-12 rounded-full bg-blue-900 flex items-center justify-center text-white shadow-lg"
+          >
+            <span className="text-lg">💬</span>
+          </button>
+        </div>
+
+        {/* Full Chat Window */}
+        {isChatOpen && <ChatWindow  onClose={toggleChat}/>}
+        <ChatButton onClick={() => setIsChatOpen(true)} />
       </div>
-
-      {/* Full Chat Window */}
-      {isChatOpen && <ChatWindow onClose={toggleChat} />}
-      <ChatButton onClick={() => setIsChatOpen(true)} />
-    </div>
   );
+
 };
 
 export default OrderPage;

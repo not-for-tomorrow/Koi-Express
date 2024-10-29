@@ -3,7 +3,7 @@
 import L from "leaflet";
 import "leaflet-routing-machine";
 
-const LOCATIONIQ_KEY = "pk.57eb525ef1bdb7826a61cf49564f8a86";
+const LOCATIONIQ_KEY = "pk.6a63f388fbd716914de899f77dfb04c6";
 
 export const initializeMap = (pickup, delivery, setDistance, retryMapLoad) => {
     const map = L.map("map").setView([pickup.lat, pickup.lon], 10);
