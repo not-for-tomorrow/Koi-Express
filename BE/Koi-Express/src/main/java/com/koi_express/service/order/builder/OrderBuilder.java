@@ -42,6 +42,7 @@ public class OrderBuilder {
                 .recipientName(orderRequest.getRecipientName())
                 .recipientPhone(orderRequest.getRecipientPhone())
                 .koiQuantity(orderRequest.getKoiQuantity())
+                .kilometers(orderRequest.getKilometers())
                 .distanceFee(distanceFee)
                 .commitmentFee(commitmentFee)
                 .paymentMethod(orderRequest.getPaymentMethod())
