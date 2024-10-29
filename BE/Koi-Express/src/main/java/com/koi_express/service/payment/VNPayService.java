@@ -12,18 +12,19 @@ import com.koi_express.dto.payment.PaymentData;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.util.VNPayUtil;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class VNPayService {
 
     private static final Logger logger = LoggerFactory.getLogger(VNPayService.class);
 
-    @Autowired
-    private VNPayConfig vnPayConfig;
+    private final VNPayConfig vnPayConfig;
 
     public ApiResponse<String> createVnPayPayment(Orders order) {
         if (order == null

@@ -16,6 +16,7 @@ import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.repository.PendingOrderRepository;
 import com.koi_express.repository.StaffAssignmentRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -23,22 +24,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class StaffAssignmentService {
 
     private final OrderRepository orderRepository;
     private final StaffAssignmentRepository staffAssignmentRepository;
     private final DeliveringStaffRepository deliveringStaffRepository;
     private final PendingOrderRepository pendingOrderRepository;
-
-    public StaffAssignmentService(OrderRepository orderRepository,
-                                  StaffAssignmentRepository staffAssignmentRepository,
-                                  DeliveringStaffRepository deliveringStaffRepository,
-                                  PendingOrderRepository pendingOrderRepository) {
-        this.orderRepository = orderRepository;
-        this.staffAssignmentRepository = staffAssignmentRepository;
-        this.deliveringStaffRepository = deliveringStaffRepository;
-        this.pendingOrderRepository = pendingOrderRepository;
-    }
 
     private Long lastAssignedStaffId = null;
 
@@ -60,9 +52,14 @@ public class StaffAssignmentService {
             throw new AppException(ErrorCode.MISSING_ORDER_DETAILS, "Order details missing kilometers for ID: " + orderId);
         }
 
-        DeliveringStaffLevel level = kilometers.compareTo(new BigDecimal(300)) < 0
-                ? DeliveringStaffLevel.LEVEL_1
-                : DeliveringStaffLevel.LEVEL_2;
+        DeliveringStaffLevel level;
+        if (kilometers.compareTo(new BigDecimal(300)) < 0) {
+            level = DeliveringStaffLevel.BASIC;
+        } else if (kilometers.compareTo(new BigDecimal(800)) < 0) {
+            level = DeliveringStaffLevel.INTERMEDIATE;
+        } else {
+            level = DeliveringStaffLevel.ADVANCED;
+        }
 
         List<DeliveringStaff> availableStaff =
                 deliveringStaffRepository.findByLevelAndStatus(level, StaffStatus.AVAILABLE);

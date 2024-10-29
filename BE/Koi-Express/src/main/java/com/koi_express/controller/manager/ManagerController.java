@@ -5,10 +5,11 @@ import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
+import com.koi_express.enums.DeliveringStaffLevel;
 import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.manager.ManagerService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,17 +23,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/manager")
 @PreAuthorize("hasRole('MANAGER')")
+@RequiredArgsConstructor
 public class ManagerController {
 
     private final ManagerService managerService;
-
     private final ManageCustomerService manageCustomerService;
-
-    @Autowired
-    public ManagerController(ManagerService managerService, ManageCustomerService manageCustomerService) {
-        this.managerService = managerService;
-        this.manageCustomerService = manageCustomerService;
-    }
 
     @PostMapping("/create-sales-staff")
     public ResponseEntity<ApiResponse<String>> createSalesStaff(
@@ -107,6 +102,15 @@ public class ManagerController {
 
         List<DeliveringStaff> deliveringStaffAccounts = managerService.getAllDeliveringStaffAccounts();
         return new ResponseEntity<>(deliveringStaffAccounts, HttpStatus.OK);
+    }
+
+    @PutMapping("/delivering-staff/{staffId}/update-level")
+    public ResponseEntity<ApiResponse<String>> updateDeliveringStaffLevel(
+            @PathVariable Long staffId,
+            @RequestParam DeliveringStaffLevel targetLevel) {
+
+        ApiResponse<String> response = managerService.promoteDeliveringStaff(staffId, targetLevel);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @GetMapping("/revenue/daily")

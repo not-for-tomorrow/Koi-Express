@@ -3,10 +3,14 @@ package com.koi_express.service.manager;
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.entity.shipment.DeliveringStaff;
+import com.koi_express.enums.DeliveringStaffLevel;
 import com.koi_express.enums.Role;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
+import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,26 +22,16 @@ import java.time.YearMonth;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ManagerService {
 
     private static final Logger logger = LoggerFactory.getLogger(ManagerService.class);
 
     private final ManageCustomerService manageCustomerService;
     private final SystemAccount systemAccountService;
-    private final DeliveringStaff deliveringStaffService;
     private final OrderRepository orderRepository;
-
-    public ManagerService(
-            ManageCustomerService manageCustomerService,
-            SystemAccount systemAccountService,
-            DeliveringStaff deliveringStaffService,
-            OrderRepository orderRepository
-    ) {
-        this.manageCustomerService = manageCustomerService;
-        this.systemAccountService = systemAccountService;
-        this.deliveringStaffService = deliveringStaffService;
-        this.orderRepository = orderRepository;
-    }
+    private final DeliveringStaffRepository deliveringStaffRepository;
+    private final DeliveringStaffAccount deliveringStaffAccount;
 
     public Customers findByPhoneNumber(String phoneNumber) {
         return manageCustomerService.findByPhoneNumber(phoneNumber);
@@ -73,7 +67,7 @@ public class ManagerService {
 
         createStaffRequest.setRole(Role.DELIVERING_STAFF);
 
-        return deliveringStaffService.createDeliveringStaffAccount(createStaffRequest);
+        return deliveringStaffAccount.createDeliveringStaffAccount(createStaffRequest);
     }
 
     public List<com.koi_express.entity.account.SystemAccount> getAllSalesStaffAccounts() {
@@ -81,7 +75,31 @@ public class ManagerService {
     }
 
     public List<com.koi_express.entity.shipment.DeliveringStaff> getAllDeliveringStaffAccounts() {
-        return deliveringStaffService.getAllAccountsByRole(Role.DELIVERING_STAFF);
+        return deliveringStaffAccount.getAllAccountsByRole(Role.DELIVERING_STAFF);
+    }
+
+    public void autoUpdateDeliveringStaffLevel(Long staffId) {
+        DeliveringStaff staff = deliveringStaffRepository.findById(staffId)
+                .orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND, "Delivering staff not found"));
+
+        staff.updateLevel(); // Calls the automatic level update logic
+        deliveringStaffRepository.save(staff); // Persist the updated level
+        logger.info("Auto-updated level for Delivering Staff ID {}: {}", staffId, staff.getLevel());
+    }
+
+    public ApiResponse<String> promoteDeliveringStaff(Long staffId, DeliveringStaffLevel targetLevel) {
+        DeliveringStaff staff = deliveringStaffRepository.findById(staffId)
+                .orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND, "Delivering staff not found"));
+
+        if (staff.getLevel().compareTo(targetLevel) >= 0) {
+            throw new AppException(ErrorCode.INVALID_LEVEL, "Cannot promote to the same or lower level");
+        }
+
+        staff.setLevel(targetLevel);
+        deliveringStaffRepository.save(staff);
+        logger.info("Manually promoted Delivering Staff ID {} to level {}", staffId, targetLevel);
+
+        return new ApiResponse<>(200, "Delivering staff promoted successfully", null);
     }
 
     public BigDecimal calculateDailyRevenue(LocalDate date) {

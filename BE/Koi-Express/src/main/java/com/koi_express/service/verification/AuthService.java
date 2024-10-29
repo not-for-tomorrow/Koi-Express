@@ -13,11 +13,13 @@ import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.CustomersRepository;
 import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.repository.SystemAccountRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final CustomersRepository customersRepository;
@@ -25,18 +27,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final DeliveringStaffRepository deliveringStaffRepository;
-
-    public AuthService(CustomersRepository customersRepository,
-                       SystemAccountRepository systemAccountRepository,
-                       PasswordEncoder passwordEncoder,
-                       JwtUtil jwtUtil,
-                       DeliveringStaffRepository deliveringStaffRepository) {
-        this.customersRepository = customersRepository;
-        this.systemAccountRepository = systemAccountRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-        this.deliveringStaffRepository = deliveringStaffRepository;
-    }
 
     public ApiResponse<String> authenticateUser(LoginRequest loginRequest) {
         Optional<? extends User> userOptional = findUserByPhoneNumber(loginRequest.getPhoneNumber());

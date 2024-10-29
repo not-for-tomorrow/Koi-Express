@@ -9,6 +9,7 @@ import com.koi_express.enums.KoiType;
 import com.koi_express.service.order.price.KoiInvoiceCalculator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/orders")
+@RequiredArgsConstructor
 public class OrderCalculation {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderCalculation.class);
@@ -27,12 +29,6 @@ public class OrderCalculation {
     private final KoiInvoiceCalculator koiInvoiceCalculator;
     private final OrderSessionManager sessionManager;
     private final JwtUtil jwtUtil;
-
-    public OrderCalculation(KoiInvoiceCalculator koiInvoiceCalculator, OrderSessionManager sessionManager, JwtUtil jwtUtil) {
-        this.koiInvoiceCalculator = koiInvoiceCalculator;
-        this.sessionManager = sessionManager;
-        this.jwtUtil = jwtUtil;
-    }
 
     @PostMapping("/calculate-total-fee")
     public ResponseEntity<ApiResponse<Map<String, BigDecimal>>> calculateTotalFee(

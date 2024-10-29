@@ -6,6 +6,7 @@ import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.sale_staff.SalesStaffService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/sales")
 @PreAuthorize("hasRole('SALES_STAFF')")
+@RequiredArgsConstructor
 public class SalesStaffController {
 
     private static final Logger logger = LoggerFactory.getLogger(SalesStaffController.class);
@@ -28,12 +30,6 @@ public class SalesStaffController {
     private final SalesStaffService salesStaffService;
     private final ManageCustomerService manageCustomerService;
     private final JwtUtil jwtUtil;
-
-    public SalesStaffController(SalesStaffService salesStaffService, ManageCustomerService manageCustomerService, JwtUtil jwtUtil) {
-        this.salesStaffService = salesStaffService;
-        this.manageCustomerService = manageCustomerService;
-        this.jwtUtil = jwtUtil;
-    }
 
     @GetMapping("/orders/pending")
     public ResponseEntity<Page<Orders>> getPendingOrders(

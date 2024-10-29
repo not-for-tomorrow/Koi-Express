@@ -15,6 +15,7 @@ import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.repository.ShipmentsRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,23 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class DeliveringStaffService {
 
     private final OrderRepository orderRepository;
     private final ShipmentsRepository shipmentsRepository;
     private final PickupTimeCalculator pickupTimeCalculator;
     private final DeliveringStaffRepository deliveringStaffRepository;
-
-    // Constructor injection
-    public DeliveringStaffService(OrderRepository orderRepository,
-                                  ShipmentsRepository shipmentsRepository,
-                                  PickupTimeCalculator pickupTimeCalculator,
-                                  DeliveringStaffRepository deliveringStaffRepository) {
-        this.orderRepository = orderRepository;
-        this.shipmentsRepository = shipmentsRepository;
-        this.pickupTimeCalculator = pickupTimeCalculator;
-        this.deliveringStaffRepository = deliveringStaffRepository;
-    }
 
     @Transactional(readOnly = true)
     public List<Orders> getAssignedOrdersByDeliveringStaff(Long deliveringStaffId) {

@@ -1,5 +1,6 @@
 package com.koi_express.dto.request;
 
+import com.koi_express.enums.DeliveringStaffLevel;
 import com.koi_express.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -26,6 +27,8 @@ public class CreateStaffRequest {
     String phoneNumber;
 
     String address;
+
+    DeliveringStaffLevel level;
 
     //    @NotEmpty(message = "Role is required")
     Role role;

@@ -60,7 +60,6 @@ public class OrderSessionManager {
     }
 
     // Lấy dữ liệu tính toán từ session
-    @SuppressWarnings("unchecked")
     public Map<String, BigDecimal> retrieveCalculationSessionData(HttpSession session, String role, String userId) {
         String sessionKey = getSessionKey(role, userId) + "_calculation";
         Map<String, BigDecimal> calculationData = (Map<String, BigDecimal>) session.getAttribute(sessionKey);

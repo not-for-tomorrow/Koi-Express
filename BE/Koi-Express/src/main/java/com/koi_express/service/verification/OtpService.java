@@ -15,7 +15,6 @@ public class OtpService {
 
     private static final Logger logger = LoggerFactory.getLogger(OtpService.class);
 
-
     private final String fromPhone;
     private final Map<String, String> otpData = new ConcurrentHashMap<>();
     private final Map<String, RegisterRequest> tempRegisterData = new ConcurrentHashMap<>();

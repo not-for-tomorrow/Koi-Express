@@ -8,16 +8,14 @@ import com.koi_express.entity.order.OrderDetail;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.service.order.price.TransportationFeeCalculator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class OrderBuilder {
 
     private final TransportationFeeCalculator transportationFeeCalculator;
-
-    public OrderBuilder(TransportationFeeCalculator transportationFeeCalculator) {
-        this.transportationFeeCalculator = transportationFeeCalculator;
-    }
 
     public Orders buildOrder(OrderRequest orderRequest, Customers customer) {
 

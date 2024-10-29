@@ -15,6 +15,7 @@ import com.koi_express.service.customer.CustomerService;
 import com.koi_express.service.verification.AuthService;
 import com.koi_express.service.verification.OtpService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -36,15 +38,6 @@ public class AuthController {
     private final OtpService otpService;
     private final JwtUtil jwtUtil;
     private final AuthService authService;
-
-    @Autowired
-    public AuthController(
-            CustomerService customerService, OtpService otpService, JwtUtil jwtUtil, AuthService authService) {
-        this.customerService = customerService;
-        this.otpService = otpService;
-        this.jwtUtil = jwtUtil;
-        this.authService = authService;
-    }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> registerCustomer(
