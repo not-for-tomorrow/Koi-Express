@@ -2,6 +2,7 @@ package com.koi_express.entity.promotion;
 
 import java.time.LocalDateTime;
 
+import com.koi_express.enums.BlogStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -19,21 +20,34 @@ public class Blog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long blogId;
+    Long blogId;
 
     @Column(nullable = false, length = 255)
-    private String title;
+    String title;
 
     @Column(columnDefinition = "TEXT")
-    private String content;
+    String content;
+
+    @Column(length = 255)
+    String imageUrl;
+
+    @Column(unique = true, length = 255)
+    String slug;
+
+    @Column
+    private String filePath;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    BlogStatus status = BlogStatus.DRAFT;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
