@@ -29,7 +29,7 @@ public class BlogController {
 //    }
 
     @PostMapping("/create-blog")
-    @PreAuthorize("hasRole('MANAGER')") // Assuming only managers can create blogs
+    @PreAuthorize("hasRole('SALES_STAFF')") // Assuming only managers can create blogs
     public ResponseEntity<Blog> createBlog(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
