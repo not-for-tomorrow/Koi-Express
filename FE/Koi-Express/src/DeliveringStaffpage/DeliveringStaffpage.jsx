@@ -3,6 +3,8 @@ import { Route, Routes } from "react-router-dom";
 import Sidebar from "../componentsDashboard/DeliveringStaffcomponents/Sidebar/Sidebar";
 import Order from "./Order";
 import { UserProvider } from "../componentsDashboard/UserContext";
+import OrderDetail from "./OrderDetail/OrderDetail";
+import DeliverOrder from "./DeliverOrder";
 
 const DeliveringStaffpage = () => {
   return (
@@ -17,6 +19,9 @@ const DeliveringStaffpage = () => {
           <div className="flex-grow h-full bg-gray-100">
             <Routes>
               <Route path="/" element={<Order />} />
+              <Route path="/Order" element={<Order />} />
+              <Route path="/Order/detail/:orderId" element={<OrderDetail />} />
+              <Route path="/deliverorder" element={<DeliverOrder />} />
             </Routes>
           </div>
         </div>
