@@ -3,6 +3,8 @@ package com.koi_express.entity.shipment;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.ShipmentCondition;
@@ -30,14 +32,17 @@ public class Shipments { // quản lý vận chuyển
 
     @OneToOne
     @JoinColumn(name = "order_id", nullable = false, unique = true)
+    @JsonIgnore
     Orders order;
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
+    @JsonIgnore
     Customers customer;
 
     @ManyToOne
     @JoinColumn(name = "delivering_staff_id", nullable = false)
+    @JsonIgnore
     DeliveringStaff deliveringStaff;
 
     LocalDateTime estimatedPickupTime;

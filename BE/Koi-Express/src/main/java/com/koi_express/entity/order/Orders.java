@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.entity.shipment.Shipments;
@@ -30,15 +31,6 @@ public class Orders implements Serializable { // Quản lý đơn hàng
     @Column(name = "order_id")
     Long orderId;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id", referencedColumnName = "customerId", nullable = false)
-    @JsonIgnore
-    Customers customer;
-
-    @ManyToOne
-    @JoinColumn(name = "delivering_staff_id", nullable = true)
-    DeliveringStaff deliveringStaff;
-
     @NotEmpty(message = "Origin location cannot be empty")
     String originLocation;
 
@@ -55,9 +47,6 @@ public class Orders implements Serializable { // Quản lý đơn hàng
     @Column(precision = 15, scale = 2)
     BigDecimal totalFee;
 
-    @OneToOne(mappedBy = "order")
-    Shipments shipment;
-
     @Enumerated(EnumType.STRING)
     OrderStatus status;
 
@@ -71,6 +60,19 @@ public class Orders implements Serializable { // Quản lý đơn hàng
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     //        @JsonIgnore
     OrderDetail orderDetail;
+
+    @ManyToOne
+    @JoinColumn(name = "customer_id", referencedColumnName = "customerId", nullable = false)
+    @JsonIgnore
+    Customers customer;
+
+    @ManyToOne
+    @JoinColumn(name = "delivering_staff_id", nullable = true)
+    DeliveringStaff deliveringStaff;
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnore
+    Shipments shipment;
 
     @PrePersist
     protected void onCreate() {

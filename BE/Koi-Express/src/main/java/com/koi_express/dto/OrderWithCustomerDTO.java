@@ -2,6 +2,7 @@ package com.koi_express.dto;
 
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.entity.shipment.Shipments;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -14,4 +15,5 @@ public class OrderWithCustomerDTO {
 
     Orders order;
     Customers customer;
+    Shipments shipments;
 }
