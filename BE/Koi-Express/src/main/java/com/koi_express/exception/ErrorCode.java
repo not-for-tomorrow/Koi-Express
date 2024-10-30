@@ -25,6 +25,8 @@ public enum ErrorCode {
     MISSING_ORDER_DETAILS(1019, "Order details missing"),
     STAFF_NOT_FOUND(1020, "Staff not found"),
     INVALID_LEVEL(1021, "Invalid level"),
+    ORDER_ALREADY_DELIVERED(1022, "Order already delivered"),
+    INVALID_ORDER_STATUS(1023, "Invalid order status"),
     ;
 
     ErrorCode(int code, String message) {
