@@ -37,6 +37,12 @@ public class DeliveringStaffService {
         return orderRepository.findByStatusAndDeliveringStaffId(OrderStatus.ASSIGNED, deliveringStaffId);
     }
 
+    @Transactional(readOnly = true)
+    public List<Orders> getPickupOrdersByDeliveringStaff(Long deliveringStaffId) {
+        log.info("Fetching orders assigned to delivering staff with ID: {}", deliveringStaffId);
+        return orderRepository.findByStatusAndDeliveringStaffId(OrderStatus.PICKING_UP, deliveringStaffId);
+    }
+
     @Transactional
     public ApiResponse<String> pickupOrder(Long orderId, Long deliveringStaffId) {
         log.info("Attempting to pick up order with ID: {} by staff with ID: {}", orderId, deliveringStaffId);

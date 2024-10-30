@@ -51,6 +51,24 @@ public class DeliveringStaffController {
         }
     }
 
+    @GetMapping("/pickup-orders")
+    public ResponseEntity<ApiResponse<List<Orders>>> getPickupOrdersByDeliveringStaff(@RequestHeader("Authorization") String token) {
+        try {
+            Long deliveringStaffId = extractDeliveringStaffId(token);
+            List<Orders> orders = deliveringStaffService.getPickupOrdersByDeliveringStaff(deliveringStaffId);
+
+            if (orders.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                        .body(new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "No assigned orders found", orders));
+            }
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Assigned orders retrieved", orders));
+        } catch (Exception e) {
+            logger.error("{} for delivering staff ID: {}", ERROR_RETRIEVING_ASSIGNED_ORDERS, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
+        }
+    }
+
     @PutMapping("/pickup/{orderId}")
     public ResponseEntity<ApiResponse<String>> pickupOrder(
             @PathVariable Long orderId, @RequestHeader("Authorization") String token) {
