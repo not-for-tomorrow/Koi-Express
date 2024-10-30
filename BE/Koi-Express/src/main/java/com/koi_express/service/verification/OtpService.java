@@ -39,13 +39,17 @@ public class OtpService {
     }
 
     public void sendOtp(String phoneNumber, String otp) {
-        com.twilio.rest.api.v2010.account.Message.creator(
-                        new com.twilio.type.PhoneNumber(phoneNumber),
-                        new com.twilio.type.PhoneNumber(fromPhone),
-                        "Your OTP is: " + otp)
-                .create();
+        try {
+            com.twilio.rest.api.v2010.account.Message.creator(
+                            new com.twilio.type.PhoneNumber(phoneNumber),
+                            new com.twilio.type.PhoneNumber(fromPhone),
+                            "Your OTP is: " + otp)
+                    .create();
 
-        logger.info("Sent OTP to phone number {}", phoneNumber);
+            logger.info("Sent OTP to phone number {}", phoneNumber);
+        } catch (Exception e) {
+            logger.error("Failed to send OTP to {}. Error: {}", phoneNumber, e.getMessage());
+        }
     }
 
     public boolean validateOtp(String phoneNumber, String otp) {

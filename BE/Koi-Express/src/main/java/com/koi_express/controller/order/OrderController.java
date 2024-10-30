@@ -3,6 +3,7 @@ package com.koi_express.controller.order;
 import java.util.List;
 import java.util.Map;
 
+import com.koi_express.entity.shipment.Shipments;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.OrderRequest;
@@ -91,9 +92,13 @@ public class OrderController {
         logger.info("Extracted role: {}, Extracted userId: {}", role, userId);
         Orders order = orderService.getOrderWithDetails(orderId).getOrder();
         Customers customer = order.getCustomer();
+        Shipments shipments = order.getShipment();
         sessionManager.storeSessionData(session, role, userId, order);
-        OrderWithCustomerDTO response =
-                OrderWithCustomerDTO.builder().order(order).customer(customer).build();
+        OrderWithCustomerDTO response = OrderWithCustomerDTO.builder()
+                                                    .order(order)
+                                                    .customer(customer)
+                                                    .shipments(shipments)
+                                                    .build();
         return ResponseEntity.ok(response);
     }
 

@@ -92,7 +92,7 @@ public class DeliveringStaffService {
             throw new AppException(ErrorCode.ORDER_NOT_ASSIGNED, "Order is not assigned to this staff member");
         }
 
-        if (order.getStatus() != OrderStatus.IN_TRANSIT) {
+        if (order.getStatus() != OrderStatus.ASSIGNED) {
             log.error("Order ID: {} is not in the required status, current status: {}", orderId, order.getStatus());
             throw new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order is not in the required status");
         }

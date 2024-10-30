@@ -2,6 +2,7 @@ package com.koi_express.controller.delivering_staff;
 
 import java.util.List;
 
+import com.koi_express.exception.AppException;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
@@ -57,8 +58,13 @@ public class DeliveringStaffController {
 
         try {
             Long deliveringStaffId = extractDeliveringStaffId(token);
+            logger.info("Delivering staff ID {} attempting to pick up order ID {}", deliveringStaffId, orderId);
             ApiResponse<String> response = deliveringStaffService.pickupOrder(orderId, deliveringStaffId);
             return ResponseEntity.status(response.getCode()).body(response);
+        } catch (AppException ae) {
+            logger.error("{} for order ID: {}, staff ID: {}", ERROR_PICKUP_ORDER, orderId, ae.getMessage(), ae);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), ae.getMessage(), ae.getMessage()));
         } catch (Exception e) {
             logger.error("{} for order ID: {}, staff ID: {}", ERROR_PICKUP_ORDER, orderId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
