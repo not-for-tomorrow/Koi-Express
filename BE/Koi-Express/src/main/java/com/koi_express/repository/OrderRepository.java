@@ -42,6 +42,8 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
             "WHERE o.orderId = :orderId")
     Optional<OrderWithCustomerDTO> findOrderWithCustomerAndShipment(@Param("orderId") Long orderId);
 
+    boolean existsByStatusAndDeliveringStaff_StaffId(OrderStatus status, Long deliveringStaffId);
+
     @Query("SELECT SUM(o.totalFee) FROM Orders o WHERE o.createdAt = :date")
     Optional<BigDecimal> findTotalRevenueByDate(@Param("date") LocalDate date);
 

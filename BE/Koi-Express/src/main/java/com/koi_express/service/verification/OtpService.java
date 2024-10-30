@@ -39,7 +39,7 @@ public class OtpService {
         logger.debug("Saved OTP for phone number {}: {}", formattedPhoneNumber, otp);
     }
 
-    public void sendOtp(String phoneNumber, String otp) {
+    public boolean sendOtp(String phoneNumber, String otp) {
         String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
         try {
             com.twilio.rest.api.v2010.account.Message.creator(
@@ -47,36 +47,40 @@ public class OtpService {
                             new com.twilio.type.PhoneNumber(fromPhone),
                             "Your OTP is: " + otp)
                     .create();
-
-            logger.info("Sent OTP to phone number {}", formattedPhoneNumber);
+            logger.info("Sent OTP to phone number {}", maskPhoneNumber(formattedPhoneNumber));
+            return true;
         } catch (Exception e) {
-            logger.error("Failed to send OTP to {}. Error: {}", formattedPhoneNumber, e.getMessage());
+            logger.error("Failed to send OTP to {}. Error: {}", maskPhoneNumber(formattedPhoneNumber), e.getMessage());
+            return false;
         }
+    }
+
+    private String maskPhoneNumber(String phoneNumber) {
+        return phoneNumber.replaceAll("(\\+84)(\\d{2})(\\d+)(\\d{2})", "$1$2****$4");
     }
 
     public boolean validateOtp(String phoneNumber, String otp) {
         String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
-        String storedOtp = otpData.get(formattedPhoneNumber);
         Long timestamp = otpTimestamps.get(formattedPhoneNumber);
 
-        if (storedOtp == null || timestamp == null) {
-            logger.warn("No OTP found for phone number {}", formattedPhoneNumber);
+        if (timestamp == null || !isOtpValid(timestamp)) {
+            logger.warn("OTP expired or not found for phone number {}", formattedPhoneNumber);
+            otpData.remove(formattedPhoneNumber);
+            otpTimestamps.remove(formattedPhoneNumber);
             return false;
         }
 
-        if (otp.equals(storedOtp) && isOtpValid(timestamp)) {
+        String storedOtp = otpData.get(formattedPhoneNumber);
+        if (otp.equals(storedOtp)) {
             otpData.remove(formattedPhoneNumber);
             otpTimestamps.remove(formattedPhoneNumber);
             logger.info("OTP validated successfully for phone number {}", formattedPhoneNumber);
             return true;
         }
 
-        logger.warn("Failed OTP validation for phone number {}. Reason: {}",
-                formattedPhoneNumber,
-                !otp.equals(storedOtp) ? "Incorrect OTP" : "Expired OTP");
+        logger.warn("Failed OTP validation for phone number {}. Incorrect OTP", formattedPhoneNumber);
         return false;
     }
-
 
     private boolean isOtpValid(Long timestamp) {
         long currentTime = System.currentTimeMillis();
@@ -88,13 +92,17 @@ public class OtpService {
     }
 
     public String formatPhoneNumber(String phoneNumber) {
-        if (phoneNumber.startsWith("0")) {
-            phoneNumber = "+84" + phoneNumber.substring(1);
-
-            logger.debug("Formatted phone number to international format: {}", phoneNumber);
+        if (!phoneNumber.startsWith("+84")) {
+            if (phoneNumber.startsWith("0")) {
+                phoneNumber = "+84" + phoneNumber.substring(1);
+            } else {
+                phoneNumber = "+84" + phoneNumber;
+            }
         }
+        logger.debug("Final formatted phone number: {}", phoneNumber);
         return phoneNumber;
     }
+
 
     public void saveTempRegisterRequest(RegisterRequest registerRequest) {
         String formattedPhoneNumber = formatPhoneNumber(registerRequest.getPhoneNumber());
