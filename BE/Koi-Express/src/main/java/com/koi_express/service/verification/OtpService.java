@@ -32,20 +32,26 @@ public class OtpService {
     }
 
     public void saveOtp(String phoneNumber, String otp) {
-        otpData.put(phoneNumber, otp);
-        otpTimestamps.put(phoneNumber, System.currentTimeMillis());
+        String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
+        otpData.put(formattedPhoneNumber, otp);
+        otpTimestamps.put(formattedPhoneNumber, System.currentTimeMillis());
 
-        logger.debug("Saved OTP for phone number {}: {}", phoneNumber, otp);
+        logger.debug("Saved OTP for phone number {}: {}", formattedPhoneNumber, otp);
     }
 
     public void sendOtp(String phoneNumber, String otp) {
-        com.twilio.rest.api.v2010.account.Message.creator(
-                        new com.twilio.type.PhoneNumber(phoneNumber),
-                        new com.twilio.type.PhoneNumber(fromPhone),
-                        "Your OTP is: " + otp)
-                .create();
+        String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
+        try {
+            com.twilio.rest.api.v2010.account.Message.creator(
+                            new com.twilio.type.PhoneNumber(formattedPhoneNumber),
+                            new com.twilio.type.PhoneNumber(fromPhone),
+                            "Your OTP is: " + otp)
+                    .create();
 
-        logger.info("Sent OTP to phone number {}", phoneNumber);
+            logger.info("Sent OTP to phone number {}", formattedPhoneNumber);
+        } catch (Exception e) {
+            logger.error("Failed to send OTP to {}. Error: {}", formattedPhoneNumber, e.getMessage());
+        }
     }
 
     public boolean validateOtp(String phoneNumber, String otp) {
@@ -53,16 +59,24 @@ public class OtpService {
         String storedOtp = otpData.get(formattedPhoneNumber);
         Long timestamp = otpTimestamps.get(formattedPhoneNumber);
 
+        if (storedOtp == null || timestamp == null) {
+            logger.warn("No OTP found for phone number {}", formattedPhoneNumber);
+            return false;
+        }
+
         if (otp.equals(storedOtp) && isOtpValid(timestamp)) {
             otpData.remove(formattedPhoneNumber);
             otpTimestamps.remove(formattedPhoneNumber);
-
             logger.info("OTP validated successfully for phone number {}", formattedPhoneNumber);
             return true;
         }
-        logger.warn("Failed OTP validation for phone number {}", formattedPhoneNumber);
+
+        logger.warn("Failed OTP validation for phone number {}. Reason: {}",
+                formattedPhoneNumber,
+                !otp.equals(storedOtp) ? "Incorrect OTP" : "Expired OTP");
         return false;
     }
+
 
     private boolean isOtpValid(Long timestamp) {
         long currentTime = System.currentTimeMillis();
@@ -83,8 +97,9 @@ public class OtpService {
     }
 
     public void saveTempRegisterRequest(RegisterRequest registerRequest) {
-        tempRegisterData.put(registerRequest.getPhoneNumber(), registerRequest);
-        logger.info("Saved temp register request for {}", registerRequest.getPhoneNumber());
+        String formattedPhoneNumber = formatPhoneNumber(registerRequest.getPhoneNumber());
+        tempRegisterData.put(formattedPhoneNumber, registerRequest);
+        logger.info("Saved temp register request for {}", formattedPhoneNumber);
     }
 
     public RegisterRequest getTempRegisterRequest(String phoneNumber) {

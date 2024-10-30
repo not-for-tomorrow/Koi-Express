@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.koi_express.entity.shipment.Shipments;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.controller.order.OrderSessionManager;
 import com.koi_express.dto.OrderWithCustomerDTO;
@@ -290,13 +291,8 @@ public class OrderService {
     }
 
     public OrderWithCustomerDTO getOrderWithDetails(Long orderId) {
-        Orders order = orderRepository
-                .findById(orderId)
+        return orderRepository.findOrderWithCustomerAndShipment(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
-
-        Customers customer = order.getCustomer();
-
-        return new OrderWithCustomerDTO(order, customer);
     }
 
     @Transactional

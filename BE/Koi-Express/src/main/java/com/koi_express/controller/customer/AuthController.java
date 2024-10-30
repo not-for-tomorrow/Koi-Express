@@ -70,31 +70,30 @@ public class AuthController {
 
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<String>> verifyOtp(@RequestParam String phoneNumber, @RequestParam String otp) {
+        String formattedPhoneNumber = otpService.formatPhoneNumber(phoneNumber);
 
-        RegisterRequest tempRegisterRequest = otpService.getTempRegisterRequest(phoneNumber);
+        RegisterRequest tempRegisterRequest = otpService.getTempRegisterRequest(formattedPhoneNumber);
 
-        if (tempRegisterRequest != null) {
+        if (tempRegisterRequest == null) {
+            logger.warn("No temporary registration data found for {}", formattedPhoneNumber);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Temporary registration data not found", null));
+        }
 
-            boolean isValid = otpService.validateOtp(otpService.formatPhoneNumber(phoneNumber), otp);
-            if (isValid) {
-
-                ApiResponse<?> response = customerService.registerCustomer(tempRegisterRequest);
-                if (response.getCode() == HttpStatus.OK.value()) {
-                    return ResponseEntity.ok(
-                            new ApiResponse<>(HttpStatus.OK.value(), "Registration completed successfully", null));
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Registration failed", null));
-                }
+        boolean isValid = otpService.validateOtp(formattedPhoneNumber, otp);
+        if (isValid) {
+            ApiResponse<?> response = customerService.registerCustomer(tempRegisterRequest);
+            if (response.getCode() == HttpStatus.OK.value()) {
+                return ResponseEntity.ok(
+                        new ApiResponse<>(HttpStatus.OK.value(), "Registration completed successfully", null));
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ApiResponse<>(
-                                HttpStatus.BAD_REQUEST.value(), "Invalid OTP. Please try again.", null));
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Registration failed", null));
             }
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(
-                            HttpStatus.BAD_REQUEST.value(), "Temporary registration data not found", null));
+            logger.warn("Invalid OTP for phone number {}", formattedPhoneNumber);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid OTP. Please try again.", null));
         }
     }
 

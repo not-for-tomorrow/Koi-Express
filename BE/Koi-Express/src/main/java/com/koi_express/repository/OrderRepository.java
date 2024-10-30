@@ -30,8 +30,17 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
 
     List<Orders> findByStatusAndDeliveringStaffId(OrderStatus status, Long deliveringStaffId);
 
-    @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c) FROM Orders o JOIN o.customer c")
+    @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c, s) " +
+            "FROM Orders o JOIN o.customer c LEFT JOIN o.shipment s " +
+            "WHERE o.orderId = :orderId")
     List<OrderWithCustomerDTO> findAllWithCustomer();
+
+    @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c, s) " +
+            "FROM Orders o " +
+            "JOIN o.customer c " +
+            "LEFT JOIN FETCH o.shipment s " +
+            "WHERE o.orderId = :orderId")
+    Optional<OrderWithCustomerDTO> findOrderWithCustomerAndShipment(@Param("orderId") Long orderId);
 
     @Query("SELECT SUM(o.totalFee) FROM Orders o WHERE o.createdAt = :date")
     Optional<BigDecimal> findTotalRevenueByDate(@Param("date") LocalDate date);
