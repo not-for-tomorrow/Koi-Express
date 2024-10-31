@@ -1,7 +1,6 @@
 export const srcPicture = [
   "/src/assets/images/banner/banner-1.webp",
   "/src/assets/images/banner/banner-2.webp",
-  "https://www.ahamove.com/_next/image?url=https%3A%2F%2Faha-cms-production.s3.ap-southeast-1.amazonaws.com%2FBanner_Homepage1_1920x900_efc0fcb754.webp&w=1920&q=75",
 ];
 
 export const altPicture = ["alt1", "alt2", "alt3"];

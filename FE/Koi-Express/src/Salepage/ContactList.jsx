@@ -3,7 +3,6 @@ import React from 'react';
 const contacts = [
     { id: 1, name: 'Nguyen Huy', status: 'Active 31m ago' },
     { id: 2, name: 'Ngoc Hoan', status: 'Active 30m ago' },
-    // Add more contacts as needed
 ];
 
 const ContactList = () => {
