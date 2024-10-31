@@ -5,7 +5,6 @@ import HomePages from "./pages/HomePages/HomePages";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import AppHomePages from "./pages/AppHomePages/AppHomePages";
-import OtpModal from "./pages/OTP/OtpModal";
 import Salepage from "./Salepage/Salepage";
 import DeliveringStaffpage from "./DeliveringStaffpage/DeliveringStaffpage";
 import ManagerPage from "./ManagerPage/ManagerPage";
@@ -25,19 +24,23 @@ export default function useRouteElements() {
     },
     {
       path: "/login",
-      element: <LoginLayout><Login /></LoginLayout>,
+      element: (
+        <LoginLayout>
+          <Login />
+        </LoginLayout>
+      ),
     },
     {
       path: "/register",
-      element: <RegisterLayout><Register /></RegisterLayout>,
+      element: (
+        <RegisterLayout>
+          <Register />
+        </RegisterLayout>
+      ),
     },
     {
       path: "/appkoiexpress/*",
       element: <AppHomePages />,
-    },
-    {
-      path: "/verify-otp",
-      element: <OtpModal />,
     },
     {
       path: "/salepage/*",
@@ -53,7 +56,11 @@ export default function useRouteElements() {
     },
     {
       path: "/blog/*",
-      element: <MainLayout><Blog /></MainLayout>,
+      element: (
+        <MainLayout>
+          <Blog />
+        </MainLayout>
+      ),
     },
   ]);
   return routeElements;
