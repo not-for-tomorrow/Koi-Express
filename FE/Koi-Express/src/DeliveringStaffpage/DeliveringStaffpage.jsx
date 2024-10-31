@@ -4,7 +4,7 @@ import Sidebar from "../componentsDashboard/DeliveringStaffcomponents/Sidebar/Si
 import Order from "./Order";
 import { UserProvider } from "../componentsDashboard/UserContext";
 import OrderDetail from "./OrderDetail/OrderDetail";
-import DeliverOrder from "./DeliverOrder";
+import DeliverOrder from "./DeliverOrder/DeliverOrder";
 
 const DeliveringStaffpage = () => {
   return (
