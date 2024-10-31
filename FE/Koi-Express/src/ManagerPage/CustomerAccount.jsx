@@ -24,12 +24,15 @@ const CustomerAccount = () => {
       }
 
       try {
-        const response = await fetch("http://localhost:8080/api/manager/customers", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          "http://localhost:8080/api/manager/customers",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch customers");
@@ -46,6 +49,37 @@ const CustomerAccount = () => {
 
     fetchCustomers();
   }, []);
+
+  const deleteCustomer = async (customerId) => {
+    const token = getToken();
+    if (!token) {
+      setError("No token found");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/manager/delete/${customerId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        // Remove the deleted customer from the list
+        setCustomers((prevCustomers) =>
+          prevCustomers.filter((customer) => customer.customerId !== customerId)
+        );
+      } else {
+        throw new Error("Failed to delete customer");
+      }
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
   const filterCustomers = () => {
     if (!searchQuery) return customers;
@@ -94,6 +128,7 @@ const CustomerAccount = () => {
                     <th className="w-1/4 p-2 font-semibold">Email</th>
                     <th className="p-2 font-semibold w-1/8">Số điện thoại</th>
                     <th className="p-2 font-semibold w-1/8">Ngày tạo</th>
+                    <th className="p-2 font-semibold w-1/8">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -116,6 +151,14 @@ const CustomerAccount = () => {
                       </td>
                       <td className="p-2 text-sm text-gray-700">
                         {new Date(customer.createdAt).toLocaleString("vi-VN")}
+                      </td>
+                      <td className="p-2 text-sm text-gray-700">
+                        <button
+                          onClick={() => deleteCustomer(customer.customerId)}
+                          className="px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}
