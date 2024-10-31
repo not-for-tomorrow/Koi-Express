@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { pickupOrderAPI } from "../../koi/api/api";
+import { useNavigate } from "react-router-dom";
 
 const OrderDetailModal = ({
   orderId,
@@ -18,6 +19,8 @@ const OrderDetailModal = ({
   commitmentFee,
   onClose,
 }) => {
+  const navigate = useNavigate();
+
   const statusMapping = {
     PENDING: "Chờ xác nhận",
     ACCEPTED: "Đã xác nhận",
@@ -51,13 +54,13 @@ const OrderDetailModal = ({
 
   const handlePickupOrder = async () => {
     try {
-      await pickupOrderAPI(orderId);
+      await pickupOrderAPI(orderId); // Await API response
       alert("Order accepted successfully!");
-      navigate("/deliveringstaffpage");
       if (onClose) onClose(); // Optional: Close modal if onClose is passed
+      navigate("/deliveringstaffpage"); // Navigate after success
     } catch (error) {
-      alert("Failed to pickup the order. Please try again.");
       console.error(error);
+      alert("Failed to pick up the order. Please try again.");
     }
   };
 

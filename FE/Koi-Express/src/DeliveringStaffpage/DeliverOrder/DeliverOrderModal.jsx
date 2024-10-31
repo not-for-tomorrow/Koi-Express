@@ -1,6 +1,6 @@
-// DeliverOrderModal.jsx
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import DeliverOrderUpdate from "./DeliverOrderUpdate";
 
 const DeliverOrderModal = ({
   orderId,
@@ -16,7 +16,12 @@ const DeliverOrderModal = ({
   paymentMethod,
   distanceFee,
   commitmentFee,
+  koiQuantity,
 }) => {
+  const [showDetailPopup, setShowDetailPopup] = useState(false);
+
+  const totalFee = distanceFee + commitmentFee;
+
   const statusMapping = {
     PENDING: "Chờ xác nhận",
     ACCEPTED: "Đã xác nhận",
@@ -83,12 +88,8 @@ const DeliverOrderModal = ({
 
       <div className="p-4 mt-4 border rounded-lg bg-gray-50">
         <div className="flex justify-between">
-          <p>Phí vận chuyển</p>
-          <p>{distanceFee.toLocaleString()} VND</p>
-        </div>
-        <div className="flex justify-between mt-2">
-          <p>Phí cam kết</p>
-          <p>{commitmentFee.toLocaleString()} VND</p>
+          <p>Tổng phí</p>
+          <p>{totalFee.toLocaleString()} VND</p>
         </div>
       </div>
 
@@ -109,13 +110,26 @@ const DeliverOrderModal = ({
         <p className="mt-3">
           <strong>Phương thức thanh toán:</strong> {paymentMethod || "N/A"}
         </p>
+        <button
+          className="mt-3 underline text-blue-600"
+          onClick={() => setShowDetailPopup(true)}
+        >
+          Chi tiết cá
+        </button>
       </div>
 
       <div className="flex-shrink-0 mt-6">
         <button className="w-full p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600">
-          <Link to="/deliveringstaffpage">Đóng</Link>
+          <Link to="/deliveringstaffpage">Giao Hàng</Link>
         </button>
       </div>
+
+      {showDetailPopup && (
+        <DeliverOrderUpdate
+          koiQuantity={koiQuantity}
+          onClose={() => setShowDetailPopup(false)}
+        />
+      )}
     </div>
   );
 };
