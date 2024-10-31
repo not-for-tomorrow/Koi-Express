@@ -6,7 +6,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
 import DeliverOrderModal from "./DeliverOrderModal";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
-import NoOrderToDeliver from "./NoOderToDeliver"; // Kiểm tra đúng đường dẫn
+import NoOrderToDeliver from "./NoOderToDeliver";
 import { LOCATIONIQ_KEY } from "../../koi/api/api";
 
 const MAX_RETRIES = 5;

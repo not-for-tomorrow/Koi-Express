@@ -1,50 +1,81 @@
-import React from "react";
-import {Link} from "react-router-dom";
-
-const TopCustomersData = [
-    {
-        id: '1',
-        name: 'Ntt'
-    },
-    {
-        id: '2',
-        name: 'Ntt'
-    },
-    {
-        id: '3',
-        name: 'Ntt'
-    },
-    {
-        id: '4',
-        name: 'Ntt'
-    },
-    {
-        id: '5',
-        name: 'Ntt'
-    },
-]
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 function TopCustomers() {
-    return(
-        <div className="bg-white px-4 pt-3 pb-4 rounded-sm border border-gray-200 w-[20rem]" >
-            <strong className="text-gray-700 font-medium">Top Customers</strong>
-            <div className="mt-4 flex flex-col gap-3">
-                {TopCustomersData.map(customeraccount => (
-                    <Link to={`/customeraccount/${customeraccount.id}`}>
-                        <div className="ml-4 flex-1">
+    const [topCustomers, setTopCustomers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+
+        const fetchOrders = async () => {
+            try {
+                const response = await fetch("http://localhost:8080/api/orders/all-orders", {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+                
+                const data = await response.json();
+
+                if (data.code === 200) {
+                    const customerOrderCounts = {};
+
+                    data.result.forEach(orderItem => {
+                        const { customerId, fullName } = orderItem.customer;
+                        const orderStatus = orderItem.status;
+
+                        if (!customerOrderCounts[customerId]) {
+                            customerOrderCounts[customerId] = { name: fullName, count: 0 };
+                        }
+
+                        if (orderStatus === "DELIVERED") {
+                            customerOrderCounts[customerId].count += 1;
+                        }
+                    });
+
+                    const sortedCustomers = Object.entries(customerOrderCounts)
+                        .map(([id, { name, count }]) => ({ id, name, count }))
+                        .sort((a, b) => b.count - a.count);
+
+                    setTopCustomers(sortedCustomers);
+                } else {
+                    console.error("Failed to fetch orders:", data.message);
+                }
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOrders();
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    return (
+        <div className="bg-white px-4 pt-3 pb-4 rounded-sm border border-gray-200 w-[20rem]">
+            <strong className="font-medium text-gray-700">Top Customers</strong>
+            <div className="flex flex-col gap-3 mt-4">
+                {topCustomers.map((customer, index) => (
+                    <Link key={index} to={`/managerpage/customeraccount/${customer.id}`}>
+                        <div className="flex-1 ml-4">
                             <p className="text-sm text-gray-800">
-                                {customeraccount.id}
+                                {index + 1}. {customer.name}
                             </p>
                         </div>
-
                         <div className="text-xs">
-                            {customeraccount.name}
+                            Orders: {customer.count}
                         </div>
                     </Link>
                 ))}
             </div>
         </div>
-    )
+    );
 }
 
 export default TopCustomers;

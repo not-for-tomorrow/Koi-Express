@@ -4,6 +4,7 @@ import axios from "axios";
 import jwt_decode from "jwt-decode";
 import "./Register.css";
 import logresKoiPic from "../../assets/images/banner/LogResKoiPic.webp";
+import { FaArrowLeft } from "react-icons/fa";
 
 const Register = () => {
   const [fullName, setFullName] = useState("");
@@ -138,6 +139,10 @@ const Register = () => {
 
   return (
     <section className="flex items-center justify-center min-h-screen registerpage bg-gray-50">
+       <div className="back-to-home" onClick={() => navigate("/")}>
+        <FaArrowLeft size={16} />
+        <span>Back to Home</span>
+      </div>
       <div className="flex items-center justify-start max-w-3xl p-5 bg-gray-100 shadow-lg registercard rounded-2xl">
         <div className="hidden w-1/2 mr-auto md:block">
           <img
