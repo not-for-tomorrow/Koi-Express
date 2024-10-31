@@ -5,46 +5,127 @@ const DeliveringStaffAccount = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [deliveringStaff, setDeliveringStaff] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [newStaff, setNewStaff] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    phoneNumber: "",
+    address: "",
+    level: "BASIC",
+  });
+  const [formErrors, setFormErrors] = useState({});
+  const [creationError, setCreationError] = useState(null);
 
   const getToken = () => {
     return localStorage.getItem("token");
   };
 
-  useEffect(() => {
-    const fetchDeliveringStaff = async () => {
-      setLoading(true);
-      setError(null);
+  const fetchDeliveringStaff = async () => {
+    setLoading(true);
+    setError(null);
 
-      const token = getToken();
-      if (!token) {
-        setError("No token found");
-        setLoading(false);
-        return;
-      }
+    const token = getToken();
+    if (!token) {
+      setError("No token found");
+      setLoading(false);
+      return;
+    }
 
-      try {
-        const response = await fetch("http://localhost:8080/api/manager/delivering-staff", {
+    try {
+      const response = await fetch(
+        "http://localhost:8080/api/manager/delivering-staff",
+        {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch delivering staff data");
         }
+      );
 
-        const data = await response.json();
-        setDeliveringStaff(data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Failed to fetch delivering staff data");
       }
-    };
 
+      const data = await response.json();
+      setDeliveringStaff(data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDeliveringStaff();
   }, []);
+
+  const validateForm = () => {
+    const errors = {};
+    if (!newStaff.fullName.trim()) errors.fullName = "Tên đầy đủ là bắt buộc";
+    if (!newStaff.email.trim()) {
+      errors.email = "Email là bắt buộc";
+    } else if (!/\S+@\S+\.\S+/.test(newStaff.email)) {
+      errors.email = "Email không hợp lệ";
+    }
+    if (!newStaff.password || newStaff.password.length < 8) {
+      errors.password = "Mật khẩu phải có ít nhất 8 ký tự";
+    }
+    if (!newStaff.phoneNumber.trim()) {
+      errors.phoneNumber = "Số điện thoại là bắt buộc";
+    }
+    if (!newStaff.address.trim()) errors.address = "Địa chỉ là bắt buộc";
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleCreateAccount = async () => {
+    if (!validateForm()) return;
+
+    const token = getToken();
+    try {
+      const response = await fetch(
+        "http://localhost:8080/api/manager/create-delivering-staff",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...newStaff,
+            role: "DELIVERING_STAFF",
+            active: true,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 409) {
+          setCreationError("Email đã tồn tại");
+        } else {
+          setCreationError("Không thể tạo tài khoản nhân viên giao hàng");
+        }
+        return;
+      }
+
+      setShowModal(false);
+      setNewStaff({
+        fullName: "",
+        email: "",
+        password: "",
+        phoneNumber: "",
+        address: "",
+        level: "BASIC",
+      });
+      setFormErrors({});
+      setCreationError(null);
+      fetchDeliveringStaff();
+    } catch (error) {
+      setCreationError("Đã xảy ra lỗi trong quá trình tạo tài khoản");
+    }
+  };
 
   const filterDeliveringStaff = () => {
     if (!searchQuery) return deliveringStaff;
@@ -66,6 +147,12 @@ const DeliveringStaffAccount = () => {
               <h1 className="text-2xl font-bold text-gray-800">
                 Quản lý nhân viên giao hàng
               </h1>
+              <button
+                onClick={() => setShowModal(true)}
+                className="px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+              >
+                Tạo Tài Khoản
+              </button>
             </div>
 
             <div className="flex items-center mb-6 space-x-6">
@@ -85,7 +172,7 @@ const DeliveringStaffAccount = () => {
                 Không tìm thấy nhân viên
               </div>
             ) : (
-                <table className="w-full text-sm text-left border-collapse shadow-md table-auto">
+              <table className="w-full text-sm text-left border-collapse shadow-md table-auto">
                 <thead className="sticky top-0 z-10 bg-blue-100">
                   <tr className="text-blue-900 border-b border-blue-200">
                     <th className="p-2 font-semibold w-1/10">Mã nhân viên</th>
@@ -137,6 +224,180 @@ const DeliveringStaffAccount = () => {
                 </tbody>
               </table>
             )}
+          </div>
+        </div>
+      )}
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
+            <h2 className="mb-4 text-lg font-semibold text-gray-700">
+              Tạo Tài Khoản Nhân Viên Giao Hàng
+            </h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleCreateAccount();
+              }}
+              noValidate
+            >
+              {/* Full Name */}
+              <div className="mb-4">
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Tên đầy đủ
+                </label>
+                <input
+                  type="text"
+                  value={newStaff.fullName}
+                  onChange={(e) =>
+                    setNewStaff({ ...newStaff, fullName: e.target.value })
+                  }
+                  className={`w-full p-2 border rounded ${
+                    formErrors.fullName ? "border-red-500" : "border-gray-300"
+                  }`}
+                  required
+                />
+                {formErrors.fullName && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {formErrors.fullName}
+                  </p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div className="mb-4">
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={newStaff.email}
+                  onChange={(e) =>
+                    setNewStaff({ ...newStaff, email: e.target.value })
+                  }
+                  className={`w-full p-2 border rounded ${
+                    formErrors.email ? "border-red-500" : "border-gray-300"
+                  }`}
+                  required
+                />
+                {formErrors.email && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {formErrors.email}
+                  </p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div className="mb-4">
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Mật khẩu
+                </label>
+                <input
+                  type="password"
+                  value={newStaff.password}
+                  onChange={(e) =>
+                    setNewStaff({ ...newStaff, password: e.target.value })
+                  }
+                  className={`w-full p-2 border rounded ${
+                    formErrors.password ? "border-red-500" : "border-gray-300"
+                  }`}
+                  required
+                />
+                {formErrors.password && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {formErrors.password}
+                  </p>
+                )}
+              </div>
+
+              {/* Phone Number */}
+              <div className="mb-4">
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Số điện thoại
+                </label>
+                <input
+                  type="tel"
+                  value={newStaff.phoneNumber}
+                  onChange={(e) =>
+                    setNewStaff({ ...newStaff, phoneNumber: e.target.value })
+                  }
+                  className={`w-full p-2 border rounded ${
+                    formErrors.phoneNumber
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  required
+                />
+                {formErrors.phoneNumber && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {formErrors.phoneNumber}
+                  </p>
+                )}
+              </div>
+
+              {/* Address */}
+              <div className="mb-4">
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Địa chỉ
+                </label>
+                <input
+                  type="text"
+                  value={newStaff.address}
+                  onChange={(e) =>
+                    setNewStaff({ ...newStaff, address: e.target.value })
+                  }
+                  className={`w-full p-2 border rounded ${
+                    formErrors.address ? "border-red-500" : "border-gray-300"
+                  }`}
+                  required
+                />
+                {formErrors.address && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {formErrors.address}
+                  </p>
+                )}
+              </div>
+
+              {/* Level Dropdown */}
+              <div className="mb-4">
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Cấp bậc
+                </label>
+                <select
+                  value={newStaff.level}
+                  onChange={(e) =>
+                    setNewStaff({ ...newStaff, level: e.target.value })
+                  }
+                  className="w-full p-2 border rounded border-gray-300"
+                >
+                  <option value="BASIC">BASIC</option>
+                  <option value="INTERMEDIATE">INTERMEDIATE</option>
+                  <option value="ADVANCED">ADVANCED</option>
+                </select>
+              </div>
+
+              {/* Error message */}
+              {creationError && (
+                <p className="mb-4 text-sm text-red-500">{creationError}</p>
+              )}
+
+              {/* Buttons */}
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 mr-2 text-sm font-semibold text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                >
+                  Tạo
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
