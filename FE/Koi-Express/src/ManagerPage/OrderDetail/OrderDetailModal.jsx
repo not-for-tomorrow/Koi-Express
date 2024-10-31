@@ -1,20 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import DeliverOrderUpdate from "./DeliverOrderUpdate";
-import PaymentModal from "./PaymentModal";
-import VNPayLogo from "../../assets/images/LogoPayments/VNPay.png";
-import Cashbysender from "../../assets/images/LogoPayments/Cashbysender.png";
-import Cashbyrep from "../../assets/images/LogoPayments/Cashbyrep.png";
+import { pickupOrderAPI } from "../../koi/api/api";
+import { useNavigate } from "react-router-dom";
 
-export const paymentMethods = [{ label: "VNPAY", icon: VNPayLogo },{ label: "Người gửi trả tiền", icon: Cashbysender },
-  { label: "Người nhận trả tiền", icon: Cashbyrep }];
-
-export const getPaymentMethodIcon = (methodLabel) => {
-  const method = paymentMethods.find((m) => m.label === methodLabel);
-  return method ? method.icon : null;
-};
-
-const DeliverOrderModal = ({
+const OrderDetailModal = ({
   orderId,
   fullName,
   originLocation,
@@ -28,17 +17,9 @@ const DeliverOrderModal = ({
   paymentMethod,
   distanceFee,
   commitmentFee,
-  koiQuantity,
+  onClose,
 }) => {
-  const [showDetailPopup, setShowDetailPopup] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(paymentMethod);
-
-  const totalFee = distanceFee + commitmentFee;
-
-  const handleSelectPaymentMethod = (methodLabel) => {
-    setSelectedPaymentMethod(methodLabel);
-  };
+  const navigate = useNavigate();
 
   const statusMapping = {
     PENDING: "Chờ xác nhận",
@@ -71,12 +52,25 @@ const DeliverOrderModal = ({
   const translatedStatus = statusMapping[status] || "Unknown";
   const statusColor = statusColors[translatedStatus] || {};
 
+  const handlePickupOrder = async () => {
+    try {
+      await pickupOrderAPI(orderId); // Await API response
+      alert("Order accepted successfully!");
+      if (onClose) onClose(); // Optional: Close modal if onClose is passed
+      navigate("/deliveringstaffpage"); // Navigate after success
+    } catch (error) {
+      console.error(error);
+      alert("Failed to pick up the order. Please try again.");
+    }
+  };
+
   return (
     <div className="relative z-20 flex flex-col w-full h-full max-w-lg p-6 bg-white border border-gray-200 shadow-lg">
       <div className="flex-grow">
         <div className="mb-4 text-2xl font-bold text-gray-800">
           Đơn hàng #{orderId} của {fullName}
         </div>
+
         <div className="mb-6 text-sm">
           <strong className="text-gray-600">Lộ trình:</strong> {distance}
         </div>
@@ -104,39 +98,14 @@ const DeliverOrderModal = ({
         </div>
       </div>
 
-      <button onClick={() => setShowDetailPopup(true)}>
-        <div className="p-4 mt-4 border rounded-lg bg-gray-50">
-          <div className="flex justify-between">Chi tiết cá</div>
-        </div>
-      </button>
-
       <div className="p-4 mt-4 border rounded-lg bg-gray-50">
         <div className="flex justify-between">
-          <p>Tổng phí</p>
-          <p>{totalFee.toLocaleString()} VND</p>
+          <p>Phí vận chuyển</p>
+          <p>{distanceFee.toLocaleString()} VND</p>
         </div>
-      </div>
-
-      <div className="flex items-center justify-between p-2 mt-4 transition duration-300 bg-white rounded-lg shadow-md hover:shadow-lg">
-        <div className="flex-grow sm:pr-4">
-          <div
-            className="p-2 bg-gray-100 rounded-lg cursor-pointer"
-            onClick={() => setShowPaymentModal(true)}
-          >
-            <label className="block text-xs font-medium text-gray-600">
-              Hình thức thanh toán
-            </label>
-            <div className="flex items-center mt-1 font-semibold text-gray-900">
-              {getPaymentMethodIcon(selectedPaymentMethod) && (
-                <img
-                  src={getPaymentMethodIcon(selectedPaymentMethod)}
-                  alt={selectedPaymentMethod}
-                  className="w-[35px] h-[35px] mr-2"
-                />
-              )}
-              <p>{selectedPaymentMethod || "N/A"}</p>
-            </div>
-          </div>
+        <div className="flex justify-between mt-2">
+          <p>Phí cam kết</p>
+          <p>{commitmentFee.toLocaleString()} VND</p>
         </div>
       </div>
 
@@ -158,31 +127,14 @@ const DeliverOrderModal = ({
           <strong>Phương thức thanh toán:</strong> {paymentMethod || "N/A"}
         </p>
       </div>
-     
-      
 
-      <div className="flex-shrink-0 mt-6">
+      <div className="flex flex-shrink-0 mt-6 space-x-2">
         <button className="w-full p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600">
-          <Link to="/deliveringstaffpage">Giao Hàng</Link>
+          <Link to="/managerpage">Đóng</Link>
         </button>
       </div>
-
-      {showDetailPopup && (
-        <DeliverOrderUpdate
-          koiQuantity={koiQuantity}
-          onClose={() => setShowDetailPopup(false)}
-        />
-      )}
-
-{showPaymentModal && (
-        <PaymentModal
-          onClose={() => setShowPaymentModal(false)}
-          onSelectPaymentMethod={handleSelectPaymentMethod}
-          currentPaymentMethod={selectedPaymentMethod}
-        />
-      )}
     </div>
   );
 };
 
-export default DeliverOrderModal;
+export default OrderDetailModal;

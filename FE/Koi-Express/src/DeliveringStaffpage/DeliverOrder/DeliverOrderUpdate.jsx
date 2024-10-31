@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
 const DeliverOrderUpdate = ({ koiQuantity, onClose }) => {
-  const [koiType, setKoiType] = useState("");
   const [fishStatus, setFishStatus] = useState("Khỏe mạnh");
 
   // State for each type and quantity
@@ -20,181 +19,138 @@ const DeliverOrderUpdate = ({ koiQuantity, onClose }) => {
   const increment = (setter) => setter((prev) => prev + 1);
   const decrement = (setter) => setter((prev) => (prev > 0 ? prev - 1 : 0));
 
-  const handleKoiTypeSelect = (type) => {
-    setKoiType(type);
-  };
-
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
       style={{ zIndex: 1000 }}
     >
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
-        <h2 className="text-lg font-bold mb-4">Chi tiết cá</h2>
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full w-[400px] relative">
+        <h2 className="mb-4 text-lg font-bold">Chi tiết cá</h2>
         <div className="mb-2">Số lượng: {koiQuantity}</div>
-        <div className="mb-4">
-          <strong>Loại cá:</strong>
-          <div className="flex space-x-4 mt-2">
-            {/* Koi VN Type */}
-            <div className="flex flex-col items-center">
-              <button
-                onClick={() => handleKoiTypeSelect("Koi VN")}
-                className={`p-2 rounded w-20 ${
-                  koiType === "Koi VN"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200"
-                }`}
-              >
-                Koi VN
-              </button>
-              {koiType === "Koi VN" && (
-                <>
-                  <div className="flex space-x-2 mt-2">
-                    <button onClick={() => decrement(setVnKoi1)}>-</button>
-                    <input
-                      type="text"
-                      value={vnKoi1}
-                      readOnly
-                      className="w-12 text-center"
-                    />
-                    <button onClick={() => increment(setVnKoi1)}>+</button>
-                  </div>
-                  <div className="flex space-x-2 mt-2">
-                    <button onClick={() => decrement(setVnKoi2)}>-</button>
-                    <input
-                      type="text"
-                      value={vnKoi2}
-                      readOnly
-                      className="w-12 text-center"
-                    />
-                    <button onClick={() => increment(setVnKoi2)}>+</button>
-                  </div>
-                  <div className="flex space-x-2 mt-2">
-                    <button onClick={() => decrement(setVnKoi3)}>-</button>
-                    <input
-                      type="text"
-                      value={vnKoi3}
-                      readOnly
-                      className="w-12 text-center"
-                    />
-                    <button onClick={() => increment(setVnKoi3)}>+</button>
-                  </div>
-                </>
-              )}
-            </div>
 
-            {/* Koi JP Type */}
-            <div className="flex flex-col items-center">
-              <button
-                onClick={() => handleKoiTypeSelect("Koi JP")}
-                className={`p-2 rounded w-20 ${
-                  koiType === "Koi JP"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200"
-                }`}
-              >
-                Koi JP
-              </button>
-              {koiType === "Koi JP" && (
-                <>
-                  <div className="flex space-x-2 mt-2">
-                    <button onClick={() => decrement(setJpKoi1)}>-</button>
-                    <input
-                      type="text"
-                      value={jpKoi1}
-                      readOnly
-                      className="w-12 text-center"
-                    />
-                    <button onClick={() => increment(setJpKoi1)}>+</button>
-                  </div>
-                  <div className="flex space-x-2 mt-2">
-                    <button onClick={() => decrement(setJpKoi2)}>-</button>
-                    <input
-                      type="text"
-                      value={jpKoi2}
-                      readOnly
-                      className="w-12 text-center"
-                    />
-                    <button onClick={() => increment(setJpKoi2)}>+</button>
-                  </div>
-                  <div className="flex space-x-2 mt-2">
-                    <button onClick={() => decrement(setJpKoi3)}>-</button>
-                    <input
-                      type="text"
-                      value={jpKoi3}
-                      readOnly
-                      className="w-12 text-center"
-                    />
-                    <button onClick={() => increment(setJpKoi3)}>+</button>
-                  </div>
-                </>
-              )}
+        <div className="grid grid-cols-3 gap-4">
+          {/* Koi VN Type */}
+          <div className="mb-4">
+            <strong>Koi VN:</strong>
+            <div className="flex mt-2 space-x-2">
+              <button onClick={() => decrement(setVnKoi1)}>-</button>
+              <input
+                type="text"
+                value={vnKoi1}
+                readOnly
+                className="w-12 text-center"
+              />
+              <button onClick={() => increment(setVnKoi1)}>+</button>
             </div>
+            <div className="flex mt-2 space-x-2">
+              <button onClick={() => decrement(setVnKoi2)}>-</button>
+              <input
+                type="text"
+                value={vnKoi2}
+                readOnly
+                className="w-12 text-center"
+              />
+              <button onClick={() => increment(setVnKoi2)}>+</button>
+            </div>
+            <div className="flex mt-2 space-x-2">
+              <button onClick={() => decrement(setVnKoi3)}>-</button>
+              <input
+                type="text"
+                value={vnKoi3}
+                readOnly
+                className="w-12 text-center"
+              />
+              <button onClick={() => increment(setVnKoi3)}>+</button>
+            </div>
+          </div>
 
-            {/* Koi EU Type */}
-            <div className="flex flex-col items-center">
-              <button
-                onClick={() => handleKoiTypeSelect("Koi EU")}
-                className={`p-2 rounded w-20 ${
-                  koiType === "Koi EU"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200"
-                }`}
-              >
-                Koi EU
-              </button>
-              {koiType === "Koi EU" && (
-                <>
-                  <div className="flex space-x-2 mt-2">
-                    <button onClick={() => decrement(setEuKoi1)}>-</button>
-                    <input
-                      type="text"
-                      value={euKoi1}
-                      readOnly
-                      className="w-12 text-center"
-                    />
-                    <button onClick={() => increment(setEuKoi1)}>+</button>
-                  </div>
-                  <div className="flex space-x-2 mt-2">
-                    <button onClick={() => decrement(setEuKoi2)}>-</button>
-                    <input
-                      type="text"
-                      value={euKoi2}
-                      readOnly
-                      className="w-12 text-center"
-                    />
-                    <button onClick={() => increment(setEuKoi2)}>+</button>
-                  </div>
-                  <div className="flex space-x-2 mt-2">
-                    <button onClick={() => decrement(setEuKoi3)}>-</button>
-                    <input
-                      type="text"
-                      value={euKoi3}
-                      readOnly
-                      className="w-12 text-center"
-                    />
-                    <button onClick={() => increment(setEuKoi3)}>+</button>
-                  </div>
-                </>
-              )}
+          {/* Koi JP Type */}
+          <div className="mb-4">
+            <strong>Koi JP:</strong>
+            <div className="flex mt-2 space-x-2">
+              <button onClick={() => decrement(setJpKoi1)}>-</button>
+              <input
+                type="text"
+                value={jpKoi1}
+                readOnly
+                className="w-12 text-center"
+              />
+              <button onClick={() => increment(setJpKoi1)}>+</button>
+            </div>
+            <div className="flex mt-2 space-x-2">
+              <button onClick={() => decrement(setJpKoi2)}>-</button>
+              <input
+                type="text"
+                value={jpKoi2}
+                readOnly
+                className="w-12 text-center"
+              />
+              <button onClick={() => increment(setJpKoi2)}>+</button>
+            </div>
+            <div className="flex mt-2 space-x-2">
+              <button onClick={() => decrement(setJpKoi3)}>-</button>
+              <input
+                type="text"
+                value={jpKoi3}
+                readOnly
+                className="w-12 text-center"
+              />
+              <button onClick={() => increment(setJpKoi3)}>+</button>
+            </div>
+          </div>
+
+          {/* Koi EU Type */}
+          <div className="mb-4">
+            <strong>Koi EU:</strong>
+            <div className="flex mt-2 space-x-2">
+              <button onClick={() => decrement(setEuKoi1)}>-</button>
+              <input
+                type="text"
+                value={euKoi1}
+                readOnly
+                className="w-12 text-center"
+              />
+              <button onClick={() => increment(setEuKoi1)}>+</button>
+            </div>
+            <div className="flex mt-2 space-x-2">
+              <button onClick={() => decrement(setEuKoi2)}>-</button>
+              <input
+                type="text"
+                value={euKoi2}
+                readOnly
+                className="w-12 text-center"
+              />
+              <button onClick={() => increment(setEuKoi2)}>+</button>
+            </div>
+            <div className="flex mt-2 space-x-2">
+              <button onClick={() => decrement(setEuKoi3)}>-</button>
+              <input
+                type="text"
+                value={euKoi3}
+                readOnly
+                className="w-12 text-center"
+              />
+              <button onClick={() => increment(setEuKoi3)}>+</button>
             </div>
           </div>
         </div>
 
+        {/* Display fish status options as buttons */}
         <div className="mt-4">
           <label>Tình trạng cá:</label>
           <select
             value={fishStatus}
             onChange={(e) => setFishStatus(e.target.value)}
-            className="w-full mt-1 p-2 border rounded"
+            className="w-full p-2 mt-1 border rounded"
           >
             <option>Khỏe mạnh</option>
             <option>Bị thương</option>
             <option>Chết</option>
           </select>
         </div>
+
         <button
-          className="mt-4 w-full bg-blue-500 text-white p-2 rounded"
+          className="w-full p-2 mt-4 text-white bg-blue-500 rounded"
           onClick={onClose}
         >
           Xác nhận

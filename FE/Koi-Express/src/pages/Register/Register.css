@@ -25,7 +25,6 @@
   backdrop-filter: blur(6px);
   border: 2px solid rgba(255, 255, 255, 0.61);
   z-index: 999;
-  margin-top: -63px;
   padding: 2rem; /* Add padding inside the card */
 }
 
@@ -60,3 +59,4 @@
   font-size: 0.875rem; /* Slightly smaller font size */
   margin-top: 0.5rem;
 }
+

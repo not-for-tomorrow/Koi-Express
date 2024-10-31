@@ -7,6 +7,8 @@ import SaleStaffAccount from "./SaleStaffAccount";
 import DeliveringStaffAccount from "./DeliveringStaffAccount";
 import CustomerAccount from "./CustomerAccount";
 import Dashboard from "./Dashboard.jsx";
+import CustomerDetail from "./CustomerDetail.jsx";
+import OrderDetail from "./OrderDetail/OrderDetail.jsx";
 
 const ManagerPage = () => {
   return (
@@ -25,6 +27,8 @@ const ManagerPage = () => {
               <Route path="/customeraccount" element={<CustomerAccount />} />
               <Route path="/salestaffaccount" element={<SaleStaffAccount />} />
               <Route path="/deliveringstaffaccount" element={<DeliveringStaffAccount />} />
+              <Route path="/customeraccount/:customerId" element={<CustomerDetail />} />
+              <Route path="/recentorder/detail/:orderId" element={<OrderDetail />} />
             </Routes>
           </div>
         </div>

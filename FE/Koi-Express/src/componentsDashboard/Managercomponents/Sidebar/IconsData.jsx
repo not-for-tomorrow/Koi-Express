@@ -1,6 +1,6 @@
 export const navItems = [
     {
-        id: 2,
+        id: 1,
         icons: (
             <img
                 width="35"

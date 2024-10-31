@@ -8,8 +8,7 @@ import AppHomePages from "./pages/AppHomePages/AppHomePages";
 import Salepage from "./Salepage/Salepage";
 import DeliveringStaffpage from "./DeliveringStaffpage/DeliveringStaffpage";
 import ManagerPage from "./ManagerPage/ManagerPage";
-import LoginLayout from "./components/LogResLayout/LogResLayout";
-import RegisterLayout from "./components/LogResLayout/LogResLayout";
+
 import Blog from "./pages/Blog/Blog";
 
 export default function useRouteElements() {
@@ -25,17 +24,13 @@ export default function useRouteElements() {
     {
       path: "/login",
       element: (
-        <LoginLayout>
           <Login />
-        </LoginLayout>
       ),
     },
     {
       path: "/register",
       element: (
-        <RegisterLayout>
           <Register />
-        </RegisterLayout>
       ),
     },
     {

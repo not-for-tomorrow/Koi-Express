@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const CustomerAccount = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [customers, setCustomers] = useState([]);
+  const navigate = useNavigate();
 
-  const getToken = () => {
-    return localStorage.getItem("token");
-  };
+  const getToken = () => localStorage.getItem("token");
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -24,22 +24,19 @@ const CustomerAccount = () => {
       }
 
       try {
-        const response = await fetch(
-          "http://localhost:8080/api/manager/customers",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await fetch("http://localhost:8080/api/manager/customers", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
         if (!response.ok) {
           throw new Error("Failed to fetch customers");
         }
 
         const data = await response.json();
-        setCustomers(data.result); // Adjusted to match the structure of the response
+        setCustomers(data.result);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -58,18 +55,14 @@ const CustomerAccount = () => {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/manager/delete/${customerId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`http://localhost:8080/api/manager/delete/${customerId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.ok) {
-        // Remove the deleted customer from the list
         setCustomers((prevCustomers) =>
           prevCustomers.filter((customer) => customer.customerId !== customerId)
         );
@@ -96,66 +89,51 @@ const CustomerAccount = () => {
         <div className="text-sm text-center text-red-500">{error}</div>
       ) : (
         <div className="p-8 text-sm bg-white rounded-lg shadow-lg">
-          <div className="sticky top-0 z-20 bg-white">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold text-gray-800">
-                Quản lý tài khoản khách hàng
-              </h1>
-            </div>
+          <h1 className="text-2xl font-bold text-gray-800">Quản lý tài khoản khách hàng</h1>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Tìm kiếm khách hàng..."
+            className="w-full max-w-md p-2 mt-4 mb-6 text-sm border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
 
-            <div className="flex items-center mb-6 space-x-6">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm kiếm khách hàng..."
-                className="w-full max-w-md p-2 text-sm transition duration-300 border border-blue-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          <div className="overflow-auto max-h-[63.5vh] text-sm">
+          <div className="overflow-auto max-h-[63.5vh]">
             {filterCustomers().length === 0 ? (
-              <div className="text-center text-gray-500">
-                Không tìm thấy khách hàng
-              </div>
+              <div className="text-center text-gray-500">Không tìm thấy khách hàng</div>
             ) : (
-              <table className="w-full text-sm text-left border-collapse shadow-md table-auto">
-                <thead className="sticky top-0 z-10 bg-blue-100">
+              <table className="w-full text-sm border-collapse shadow-md table-auto">
+                <thead className="sticky top-0 bg-blue-100">
                   <tr className="text-blue-900 border-b border-blue-200">
-                    <th className="p-2 font-semibold w-1/8">Mã khách hàng</th>
-                    <th className="w-1/4 p-2 font-semibold">Tên khách hàng</th>
-                    <th className="w-1/4 p-2 font-semibold">Email</th>
-                    <th className="p-2 font-semibold w-1/8">Số điện thoại</th>
-                    <th className="p-2 font-semibold w-1/8">Ngày tạo</th>
-                    <th className="p-2 font-semibold w-1/8">Thao tác</th>
+                    <th className="p-3 font-semibold text-left">Mã khách hàng</th>
+                    <th className="p-3 font-semibold text-left">Tên khách hàng</th>
+                    <th className="p-3 font-semibold text-left">Email</th>
+                    <th className="p-3 font-semibold text-left">Số điện thoại</th>
+                    <th className="p-3 font-semibold text-left">Ngày tạo</th>
+                    <th className="p-3 font-semibold text-left">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filterCustomers().map((customer, index) => (
+                  {filterCustomers().map((customer) => (
                     <tr
-                      key={index}
-                      className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
+                      key={customer.customerId}
+                      className="transition-colors border-b border-gray-200 cursor-pointer hover:bg-blue-50"
+                      onClick={() => navigate(`/managerpage/customeraccount/${customer.customerId}`)}
                     >
-                      <td className="p-2 font-semibold text-blue-600">
-                        {customer.customerId}
-                      </td>
-                      <td className="p-2 text-sm text-gray-700">
-                        {customer.fullName}
-                      </td>
-                      <td className="p-2 text-sm text-gray-700">
-                        {customer.email}
-                      </td>
-                      <td className="p-2 text-sm text-gray-700">
-                        {customer.phoneNumber || "N/A"}
-                      </td>
-                      <td className="p-2 text-sm text-gray-700">
+                      <td className="p-3 font-medium text-blue-600">{customer.customerId}</td>
+                      <td className="p-3 text-gray-700">{customer.fullName}</td>
+                      <td className="p-3 text-gray-700">{customer.email}</td>
+                      <td className="p-3 text-gray-700">{customer.phoneNumber || "N/A"}</td>
+                      <td className="p-3 text-gray-700">
                         {new Date(customer.createdAt).toLocaleString("vi-VN")}
                       </td>
-                      <td className="p-2 text-sm text-gray-700">
+                      <td className="p-3 text-gray-700">
                         <button
-                          onClick={() => deleteCustomer(customer.customerId)}
-                          className="px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600"
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevents row click navigation
+                            deleteCustomer(customer.customerId);
+                          }}
+                          className="px-3 py-1 text-white transition-all bg-red-500 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
                         >
                           Delete
                         </button>

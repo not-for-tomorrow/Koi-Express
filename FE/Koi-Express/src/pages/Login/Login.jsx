@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FcGoogle } from "react-icons/fc";
-import { FaFacebook } from "react-icons/fa";
+import { FaArrowLeft, FaFacebook } from "react-icons/fa";
 import jwt_decode from "jwt-decode";
 import "./Login.css";
 import logresKoiPic from "../../assets/images/banner/LogResKoiPic.webp";
@@ -114,6 +114,10 @@ const Login = () => {
 
   return (
     <section className="flex items-center justify-center min-h-screen loginpage bg-gray-50">
+       <div className="back-to-home" onClick={() => navigate("/")}>
+        <FaArrowLeft size={16} />
+        <span>Back to Home</span>
+      </div>
       <div className="flex items-center max-w-3xl p-5 bg-gray-100 shadow-lg logincard rounded-2xl">
         <div className="px-8 md:w-1/2 md:px-16">
           <h2 className="font-bold text-2xl text-[#002D74]">Login</h2>
