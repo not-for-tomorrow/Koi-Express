@@ -7,6 +7,7 @@ import AcceptOrder from "./AcceptOrder";
 import { UserProvider } from "../componentsDashboard/UserContext"; // Import UserProvider
 import OrderDetail from "./OrderDetail/OrderDetail";
 import OrderDetailForAccept from "./OrderDetailForAccept/OrderDetail";
+import ChatPage from "./ChatPage.jsx";
 
 const Salepage = () => {
   return (
@@ -24,6 +25,7 @@ const Salepage = () => {
               <Route path="/accept" element={<AcceptOrder />} />
               <Route path="/allorder" element={<Order />} />
               <Route path="/customeraccount" element={<CustomerAccount />} />
+              <Route path="/chat" element={<ChatPage />} />
               <Route
                 path="/allorder/detail/:orderId"
                 element={<OrderDetail />}
