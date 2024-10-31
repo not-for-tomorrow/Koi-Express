@@ -37,6 +37,12 @@ public class DeliveringStaffService {
         return orderRepository.findByStatusAndDeliveringStaffId(OrderStatus.ASSIGNED, deliveringStaffId);
     }
 
+    @Transactional(readOnly = true)
+    public List<Orders> getPickupOrdersByDeliveringStaff(Long deliveringStaffId) {
+        log.info("Fetching orders assigned to delivering staff with ID: {}", deliveringStaffId);
+        return orderRepository.findByStatusAndDeliveringStaffId(OrderStatus.PICKING_UP, deliveringStaffId);
+    }
+
     @Transactional
     public ApiResponse<String> pickupOrder(Long orderId, Long deliveringStaffId) {
         log.info("Attempting to pick up order with ID: {} by staff with ID: {}", orderId, deliveringStaffId);
@@ -64,21 +70,25 @@ public class DeliveringStaffService {
     }
 
     @Transactional
-    public ApiResponse<String> completeDelivery(Long orderId, Long deliveringStaffId) {
-        log.info("Completing delivery for order ID: {} by staff ID: {}", orderId, deliveringStaffId);
+    public ApiResponse<String> completeOrder(Long orderId, Long deliveringStaffId) {
+        log.info("Completing order ID: {} for delivering staff ID: {}", orderId, deliveringStaffId);
 
         Orders order = validateOrderAssignment(orderId, deliveringStaffId);
 
+        // Update the order status to DELIVERED
         order.setStatus(OrderStatus.DELIVERED);
         orderRepository.save(order);
 
+        // Update the delivering staff status to AVAILABLE if this is their only active order
         DeliveringStaff staff = order.getDeliveringStaff();
-        staff.setStatus(StaffStatus.AVAILABLE);
-        deliveringStaffRepository.save(staff);
+        if (!orderRepository.existsByStatusAndDeliveringStaff_StaffId(OrderStatus.PICKING_UP, deliveringStaffId)) {
+            staff.setStatus(StaffStatus.AVAILABLE);
+            deliveringStaffRepository.save(staff);
+            log.info("Delivering staff ID: {} status updated to AVAILABLE", deliveringStaffId);
+        }
 
-        log.info("Order ID: {} has been delivered, staff ID: {} status updated to AVAILABLE", orderId, deliveringStaffId);
-
-        return new ApiResponse<>(HttpStatus.OK.value(), "Order marked as delivered, delivering staff available", null);
+        log.info("Order ID: {} marked as DELIVERED by staff ID: {}", orderId, deliveringStaffId);
+        return new ApiResponse<>(HttpStatus.OK.value(), "Order marked as delivered", null);
     }
 
     private Orders validateOrderAssignment(Long orderId, Long deliveringStaffId) {

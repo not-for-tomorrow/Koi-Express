@@ -24,7 +24,6 @@ public class DeliveringStaffController {
     private static final Logger logger = LoggerFactory.getLogger(DeliveringStaffController.class);
     private static final String ERROR_RETRIEVING_ASSIGNED_ORDERS = "Error retrieving assigned orders";
     private static final String ERROR_PICKUP_ORDER = "Failed to pick up order";
-    private static final String ERROR_COMPLETE_DELIVERY = "Failed to complete delivery";
 
     private final DeliveringStaffService deliveringStaffService;
     private final JwtUtil jwtUtil;
@@ -39,6 +38,24 @@ public class DeliveringStaffController {
         try {
             Long deliveringStaffId = extractDeliveringStaffId(token);
             List<Orders> orders = deliveringStaffService.getAssignedOrdersByDeliveringStaff(deliveringStaffId);
+
+            if (orders.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                        .body(new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "No assigned orders found", orders));
+            }
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Assigned orders retrieved", orders));
+        } catch (Exception e) {
+            logger.error("{} for delivering staff ID: {}", ERROR_RETRIEVING_ASSIGNED_ORDERS, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
+        }
+    }
+
+    @GetMapping("/pickup-orders")
+    public ResponseEntity<ApiResponse<List<Orders>>> getPickupOrdersByDeliveringStaff(@RequestHeader("Authorization") String token) {
+        try {
+            Long deliveringStaffId = extractDeliveringStaffId(token);
+            List<Orders> orders = deliveringStaffService.getPickupOrdersByDeliveringStaff(deliveringStaffId);
 
             if (orders.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NO_CONTENT)
@@ -72,18 +89,23 @@ public class DeliveringStaffController {
         }
     }
 
-    @PostMapping("/complete-delivery/{orderId}")
-    public ResponseEntity<ApiResponse<String>> completeDelivery(
+    @PutMapping("/complete-order/{orderId}")
+    public ResponseEntity<ApiResponse<String>> completeOrder(
             @PathVariable Long orderId, @RequestHeader("Authorization") String token) {
-
         try {
             Long deliveringStaffId = extractDeliveringStaffId(token);
-            ApiResponse<String> response = deliveringStaffService.completeDelivery(orderId, deliveringStaffId);
+            ApiResponse<String> response = deliveringStaffService.completeOrder(orderId, deliveringStaffId);
+
             return ResponseEntity.status(response.getCode()).body(response);
+        } catch (AppException ae) {
+            logger.error("Failed to complete order ID: {} for delivering staff ID: {}", orderId, ae.getMessage(), ae);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), ae.getMessage(), ae.getMessage()));
         } catch (Exception e) {
-            logger.error("{} for order ID: {}, staff ID: {}", ERROR_COMPLETE_DELIVERY, orderId, e.getMessage(), e);
+            logger.error("Error completing order ID: {} for delivering staff ID: {}", orderId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_COMPLETE_DELIVERY, e.getMessage()));
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to complete order", null));
         }
     }
+
 }
