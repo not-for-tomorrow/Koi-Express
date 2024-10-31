@@ -179,11 +179,17 @@ const DeliverOrder = () => {
           commitmentFee={commitmentFee}
         />
       </div>
-
       <div className="relative w-2/3">
-        <div id="map" className="absolute top-0 left-0 w-full h-full"></div>
+        <div
+          id="map"
+          className="absolute top-0 left-0 w-full h-full"
+          style={{ zIndex: 10 }}
+        ></div>
         {loadingMap && (
-          <div className="absolute top-0 left-0 z-50 flex items-center justify-center w-full h-full bg-white bg-opacity-75">
+          <div
+            className="absolute top-0 left-0 flex items-center justify-center w-full h-full bg-white bg-opacity-75"
+            style={{ zIndex: 15 }}
+          >
             <LoadingSpinner />
           </div>
         )}
@@ -193,7 +199,7 @@ const DeliverOrder = () => {
             position: "absolute",
             top: "10px",
             right: "10px",
-            zIndex: 1000,
+            zIndex: 20, // Set button above the map and loading spinner, but below popup
             padding: "10px",
             backgroundColor: "#007bff",
             color: "white",

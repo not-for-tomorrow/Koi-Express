@@ -6,6 +6,7 @@ import { UserProvider } from "../componentsDashboard/UserContext";
 import SaleStaffAccount from "./SaleStaffAccount";
 import DeliveringStaffAccount from "./DeliveringStaffAccount";
 import CustomerAccount from "./CustomerAccount";
+import Dashboard from "./Dashboard.jsx";
 
 const ManagerPage = () => {
   return (
@@ -19,7 +20,8 @@ const ManagerPage = () => {
           {/* Content area: Keep within full screen, prevent scrolling */}
           <div className="flex-grow h-full bg-gray-100">
             <Routes>
-              <Route path="/" element={<Order />} />
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/order" element={<Order />} />
               <Route path="/customeraccount" element={<CustomerAccount />} />
               <Route path="/salestaffaccount" element={<SaleStaffAccount />} />
               <Route path="/deliveringstaffaccount" element={<DeliveringStaffAccount />} />
