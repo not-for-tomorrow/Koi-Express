@@ -8,9 +8,6 @@ import OrderDetailModal from "./OrderDetailModal";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { LOCATIONIQ_KEY } from "../../koi/api/api";
 
-const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 2000;
-
 const OrderDetail = () => {
   const location = useLocation();
   const { orderId } = useParams();
@@ -20,7 +17,7 @@ const OrderDetail = () => {
   const [map, setMap] = useState(null);
   const [routeBounds, setRouteBounds] = useState(null);
   const [loadingMap, setLoadingMap] = useState(true);
-  const [retryCount, setRetryCount] = useState(0);
+  const [mapInitialized, setMapInitialized] = useState(false); // Flag to prevent multiple map initializations
 
   const token = localStorage.getItem("token");
 
@@ -35,8 +32,9 @@ const OrderDetail = () => {
             },
           }
         );
-        // Extracting assigned orders from the result array based on orderId
-        const assignedOrder = response.data.result.find(order => order.orderId === parseInt(orderIdFromLocation));
+        const assignedOrder = response.data.result.find(
+          (order) => order.orderId === parseInt(orderIdFromLocation)
+        );
         setOrderData(assignedOrder);
       } catch (error) {
         console.error("Failed to fetch order data:", error);
@@ -47,11 +45,7 @@ const OrderDetail = () => {
   }, [orderIdFromLocation, token]);
 
   const initializeMap = async () => {
-    if (!orderData?.originLocation || !orderData?.destinationLocation) return;
-
-    if (map) {
-      map.remove();
-    }
+    if (!orderData?.originLocation || !orderData?.destinationLocation || mapInitialized) return;
 
     const { originLocation, destinationLocation } = orderData;
 
@@ -68,6 +62,7 @@ const OrderDetail = () => {
 
       const newMap = L.map("map").setView([pickup.lat, pickup.lon], 10);
       setMap(newMap);
+      setMapInitialized(true); // Set map initialized flag to true
 
       L.tileLayer(
         `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`,
@@ -101,33 +96,22 @@ const OrderDetail = () => {
             setLoadingMap(false);
           } else {
             console.error("Failed to calculate route:", err);
-            retryMapLoad();
+            setLoadingMap(false);
           }
         }
       );
     } catch (error) {
       console.error("Failed to fetch coordinates:", error);
-      retryMapLoad();
-    }
-  };
-
-  const retryMapLoad = () => {
-    if (retryCount < MAX_RETRIES) {
-      setTimeout(() => {
-        setRetryCount(retryCount + 1);
-        initializeMap();
-      }, RETRY_DELAY_MS);
-    } else {
       setLoadingMap(false);
-      console.error("Failed to load the map after multiple attempts.");
     }
   };
 
   useEffect(() => {
-    setLoadingMap(true);
-    setRetryCount(0);
-    initializeMap();
-  }, [orderData]);
+    if (orderData) {
+      setLoadingMap(true);
+      initializeMap();
+    }
+  }, [orderData]); // Initialize map once when orderData is available
 
   const handleFitBounds = () => {
     if (map && routeBounds) {

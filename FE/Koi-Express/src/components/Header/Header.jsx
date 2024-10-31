@@ -50,7 +50,7 @@ export default function Header() {
       >
         <div className="flex justify-between items-center max-w-[1300px] mx-auto px-6 py-4">
           {/* Logo Section */}
-          <Link to="/" className="flex items-center text-2xl font-extrabold tracking-tight space-x-1">
+          <Link to="/" className="flex items-center space-x-1 text-2xl font-extrabold tracking-tight">
             <span style={{ color: "#0F2C57" }}>K</span>
             <span style={{ color: "#0F2C57" }}>O</span>
             <span style={{ color: "#0F2C57" }}>I</span>

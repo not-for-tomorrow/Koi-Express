@@ -1,4 +1,3 @@
-// DeliverOrder.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import L from "leaflet";
@@ -9,16 +8,13 @@ import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import NoOrderToDeliver from "./NoOderToDeliver";
 import { LOCATIONIQ_KEY } from "../../koi/api/api";
 
-const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 2000;
-
 const DeliverOrder = () => {
   const [orderData, setOrderData] = useState(null);
   const [distance, setDistance] = useState("");
   const [map, setMap] = useState(null);
   const [routeBounds, setRouteBounds] = useState(null);
   const [loadingMap, setLoadingMap] = useState(true);
-  const [retryCount, setRetryCount] = useState(0);
+  const [mapInitialized, setMapInitialized] = useState(false); // Flag to check if map is already initialized
 
   const token = localStorage.getItem("token");
 
@@ -44,18 +40,10 @@ const DeliverOrder = () => {
     fetchOrderData();
   }, [token]);
 
-  // Kiểm tra dữ liệu trước khi load bản đồ
   useEffect(() => {
-    if (
-      !orderData ||
-      !orderData.originLocation ||
-      !orderData.destinationLocation
-    )
-      return;
+    if (!orderData || !orderData.originLocation || !orderData.destinationLocation || mapInitialized) return;
 
     const initializeMap = async () => {
-      if (map) map.remove();
-
       const { originLocation, destinationLocation } = orderData;
 
       try {
@@ -71,12 +59,12 @@ const DeliverOrder = () => {
 
         const newMap = L.map("map").setView([pickup.lat, pickup.lon], 10);
         setMap(newMap);
+        setMapInitialized(true); // Set flag to true after initializing
 
         L.tileLayer(
           `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`,
           {
-            attribution:
-              '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
+            attribution: '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
           }
         ).addTo(newMap);
 
@@ -92,9 +80,7 @@ const DeliverOrder = () => {
           (err, routes) => {
             if (!err && routes && routes[0]) {
               const route = routes[0];
-              setDistance(
-                (route.summary.totalDistance / 1000).toFixed(2) + " km"
-              );
+              setDistance((route.summary.totalDistance / 1000).toFixed(2) + " km");
 
               const routePolyline = L.polyline(route.coordinates, {
                 color: "blue",
@@ -104,35 +90,22 @@ const DeliverOrder = () => {
               setRouteBounds(bounds);
 
               newMap.fitBounds(bounds);
-              setLoadingMap(false);
+              setLoadingMap(false); // Map loaded successfully
             } else {
               console.error("Failed to calculate route:", err);
-              retryMapLoad();
+              setLoadingMap(false);
             }
           }
         );
       } catch (error) {
         console.error("Failed to fetch coordinates:", error);
-        retryMapLoad();
-      }
-    };
-
-    const retryMapLoad = () => {
-      if (retryCount < MAX_RETRIES) {
-        setTimeout(() => {
-          setRetryCount(retryCount + 1);
-          initializeMap();
-        }, RETRY_DELAY_MS);
-      } else {
         setLoadingMap(false);
-        console.error("Failed to load the map after multiple attempts.");
       }
     };
 
     setLoadingMap(true);
-    setRetryCount(0);
     initializeMap();
-  }, [orderData]); // Chỉ chạy khi orderData thay đổi
+  }, [orderData, mapInitialized]); // Added mapInitialized as a dependency
 
   const handleFitBounds = () => {
     if (map && routeBounds) {
@@ -199,7 +172,7 @@ const DeliverOrder = () => {
             position: "absolute",
             top: "10px",
             right: "10px",
-            zIndex: 20, // Set button above the map and loading spinner, but below popup
+            zIndex: 20,
             padding: "10px",
             backgroundColor: "#007bff",
             color: "white",

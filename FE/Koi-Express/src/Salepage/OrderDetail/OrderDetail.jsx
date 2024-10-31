@@ -8,10 +8,6 @@ import OrderDetailModal from "./OrderDetailModal";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { LOCATIONIQ_KEY } from "../../koi/api/api";
 
-
-const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 2000;
-
 const OrderDetail = () => {
   const location = useLocation();
   const { orderId } = useParams();
@@ -21,7 +17,6 @@ const OrderDetail = () => {
   const [map, setMap] = useState(null);
   const [routeBounds, setRouteBounds] = useState(null);
   const [loadingMap, setLoadingMap] = useState(true);
-  const [retryCount, setRetryCount] = useState(0);
 
   const token = localStorage.getItem("token");
 
@@ -45,87 +40,71 @@ const OrderDetail = () => {
     fetchOrderData();
   }, [orderIdFromLocation, token]);
 
-  const initializeMap = async () => {
-    if (!orderData?.order?.originLocation || !orderData?.order?.destinationLocation) return;
-
-    if (map) {
-      map.remove();
-    }
-
-    const { originLocation, destinationLocation } = orderData.order;
-
-    try {
-      const pickupResponse = await axios.get(
-        `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${originLocation}&format=json`
-      );
-      const deliveryResponse = await axios.get(
-        `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${destinationLocation}&format=json`
-      );
-
-      const pickup = pickupResponse.data[0];
-      const delivery = deliveryResponse.data[0];
-
-      const newMap = L.map("map").setView([pickup.lat, pickup.lon], 10);
-      setMap(newMap);
-
-      L.tileLayer(
-        `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`,
-        {
-          attribution: '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
-        }
-      ).addTo(newMap);
-
-      L.marker([pickup.lat, pickup.lon]).addTo(newMap);
-      L.marker([delivery.lat, delivery.lon]).addTo(newMap);
-
-      const routingService = L.Routing.osrmv1();
-      routingService.route(
-        [
-          L.Routing.waypoint(L.latLng(pickup.lat, pickup.lon)),
-          L.Routing.waypoint(L.latLng(delivery.lat, delivery.lon)),
-        ],
-        (err, routes) => {
-          if (!err && routes && routes[0]) {
-            const route = routes[0];
-            setDistance((route.summary.totalDistance / 1000).toFixed(2) + " km");
-
-            const routePolyline = L.polyline(route.coordinates, {
-              color: "blue",
-              weight: 4,
-            }).addTo(newMap);
-            const bounds = routePolyline.getBounds();
-            setRouteBounds(bounds);
-
-            newMap.fitBounds(bounds);
-            setLoadingMap(false);
-          } else {
-            console.error("Failed to calculate route:", err);
-            retryMapLoad();
-          }
-        }
-      );
-    } catch (error) {
-      console.error("Failed to fetch coordinates:", error);
-      retryMapLoad();
-    }
-  };
-
-  const retryMapLoad = () => {
-    if (retryCount < MAX_RETRIES) {
-      setTimeout(() => {
-        setRetryCount(retryCount + 1);
-        initializeMap();
-      }, RETRY_DELAY_MS);
-    } else {
-      setLoadingMap(false); // Stop loading spinner if retries are exhausted
-      console.error("Failed to load the map after multiple attempts.");
-    }
-  };
-
   useEffect(() => {
-    setLoadingMap(true);
-    setRetryCount(0);
-    initializeMap();
+    const initializeMap = async () => {
+      if (!orderData?.order?.originLocation || !orderData?.order?.destinationLocation || map) return;
+
+      const { originLocation, destinationLocation } = orderData.order;
+
+      try {
+        const pickupResponse = await axios.get(
+          `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${originLocation}&format=json`
+        );
+        const deliveryResponse = await axios.get(
+          `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${destinationLocation}&format=json`
+        );
+
+        const pickup = pickupResponse.data[0];
+        const delivery = deliveryResponse.data[0];
+
+        const newMap = L.map("map").setView([pickup.lat, pickup.lon], 10);
+        setMap(newMap);
+
+        L.tileLayer(
+          `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`,
+          {
+            attribution: '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
+          }
+        ).addTo(newMap);
+
+        L.marker([pickup.lat, pickup.lon]).addTo(newMap);
+        L.marker([delivery.lat, delivery.lon]).addTo(newMap);
+
+        const routingService = L.Routing.osrmv1();
+        routingService.route(
+          [
+            L.Routing.waypoint(L.latLng(pickup.lat, pickup.lon)),
+            L.Routing.waypoint(L.latLng(delivery.lat, delivery.lon)),
+          ],
+          (err, routes) => {
+            if (!err && routes && routes[0]) {
+              const route = routes[0];
+              setDistance((route.summary.totalDistance / 1000).toFixed(2) + " km");
+
+              const routePolyline = L.polyline(route.coordinates, {
+                color: "blue",
+                weight: 4,
+              }).addTo(newMap);
+              const bounds = routePolyline.getBounds();
+              setRouteBounds(bounds);
+
+              newMap.fitBounds(bounds);
+              setLoadingMap(false);
+            } else {
+              console.error("Failed to calculate route:", err);
+              setLoadingMap(false);
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Failed to fetch coordinates:", error);
+        setLoadingMap(false);
+      }
+    };
+
+    if (orderData) {
+      initializeMap();
+    }
   }, [orderData]);
 
   const handleFitBounds = () => {
