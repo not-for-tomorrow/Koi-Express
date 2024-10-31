@@ -31,8 +31,7 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
     List<Orders> findByStatusAndDeliveringStaffId(OrderStatus status, Long deliveringStaffId);
 
     @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c, s) " +
-            "FROM Orders o JOIN o.customer c LEFT JOIN o.shipment s " +
-            "WHERE o.orderId = :orderId")
+            "FROM Orders o JOIN o.customer c LEFT JOIN o.shipment s")
     List<OrderWithCustomerDTO> findAllWithCustomer();
 
     @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c, s) " +
