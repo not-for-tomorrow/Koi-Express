@@ -17,8 +17,13 @@ const Sidebar = () => {
     setActiveItem(item.id); // Chỉ thay đổi activeItem cho các mục trong navItems
     // Điều hướng dựa trên item.title
     switch (item.title) {
-      case "Tổng đơn hàng":
+
+      case "Dashboard":
         navigate("/managerpage");
+        break;
+
+      case "Tổng đơn hàng":
+        navigate("/managerpage/order");
         break;
         case "Tổng khách hàng":
         navigate("/managerpage/customeraccount");
