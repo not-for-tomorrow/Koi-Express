@@ -36,6 +36,21 @@ public class OrderSessionManager {
         logger.info("Session data stored for key '{}': {}", sessionKey, sessionData);
     }
 
+    public void storePickupOrderSessionData(HttpSession session, String role, String userId, Orders order) {
+        String sessionKey = getSessionKey(role, userId) + "_pickupOrder";
+
+        Map<String, Object> sessionData = Map.of(
+                "orderId", order.getOrderId(),
+                "koiQuantity", order.getOrderDetail().getKoiQuantity(),
+                "distanceFee", order.getOrderDetail().getDistanceFee(),
+                "commitmentFee", order.getOrderDetail().getCommitmentFee()
+        );
+
+        session.setAttribute(sessionKey, sessionData);
+        logger.info("Pickup order session data stored for key '{}': {}", sessionKey, sessionData);
+    }
+
+
     // Lấy dữ liệu session của order
     @SuppressWarnings("unchecked")
     public Map<String, Object> retrieveSessionData(HttpSession session, String role, String userId) {

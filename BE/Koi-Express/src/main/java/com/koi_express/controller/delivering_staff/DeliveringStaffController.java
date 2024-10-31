@@ -2,11 +2,13 @@ package com.koi_express.controller.delivering_staff;
 
 import java.util.List;
 
+import com.koi_express.controller.order.OrderSessionManager;
 import com.koi_express.exception.AppException;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.service.delivering_staff.DeliveringStaffService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,7 @@ public class DeliveringStaffController {
 
     private final DeliveringStaffService deliveringStaffService;
     private final JwtUtil jwtUtil;
+    private final OrderSessionManager session;
 
     private Long extractDeliveringStaffId(String token) throws Exception {
         String cleanedToken = jwtUtil.cleanToken(token);
@@ -52,15 +55,17 @@ public class DeliveringStaffController {
     }
 
     @GetMapping("/pickup-orders")
-    public ResponseEntity<ApiResponse<List<Orders>>> getPickupOrdersByDeliveringStaff(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse<List<Orders>>> getPickupOrdersByDeliveringStaff(
+            @RequestHeader("Authorization") String token, HttpSession httpSession) {
         try {
             Long deliveringStaffId = extractDeliveringStaffId(token);
             List<Orders> orders = deliveringStaffService.getPickupOrdersByDeliveringStaff(deliveringStaffId);
 
-            if (orders.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                        .body(new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "No assigned orders found", orders));
+            if (!orders.isEmpty()) {
+                Orders order = orders.get(0);
+                session.storePickupOrderSessionData(httpSession, "DELIVERING_STAFF", deliveringStaffId.toString(), order);
             }
+
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Assigned orders retrieved", orders));
         } catch (Exception e) {
             logger.error("{} for delivering staff ID: {}", ERROR_RETRIEVING_ASSIGNED_ORDERS, e.getMessage(), e);
