@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
@@ -8,20 +8,17 @@ import OrderDetailModal from "./OrderDetailModal";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { LOCATIONIQ_KEY } from "../../koi/api/api";
 
-const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 2000;
-
 const OrderDetail = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { orderId } = useParams();
   const orderIdFromLocation = location.state?.orderId || orderId;
   const [orderData, setOrderData] = useState(null);
-  const [customerData, setCustomerData] = useState(null); // Added state for customer data
+  const [customerData, setCustomerData] = useState(null);
   const [distance, setDistance] = useState("");
   const [map, setMap] = useState(null);
   const [routeBounds, setRouteBounds] = useState(null);
   const [loadingMap, setLoadingMap] = useState(true);
-  const [retryCount, setRetryCount] = useState(0);
 
   const token = localStorage.getItem("token");
 
@@ -37,9 +34,9 @@ const OrderDetail = () => {
           }
         );
 
-        const { order, customer } = response.data; // Destructure response
+        const { order, customer } = response.data;
         setOrderData(order);
-        setCustomerData(customer); // Set customer data separately
+        setCustomerData(customer);
       } catch (error) {
         console.error("Failed to fetch order data:", error);
       }
@@ -48,88 +45,70 @@ const OrderDetail = () => {
     fetchOrderData();
   }, [orderIdFromLocation, token]);
 
-  const initializeMap = async () => {
-    if (!orderData?.originLocation || !orderData?.destinationLocation) return;
-
-    if (map) {
-      map.remove();
-    }
-
-    const { originLocation, destinationLocation } = orderData;
-
-    try {
-      const pickupResponse = await axios.get(
-        `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${originLocation}&format=json`
-      );
-      const deliveryResponse = await axios.get(
-        `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${destinationLocation}&format=json`
-      );
-
-      const pickup = pickupResponse.data[0];
-      const delivery = deliveryResponse.data[0];
-
-      const newMap = L.map("map").setView([pickup.lat, pickup.lon], 10);
-      setMap(newMap);
-
-      L.tileLayer(
-        `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`,
-        {
-          attribution: '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
-        }
-      ).addTo(newMap);
-
-      L.marker([pickup.lat, pickup.lon]).addTo(newMap);
-      L.marker([delivery.lat, delivery.lon]).addTo(newMap);
-
-      const routingService = L.Routing.osrmv1();
-      routingService.route(
-        [
-          L.Routing.waypoint(L.latLng(pickup.lat, pickup.lon)),
-          L.Routing.waypoint(L.latLng(delivery.lat, delivery.lon)),
-        ],
-        (err, routes) => {
-          if (!err && routes && routes[0]) {
-            const route = routes[0];
-            setDistance((route.summary.totalDistance / 1000).toFixed(2) + " km");
-
-            const routePolyline = L.polyline(route.coordinates, {
-              color: "blue",
-              weight: 4,
-            }).addTo(newMap);
-            const bounds = routePolyline.getBounds();
-            setRouteBounds(bounds);
-
-            newMap.fitBounds(bounds);
-            setLoadingMap(false);
-          } else {
-            console.error("Failed to calculate route:", err);
-            retryMapLoad();
-          }
-        }
-      );
-    } catch (error) {
-      console.error("Failed to fetch coordinates:", error);
-      retryMapLoad();
-    }
-  };
-
-  const retryMapLoad = () => {
-    if (retryCount < MAX_RETRIES) {
-      setTimeout(() => {
-        setRetryCount(retryCount + 1);
-        initializeMap();
-      }, RETRY_DELAY_MS);
-    } else {
-      setLoadingMap(false);
-      console.error("Failed to load the map after multiple attempts.");
-    }
-  };
-
   useEffect(() => {
-    setLoadingMap(true);
-    setRetryCount(0);
+    const initializeMap = async () => {
+      if (!orderData || !orderData.originLocation || !orderData.destinationLocation || map) return;
+
+      const { originLocation, destinationLocation } = orderData;
+
+      try {
+        const pickupResponse = await axios.get(
+          `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${originLocation}&format=json`
+        );
+        const deliveryResponse = await axios.get(
+          `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${destinationLocation}&format=json`
+        );
+
+        const pickup = pickupResponse.data[0];
+        const delivery = deliveryResponse.data[0];
+
+        const newMap = L.map("map").setView([pickup.lat, pickup.lon], 10);
+        setMap(newMap);
+
+        L.tileLayer(
+          `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`,
+          {
+            attribution: '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
+          }
+        ).addTo(newMap);
+
+        L.marker([pickup.lat, pickup.lon]).addTo(newMap);
+        L.marker([delivery.lat, delivery.lon]).addTo(newMap);
+
+        const routingService = L.Routing.osrmv1();
+        routingService.route(
+          [
+            L.Routing.waypoint(L.latLng(pickup.lat, pickup.lon)),
+            L.Routing.waypoint(L.latLng(delivery.lat, delivery.lon)),
+          ],
+          (err, routes) => {
+            if (!err && routes && routes[0]) {
+              const route = routes[0];
+              setDistance((route.summary.totalDistance / 1000).toFixed(2) + " km");
+
+              const routePolyline = L.polyline(route.coordinates, {
+                color: "blue",
+                weight: 4,
+              }).addTo(newMap);
+              const bounds = routePolyline.getBounds();
+              setRouteBounds(bounds);
+
+              newMap.fitBounds(bounds);
+              setLoadingMap(false);
+            } else {
+              console.error("Failed to calculate route:", err);
+              setLoadingMap(false);
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Failed to fetch coordinates:", error);
+        setLoadingMap(false);
+      }
+    };
+
     initializeMap();
-  }, [orderData]);
+  }, [orderData]); // Initialize map only once when orderData is available
 
   const handleFitBounds = () => {
     if (map && routeBounds) {
