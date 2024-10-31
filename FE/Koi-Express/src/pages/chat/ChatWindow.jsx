@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Client } from "@stomp/stompjs";
 import { FiArrowLeft, FiX, FiSend } from "react-icons/fi";
 
 const formatTime = () => {
@@ -49,6 +50,8 @@ const ChatWindow = ({ onClose }) => {
     const [showEmailForm, setShowEmailForm] = useState(false);
     const [showInputField, setShowInputField] = useState(false);
     const [message, setMessage] = useState("");
+    const [messages, setMessages] = useState([]);
+    const [stompClient, setStompClient] = useState(null);
 
     const offlineMessages = [
         "Our reps are currently offline.",
@@ -60,11 +63,33 @@ const ChatWindow = ({ onClose }) => {
         "How can we help you today?"
     ];
 
+    // Initialize WebSocket Connection
+    useEffect(() => {
+        const client = new Client({
+            brokerURL: "ws://localhost:8080/ws",
+            reconnectDelay: 5000,
+            onConnect: () => {
+                client.subscribe("/topic/public", (message) => {
+                    const receivedMessage = JSON.parse(message.body);
+                    setMessages((prevMessages) => [
+                        ...prevMessages,
+                        { id: receivedMessage.id || Date.now(), sender: receivedMessage.sender, text: receivedMessage.content, timestamp: formatTime() }
+                    ]);
+                });
+            },
+        });
+
+        client.activate();
+        setStompClient(client);
+
+        return () => {
+            client.deactivate();
+        };
+    }, []);
+
     useEffect(() => {
         const currentHour = new Date().getHours();
-        if (currentHour >= 22 || currentHour < 7) {
-            setIsOffline(true);
-        }
+        setIsOffline(currentHour >= 22 || currentHour < 7);
     }, []);
 
     const typedMessages = useSequentialTypingEffect(
@@ -91,9 +116,23 @@ const ChatWindow = ({ onClose }) => {
     };
 
     const handleSendMessage = () => {
-        if (message.trim()) {
-            console.log("Message sent:", message);
-            setMessage(""); // Clear input field after sending
+        if (message.trim() && stompClient) {
+            const chatMessage = {
+                sender: "Customer",
+                content: message,
+                type: "CHAT"
+            };
+
+            stompClient.publish({
+                destination: "/app/chat.sendMessage",
+                body: JSON.stringify(chatMessage),
+            });
+
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { id: Date.now(), sender: "You", text: message, timestamp: formatTime() },
+            ]);
+            setMessage("");
         }
     };
 
@@ -101,6 +140,7 @@ const ChatWindow = ({ onClose }) => {
         setIsSubmitted(false);
         setIsOffline(false);
         setShowEmailForm(false);
+        setMessages([]);
     };
 
     return (
@@ -124,12 +164,21 @@ const ChatWindow = ({ onClose }) => {
             <div className="flex-1 p-4 space-y-3 overflow-y-auto bg-gray-50 rounded-b-2xl animate-fade-in">
                 <p className="text-xs text-gray-500 text-center mb-2">Today, {formatTime()}</p>
 
-                {typedMessages.map((message, index) => (
+                {typedMessages.map((msg, index) => (
                     <div key={index} className="flex items-start space-x-2 animate-slide-right">
                         <img src="/src/assets/images/Icons/KoiExpress1.webp" alt="Agent Icon" className="w-6 h-6 rounded-full bg-white shadow-md" />
                         <div className="bg-blue-50 text-blue-900 p-3 rounded-2xl shadow-inner max-w-[80%] border border-blue-100">
-                            <p>{message}</p>
+                            <p>{msg}</p>
                             <p className="text-xs text-blue-500 mt-1">{formatTime()}</p>
+                        </div>
+                    </div>
+                ))}
+
+                {messages.map((msg, index) => (
+                    <div key={index} className={`flex ${msg.sender === "You" ? "justify-end" : "justify-start"}`}>
+                        <div className="bg-gray-200 p-3 rounded-lg max-w-xs shadow-md">
+                            <p>{msg.text}</p>
+                            <p className="text-xs text-gray-400 text-right">{msg.timestamp}</p>
                         </div>
                     </div>
                 ))}

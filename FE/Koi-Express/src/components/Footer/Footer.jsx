@@ -1,186 +1,74 @@
 import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFacebook, faTwitter, faInstagram, faLinkedin } from "@fortawesome/free-brands-svg-icons";
 
 export default function Footer() {
   return (
-    <>
-      <div className="items-center bg-white mx-[132px]">
-        <div class="flex items-center flex-shrink-0 text-blue-500 mr-10 w">
-          <span class="font-extrabold  text-2xl tracking-tight ">
-            Koi Express
-          </span>
-        </div>
-        <div className="flex justify-around w-full mt-5">
-          <div>
-            <ul>
-              <li className="mt-5 text-2xl font-semibold cursor-pointer hover:text-amber-500">
-                Dịch vụ
-              </li>
-              <li className="mt-6 cursor-pointer hover:text-amber-500 ">
-                Dịch vụ giao cá koi
-              </li>
-            </ul>
+      <div className="bg-white text-gray-800 px-10 py-12">
+        <div className="max-w-7xl mx-auto flex justify-between items-center space-x-6">
+
+          {/* Left section with Koi Express title and all lists in a horizontal layout */}
+          <div className="flex-1">
+            <h2 className="text-blue-500 font-extrabold text-2xl mb-4">Koi Express</h2>
+            <div className="flex space-x-14">
+              <ul>
+                <li className="text-lg font-semibold mb-2">Dịch vụ</li>
+                <li className="hover:text-amber-500 cursor-pointer mb-2">Dịch vụ giao cá koi</li>
+              </ul>
+
+              <ul>
+                <li className="text-lg font-semibold mb-2">Công ty</li>
+                <li className="hover:text-amber-500 cursor-pointer mb-2">Về chúng tôi</li>
+                <li className="hover:text-amber-500 cursor-pointer mb-2">Tin tức</li>
+                <li className="hover:text-amber-500 cursor-pointer">Tuyển dụng</li>
+              </ul>
+
+              <ul>
+                <li className="text-lg font-semibold mb-2">Hỗ trợ</li>
+                <li className="hover:text-amber-500 cursor-pointer">Chính sách và điều khoản</li>
+              </ul>
+
+              <ul>
+                <li className="text-lg font-semibold mb-2">Khách hàng</li>
+                <li className="hover:text-amber-500 cursor-pointer mb-2">Khách hàng cá nhân</li>
+                <li className="hover:text-amber-500 cursor-pointer mb-2">Khách hàng doanh nghiệp</li>
+                <li className="hover:text-amber-500 cursor-pointer mb-2">Cộng đồng khách hàng</li>
+                <li className="hover:text-amber-500 cursor-pointer mb-2">Trung tâm hỗ trợ</li>
+              </ul>
+            </div>
           </div>
-          <div>
-            <ul>
-              <li className="mt-5 text-2xl font-semibold cursor-pointer hover:text-amber-500">
-                Công ty
-              </li>
-              <li className="mt-6 cursor-pointer hover:text-amber-500 ">
-                Về chúng tôi
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Tin tức
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Tuyển dụng
-              </li>
-            </ul>
-          </div>
-          <div>
-            <ul>
-              <li className="mt-5 text-2xl font-semibold cursor-pointer hover:text-amber-500">
-                Khách hàng
-              </li>
-              <li className="mt-6 cursor-pointer hover:text-amber-500 ">
-                Khách hàng cá nhân
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Khách hàng doanh nghiệp
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Cộng đồng khách hàng
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Trung tâm hỗ trợ
-              </li>
-            </ul>
-          </div>
-          <div>
-            <ul>
-              <li className="mt-5 text-2xl font-semibold cursor-pointer hover:text-amber-500">
-                Hỗ trợ
-              </li>
-              <li className="mt-6 cursor-pointer hover:text-amber-500 ">
-                Chính sách và điều khoản
-              </li>
-            </ul>
-          </div>
-          <div>
-            <ul>
-              <li className="mt-5 text-2xl font-semibold cursor-pointer hover:text-amber-500">
-                Tài xế
-              </li>
-              <li className="mt-6 cursor-pointer hover:text-amber-500 ">
-                Đăng ký tài xế mới
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Cộng đồng tài xế
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Cẩm nang tài xế
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Trung tâm hỗ trợ
-              </li>
-            </ul>
-          </div>
-          <div>
-            <ul>
-              <li className="mt-5 text-2xl font-semibold cursor-pointer hover:text-amber-500">
-                Đường dẫn nhanh
-              </li>
-              <li className="mt-6 cursor-pointer hover:text-amber-500 ">
-                Trung tâm hỗ trợ khách hàng
-              </li>
-              <li className="mt-5 cursor-pointer hover:text-amber-500 ">
-                Trung tâm hỗ trợ tài xế
-              </li>
-            </ul>
+
+          {/* Right section with email subscription form and icons */}
+          <div className="w-full md:w-1/4">
+            <h2 className="text-lg font-semibold mb-2">Đăng ký nhận tin</h2>
+            <form className="flex mb-4">
+              <input
+                  type="email"
+                  placeholder="Nhập email của bạn"
+                  className="p-2 border border-gray-300 rounded-l w-2/3 focus:outline-none"
+              />
+              <button className="p-2 bg-blue-500 text-white rounded-r w-1/3">
+                Đăng ký
+              </button>
+            </form>
+
+            {/* Icons section */}
+            <div className="flex space-x-4 mt-4">
+              <a href="#" className="text-gray-500 hover:text-blue-500">
+                <FontAwesomeIcon icon={faFacebook} className="text-blue-600" size="lg"/>
+              </a>
+              <a href="#" className="text-gray-500 hover:text-blue-500">
+                <FontAwesomeIcon icon={faTwitter} className="text-blue-400" size="lg"/>
+              </a>
+              <a href="#" className="text-gray-500 hover:text-blue-500">
+                <FontAwesomeIcon icon={faInstagram} className="text-pink-500" size="lg"/>
+              </a>
+              <a href="#" className="text-gray-500 hover:text-blue-500">
+                <FontAwesomeIcon icon={faLinkedin} className="text-blue-800" size="lg"/>
+              </a>
+            </div>
           </div>
         </div>
-        <div className="mt-8 text-2xl font-semibold">
-          Công ty Cổ Phần Dịch Vụ KOI EXPRESS
-        </div>
-        <div className="mt-2">
-          <div className="flex">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="mb-1 mr-2 size-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
-              />
-            </svg>
-            <p>
-              VP TPHCM: Tầng 1, Tòa nhà Rivera Park, 7/28 Thành Thái, Phường 14,
-              Quận 10
-            </p>
-          </div>
-        </div>
-        <div className="mt-2">
-          <div className="flex">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="mb-1 mr-2 size-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
-              />
-            </svg>
-            <p>
-              VP Hà Nội: Tầng 9, Tòa nhà Mipec, số 229 Tây Sơn, Phường Ngã Tư
-              Sở, Quận Đống Đa
-            </p>
-          </div>
-        </div>
-        <div className="mt-2">
-          <div className="flex">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="mb-1 mr-2 size-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
-              />
-            </svg>
-            <p>VP Đà Nẵng: 66A Lê Đình Lý, Thanh Khê, Đà Nẵng</p>
-          </div>
-        </div>
-       
       </div>
-    </>
   );
 }
