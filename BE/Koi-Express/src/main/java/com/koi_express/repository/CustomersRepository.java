@@ -1,5 +1,6 @@
 package com.koi_express.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,4 +24,6 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
 
     @NonNull
     List<Customers> findAll(@NonNull Sort sort);
+
+    List<Customers> findByActiveTrueAndLastLoginBefore(LocalDateTime date);
 }

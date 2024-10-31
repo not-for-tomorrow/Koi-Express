@@ -10,6 +10,7 @@ import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.repository.OrderRepository;
+import com.koi_express.repository.SystemAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public class ManagerService {
     private final OrderRepository orderRepository;
     private final DeliveringStaffRepository deliveringStaffRepository;
     private final DeliveringStaffAccount deliveringStaffAccount;
+    private final SystemAccountRepository systemAccountRepository;
 
     public Customers findByPhoneNumber(String phoneNumber) {
         return manageCustomerService.findByPhoneNumber(phoneNumber);
@@ -166,4 +168,37 @@ public class ManagerService {
     public int getHighestRevenueYear() {
         return orderRepository.findHighestRevenueYear().orElse(0);
     }
+
+    public boolean deactivateDeliveringStaff(Long staffId) {
+        DeliveringStaff deliveringStaff = deliveringStaffRepository.findById(staffId)
+                .orElseThrow(() -> new IllegalArgumentException("Staff not found with id: " + staffId));
+
+        if (!deliveringStaff.isActive()) {
+            return false;
+        }
+
+        deliveringStaff.setActive(false);
+        deliveringStaffRepository.save(deliveringStaff);
+
+        return true;
+    }
+
+    public boolean deactivateSalesStaff(Long accountId) {
+        com.koi_express.entity.account.SystemAccount account = systemAccountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + accountId));
+
+        if (account.getRole() != Role.SALES_STAFF) {
+            throw new IllegalArgumentException("Only SALES_STAFF accounts can be deactivated via this method.");
+        }
+
+        if (!account.isActive()) {
+            return false;
+        }
+
+        account.setActive(false);
+        systemAccountRepository.save(account);
+
+        return true;
+    }
+
 }

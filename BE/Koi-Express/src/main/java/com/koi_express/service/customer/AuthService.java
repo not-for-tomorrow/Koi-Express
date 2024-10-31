@@ -1,5 +1,6 @@
-package com.koi_express.service.verification;
+package com.koi_express.service.customer;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.koi_express.jwt.JwtUtil;
@@ -35,6 +36,12 @@ public class AuthService {
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())) {
             throw new AppException(ErrorCode.PASSWORD_INCORRECT);
+        }
+
+        if (user instanceof Customers) {
+            Customers customer = (Customers) user;
+            customer.setLastLogin(LocalDateTime.now());
+            customersRepository.save(customer);
         }
 
         String token = jwtUtil.generateToken(

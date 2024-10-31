@@ -48,7 +48,10 @@ public class Customers implements User { // quản lí thông tin khách hàng
     @CreationTimestamp
     LocalDateTime createdAt = LocalDateTime.now();
 
-    boolean activated;
+    @Column(nullable = false)
+    boolean active = true;
+
+    LocalDateTime lastLogin;
 
     @Override
     public Long getId() {
