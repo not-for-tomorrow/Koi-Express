@@ -1,6 +1,7 @@
 package com.koi_express.service.customer;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import com.koi_express.dto.request.RegisterRequest;
@@ -13,8 +14,8 @@ import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.CustomersRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +43,7 @@ public class CustomerService {
                 .email(registerRequest.getEmail())
                 .passwordHash(encodedPassword)
                 .authProvider(AuthProvider.LOCAL)
+                .active(true)
                 .role(Role.CUSTOMER)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -73,5 +75,29 @@ public class CustomerService {
 
     public Customers save(Customers customer) {
         return customersRepository.save(customer);
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?") // Runs daily at midnight
+    public void lockInactiveCustomers() {
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        List<Customers> inactiveCustomers = customersRepository.findByActiveTrueAndLastLoginBefore(sevenDaysAgo);
+
+        for (Customers customer : inactiveCustomers) {
+            customer.setActive(false);
+            customersRepository.save(customer);
+        }
+    }
+
+    public ApiResponse<String> reactivateCustomer(Long customerId) {
+        Customers customer = customersRepository.findById(customerId)
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+
+        if (!customer.isActive()) {
+            customer.setActive(true);
+            customer.setLastLogin(LocalDateTime.now());
+            customersRepository.save(customer);
+            return new ApiResponse<>(HttpStatus.OK.value(), "Account reactivated successfully");
+        }
+        return new ApiResponse<>(HttpStatus.OK.value(), "Account is already active");
     }
 }

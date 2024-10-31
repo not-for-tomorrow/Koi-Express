@@ -6,6 +6,8 @@ import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.DeliveringStaffLevel;
+import com.koi_express.service.delivering_staff.DeliveringStaffService;
+import com.koi_express.service.manager.DeliveringStaffAccount;
 import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.manager.ManagerService;
 import jakarta.validation.Valid;
@@ -28,6 +30,7 @@ public class ManagerController {
 
     private final ManagerService managerService;
     private final ManageCustomerService manageCustomerService;
+    private final DeliveringStaffService deliveringStaffService;
 
     @PostMapping("/create-sales-staff")
     public ResponseEntity<ApiResponse<String>> createSalesStaff(
@@ -170,4 +173,47 @@ public class ManagerController {
     public int getHighestRevenueYear() {
         return managerService.getHighestRevenueYear();
     }
+
+    @PutMapping("/delivering-staff/{staffId}/deactivate")
+    public ResponseEntity<ApiResponse<String>> deactivateDeliveringStaff(
+            @PathVariable Long staffId) {
+
+        boolean deactivated = managerService.deactivateDeliveringStaff(staffId);
+
+        if (deactivated) {
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.OK.value(), "Delivering staff account deactivated successfully.", null),
+                    HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Delivering staff account is already inactive.", null),
+                    HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/sales-staff/{accountId}/deactivate")
+    public ResponseEntity<ApiResponse<String>> deactivateSalesStaff(
+            @PathVariable Long accountId) {
+
+        try {
+            boolean deactivated = managerService.deactivateSalesStaff(accountId);
+
+            if (deactivated) {
+                return new ResponseEntity<>(
+                        new ApiResponse<>(HttpStatus.OK.value(), "Sales staff account deactivated successfully.", null),
+                        HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(
+                        new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Sales staff account is already inactive.", null),
+                        HttpStatus.BAD_REQUEST);
+            }
+
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null),
+                    HttpStatus.BAD_REQUEST);
+        }
+    }
+
+
 }
