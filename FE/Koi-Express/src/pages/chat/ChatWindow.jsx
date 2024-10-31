@@ -112,8 +112,8 @@ const ChatWindow = ({ onClose }) => {
                     </button>
                     <img src="/src/assets/images/Icons/KoiExpress1.webp" alt="Chat Icon" className="w-8 h-8 rounded-full bg-white p-1 shadow-md" />
                     <div>
-                        <h2 className="text-lg font-semibold">Swimlane</h2>
-                        <p className="text-xs text-blue-200">You are chatting with Swimlane</p>
+                        <h2 className="text-lg font-semibold">Koi Express</h2>
+                        <p className="text-xs text-blue-200">You are chatting with Koi Express</p>
                     </div>
                 </div>
                 <button onClick={onClose} className="text-2xl hover:bg-blue-600 rounded-full p-1 transition" aria-label="Close Chat">

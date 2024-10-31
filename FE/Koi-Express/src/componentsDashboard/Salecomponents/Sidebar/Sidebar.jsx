@@ -25,6 +25,9 @@ const Sidebar = () => {
       case "Duyệt đơn hàng":
         navigate("/salepage");
         break;
+      case "Chat":
+        navigate("/salepage/chat");
+        break;
       case "Logout":
         navigate("/");
         break;
