@@ -41,7 +41,6 @@ public class Orders implements Serializable { // Quản lý đơn hàng
     String destinationDetail;
 
     boolean isPriceCalculated = false;
-    boolean isImageUploaded = false;
     boolean isPaymentConfirmed = false;
 
     @Column(precision = 15, scale = 2)
@@ -81,10 +80,6 @@ public class Orders implements Serializable { // Quản lý đơn hàng
 
     public void markPriceCalculated() {
         this.isPriceCalculated = true;
-    }
-
-    public void markImageUploaded() {
-        this.isImageUploaded = true;
     }
 
     public void markPaymentConfirmed() {

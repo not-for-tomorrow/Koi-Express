@@ -15,12 +15,12 @@ public class OrderDetailBuilder {
         OrderDetail orderDetail = order.getOrderDetail();
         orderDetail.setKoiType(koiType);
         orderDetail.setKoiSize(koiSize);
-        orderDetail.setDistanceFee(fees.get("remainingTransportationFee"));
-        orderDetail.setKoiFee(fees.get("fishPrice"));
-        orderDetail.setCareFee(fees.get("careFee"));
-        orderDetail.setPackagingFee(fees.get("packagingFee"));
-        orderDetail.setInsuranceFee(fees.get("insuranceFee"));
-        orderDetail.setVat(fees.get("vat"));
-        order.setTotalFee(fees.get("totalPrice"));
+        orderDetail.setDistanceFee(fees.getOrDefault("remainingTransportationFee", BigDecimal.ZERO));
+        orderDetail.setKoiFee(fees.getOrDefault("koiFee", BigDecimal.ZERO));
+        orderDetail.setCareFee(fees.getOrDefault("careFee", BigDecimal.ZERO));
+        orderDetail.setPackagingFee(fees.getOrDefault("packagingFee", BigDecimal.ZERO));
+        orderDetail.setInsuranceFee(fees.getOrDefault("insuranceFee", BigDecimal.ZERO));
+        orderDetail.setVat(fees.getOrDefault("vat", BigDecimal.ZERO));
+        order.setTotalFee(fees.getOrDefault("totalFee", BigDecimal.ZERO));
     }
 }

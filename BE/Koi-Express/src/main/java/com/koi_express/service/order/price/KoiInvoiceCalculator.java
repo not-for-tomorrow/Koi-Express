@@ -72,6 +72,7 @@ public class KoiInvoiceCalculator {
         feeDetails.put("subtotal", subtotal.setScale(0, RoundingMode.HALF_UP));
         feeDetails.put("vat", vat.setScale(0, RoundingMode.HALF_UP));
         feeDetails.put("totalFee", totalFee.setScale(0, RoundingMode.HALF_UP));
+        feeDetails.put("specializedVehicleFee", BigDecimal.valueOf(specializedVehicleFee));
 
         if (logger.isLoggable(Level.INFO)) {
             logger.info(String.format(

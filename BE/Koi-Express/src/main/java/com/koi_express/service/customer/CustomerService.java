@@ -100,4 +100,10 @@ public class CustomerService {
         }
         return new ApiResponse<>(HttpStatus.OK.value(), "Account is already active");
     }
+
+    public Customers getCustomerById(Long customerId) {
+        return customersRepository.findById(customerId)
+                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
+    }
+
 }

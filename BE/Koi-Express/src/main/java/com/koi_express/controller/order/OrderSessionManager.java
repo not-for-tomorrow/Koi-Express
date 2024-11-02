@@ -43,13 +43,16 @@ public class OrderSessionManager {
                 "orderId", order.getOrderId(),
                 "koiQuantity", order.getOrderDetail().getKoiQuantity(),
                 "distanceFee", order.getOrderDetail().getDistanceFee(),
-                "commitmentFee", order.getOrderDetail().getCommitmentFee()
+                "commitmentFee", order.getOrderDetail().getCommitmentFee(),
+                "customerId", order.getCustomer().getCustomerId(),
+                "email", order.getCustomer().getEmail()
         );
 
         session.setAttribute(sessionKey, sessionData);
+        session.setAttribute(ROLE_SESSION_KEY, role);
+        session.setAttribute(USER_ID_SESSION_KEY, userId);
         logger.info("Pickup order session data stored for key '{}': {}", sessionKey, sessionData);
     }
-
 
     // Lấy dữ liệu session của order
     @SuppressWarnings("unchecked")
@@ -68,7 +71,7 @@ public class OrderSessionManager {
 
     // Lưu dữ liệu tính toán vào session
     public void storeCalculationSessionData(
-            HttpSession session, String role, String userId, Map<String, BigDecimal> calculationData) {
+            HttpSession session, String role, String userId, Map<String, Object> calculationData) {
         String sessionKey = getSessionKey(role, userId) + "_calculation";
         session.setAttribute(sessionKey, calculationData);
         logger.info("Calculation session data stored for key '{}': {}", sessionKey, calculationData);
@@ -87,6 +90,20 @@ public class OrderSessionManager {
         logger.info("Calculation session data retrieved for key '{}': {}", sessionKey, calculationData);
         return calculationData;
     }
+
+    public Map<String, Object> retrievePickupOrderSessionData(HttpSession session, String role, String userId) {
+        String sessionKey = getSessionKey(role, userId) + "_pickupOrder";
+        Map<String, Object> sessionData = (Map<String, Object>) session.getAttribute(sessionKey);
+
+        if (sessionData == null) {
+            logger.warn("No pickup order session data found for key '{}'", sessionKey);
+            return Collections.emptyMap();
+        }
+
+        logger.info("Pickup order session data retrieved for key '{}': {}", sessionKey, sessionData);
+        return sessionData;
+    }
+
 
     // Lấy role từ session
     public String getRoleFromSession(HttpSession session) {
@@ -107,6 +124,11 @@ public class OrderSessionManager {
     }
 
     private String getSessionKey(String role, String userId) {
+        if (role == null || userId == null) {
+            logger.warn("Missing role or userId in session data: role=" + role + ", userId=" + userId);
+            throw new IllegalArgumentException("Session data is incomplete. Role and userId are required.");
+        }
+
         return switch (role) {
             case "CUSTOMER" -> "customer_" + userId;
             case "SALES_STAFF" -> "sales_staff_" + userId;

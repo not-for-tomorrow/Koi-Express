@@ -1,6 +1,8 @@
 package com.koi_express.controller.order;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.koi_express.jwt.JwtUtil;
@@ -14,10 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -31,9 +30,8 @@ public class OrderCalculation {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/calculate-total-fee")
-    public ResponseEntity<ApiResponse<Map<String, BigDecimal>>> calculateTotalFee(
-            @RequestParam KoiType koiType,
-            @RequestParam BigDecimal koiSize,
+    public ResponseEntity<ApiResponse<Map<String, Object>>> calculateTotalFee(
+            @RequestBody Map<String, List<Map<String, Object>>> requestBody,
             HttpSession session,
             HttpServletRequest request) {
 
@@ -48,9 +46,8 @@ public class OrderCalculation {
         String role = jwtUtil.extractRole(token);
         String userId = jwtUtil.extractUserId(token, role);
 
-        Map<String, Object> sessionData = sessionManager.retrieveSessionData(session, role, userId);
+        Map<String, Object> sessionData = sessionManager.retrievePickupOrderSessionData(session, role, userId);
         if (sessionData == null
-                || !sessionData.containsKey("koiQuantity")
                 || !sessionData.containsKey("distanceFee")
                 || !sessionData.containsKey("commitmentFee")) {
             return new ResponseEntity<>(
@@ -58,14 +55,51 @@ public class OrderCalculation {
                     HttpStatus.BAD_REQUEST);
         }
 
-        Integer koiQuantity = (Integer) sessionData.get("koiQuantity");
-        BigDecimal distanceFee = (BigDecimal) sessionData.get("distanceFee");
-        BigDecimal commitmentFee = (BigDecimal) sessionData.get("commitmentFee");
+        BigDecimal distanceFee = sessionData.get("distanceFee") != null ? (BigDecimal) sessionData.get("distanceFee") : BigDecimal.ZERO;
+        BigDecimal commitmentFee = sessionData.get("commitmentFee") != null ? (BigDecimal) sessionData.get("commitmentFee") : BigDecimal.ZERO;
 
-        ApiResponse<Map<String, BigDecimal>> response =
-                koiInvoiceCalculator.calculateTotalPrice(koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
-        sessionManager.storeCalculationSessionData(session, role, userId, response.getResult());
+        List<Map<String, Object>> koiList = requestBody.get("koiList");
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        BigDecimal totalKoiFee = BigDecimal.ZERO;
+        BigDecimal totalCareFee = BigDecimal.ZERO;
+        BigDecimal totalPackagingFee = BigDecimal.ZERO;
+        BigDecimal totalRemainingTransportationFee = BigDecimal.ZERO;
+        BigDecimal totalInsuranceFee = BigDecimal.ZERO;
+        BigDecimal totalVat = BigDecimal.ZERO;
+        BigDecimal grandTotalFee = BigDecimal.ZERO;
+
+        for (Map<String, Object> koi : koiList) {
+            KoiType koiType = KoiType.valueOf((String) koi.get("koiType"));
+            Integer koiQuantity = koi.get("quantity") != null ? (Integer) koi.get("quantity") : 0;
+            BigDecimal koiSize = koi.get("koiSize") != null ? new BigDecimal(koi.get("koiSize").toString()) : BigDecimal.ZERO;
+
+            ApiResponse<Map<String, BigDecimal>> feeResponse =
+                    koiInvoiceCalculator.calculateTotalPrice(koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
+            Map<String, BigDecimal> individualFee = feeResponse.getResult();
+
+            // Tính tổng các loại phí
+            totalKoiFee = totalKoiFee.add(individualFee.getOrDefault("koiFee", BigDecimal.ZERO));
+            totalCareFee = totalCareFee.add(individualFee.getOrDefault("careFee", BigDecimal.ZERO));
+            totalPackagingFee = totalPackagingFee.add(individualFee.getOrDefault("packagingFee", BigDecimal.ZERO));
+            totalRemainingTransportationFee = totalRemainingTransportationFee.add(individualFee.getOrDefault("remainingTransportationFee", BigDecimal.ZERO));
+            totalInsuranceFee = totalInsuranceFee.add(individualFee.getOrDefault("insuranceFee", BigDecimal.ZERO));
+            totalVat = totalVat.add(individualFee.getOrDefault("vat", BigDecimal.ZERO));
+            grandTotalFee = grandTotalFee.add(individualFee.getOrDefault("totalFee", BigDecimal.ZERO));
+        }
+
+        // Chuẩn bị phản hồi
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("koiFee", totalKoiFee);
+        responseData.put("careFee", totalCareFee);
+        responseData.put("packagingFee", totalPackagingFee);
+        responseData.put("remainingTransportationFee", totalRemainingTransportationFee);
+        responseData.put("insuranceFee", totalInsuranceFee);
+        responseData.put("vat", totalVat);
+        responseData.put("totalFee", grandTotalFee);
+
+        sessionManager.storeCalculationSessionData(session, role, userId, responseData);
+
+        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Total fee calculated", responseData), HttpStatus.OK);
     }
+
 }
