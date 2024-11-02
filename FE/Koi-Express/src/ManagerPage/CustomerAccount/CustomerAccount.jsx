@@ -24,12 +24,15 @@ const CustomerAccount = () => {
       }
 
       try {
-        const response = await fetch("http://localhost:8080/api/manager/customers", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          "http://localhost:8080/api/manager/customers",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch customers");
@@ -55,12 +58,15 @@ const CustomerAccount = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/manager/delete/${customerId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:8080/api/manager/delete/${customerId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.ok) {
         setCustomers((prevCustomers) =>
@@ -89,7 +95,9 @@ const CustomerAccount = () => {
         <div className="text-sm text-center text-red-500">{error}</div>
       ) : (
         <div className="p-8 text-sm bg-white rounded-lg shadow-lg">
-          <h1 className="text-2xl font-bold text-gray-800">Quản lý tài khoản khách hàng</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Quản lý tài khoản khách hàng
+          </h1>
           <input
             type="text"
             value={searchQuery}
@@ -100,15 +108,23 @@ const CustomerAccount = () => {
 
           <div className="overflow-auto max-h-[63.5vh]">
             {filterCustomers().length === 0 ? (
-              <div className="text-center text-gray-500">Không tìm thấy khách hàng</div>
+              <div className="text-center text-gray-500">
+                Không tìm thấy khách hàng
+              </div>
             ) : (
               <table className="w-full text-sm border-collapse shadow-md table-auto">
                 <thead className="sticky top-0 bg-blue-100">
                   <tr className="text-blue-900 border-b border-blue-200">
-                    <th className="p-3 font-semibold text-left">Mã khách hàng</th>
-                    <th className="p-3 font-semibold text-left">Tên khách hàng</th>
+                    <th className="p-3 font-semibold text-left">
+                      Mã khách hàng
+                    </th>
+                    <th className="p-3 font-semibold text-left">
+                      Tên khách hàng
+                    </th>
                     <th className="p-3 font-semibold text-left">Email</th>
-                    <th className="p-3 font-semibold text-left">Số điện thoại</th>
+                    <th className="p-3 font-semibold text-left">
+                      Số điện thoại
+                    </th>
                     <th className="p-3 font-semibold text-left">Ngày tạo</th>
                     <th className="p-3 font-semibold text-left">Thao tác</th>
                   </tr>
@@ -118,12 +134,20 @@ const CustomerAccount = () => {
                     <tr
                       key={customer.customerId}
                       className="transition-colors border-b border-gray-200 cursor-pointer hover:bg-blue-50"
-                      onClick={() => navigate(`/managerpage/customeraccount/${customer.customerId}`)}
+                      onClick={() =>
+                        navigate(
+                          `/managerpage/customeraccount/${customer.customerId}`
+                        )
+                      }
                     >
-                      <td className="p-3 font-medium text-blue-600">{customer.customerId}</td>
+                      <td className="p-3 font-medium text-blue-600">
+                        {customer.customerId}
+                      </td>
                       <td className="p-3 text-gray-700">{customer.fullName}</td>
                       <td className="p-3 text-gray-700">{customer.email}</td>
-                      <td className="p-3 text-gray-700">{customer.phoneNumber || "N/A"}</td>
+                      <td className="p-3 text-gray-700">
+                        {customer.phoneNumber || "N/A"}
+                      </td>
                       <td className="p-3 text-gray-700">
                         {new Date(customer.createdAt).toLocaleString("vi-VN")}
                       </td>

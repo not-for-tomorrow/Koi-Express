@@ -24,6 +24,7 @@
     "@stomp/stompjs": "^7.0.0",
     "axios": "^1.7.7",
     "chart.js": "^4.4.5",
+    "js-cookie": "^3.0.5",
     "jwt-decode": "^3.1.2",
     "koi-express": "file:",
     "leaflet": "^1.9.4",

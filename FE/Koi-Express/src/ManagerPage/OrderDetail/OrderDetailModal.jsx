@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { pickupOrderAPI } from "../../koi/api/api";
 import { useNavigate } from "react-router-dom";
 
 const OrderDetailModal = ({
@@ -17,10 +16,8 @@ const OrderDetailModal = ({
   paymentMethod,
   distanceFee,
   commitmentFee,
-  onClose,
+  deliveringStaff,
 }) => {
-  const navigate = useNavigate();
-
   const statusMapping = {
     PENDING: "Chờ xác nhận",
     ACCEPTED: "Đã xác nhận",
@@ -52,24 +49,28 @@ const OrderDetailModal = ({
   const translatedStatus = statusMapping[status] || "Unknown";
   const statusColor = statusColors[translatedStatus] || {};
 
-  const handlePickupOrder = async () => {
-    try {
-      await pickupOrderAPI(orderId); // Await API response
-      alert("Order accepted successfully!");
-      if (onClose) onClose(); // Optional: Close modal if onClose is passed
-      navigate("/deliveringstaffpage"); // Navigate after success
-    } catch (error) {
-      console.error(error);
-      alert("Failed to pick up the order. Please try again.");
-    }
-  };
-
   return (
     <div className="relative z-20 flex flex-col w-full h-full max-w-lg p-6 bg-white border border-gray-200 shadow-lg">
       <div className="flex-grow">
         <div className="mb-4 text-2xl font-bold text-gray-800">
           Đơn hàng #{orderId} của {fullName}
         </div>
+
+        {/* Driver Information Section */}
+        {deliveringStaff && (
+          <div className="p-4 mb-4 border rounded-lg bg-gray-50">
+            <h3 className="mb-2 text-lg font-semibold">Thông tin tài xế</h3>
+            <p>
+              <strong>Họ tên:</strong> {deliveringStaff.fullName}
+            </p>
+            <p>
+              <strong>Số điện thoại:</strong> {deliveringStaff.phoneNumber}
+            </p>
+            <p>
+              <strong>Email:</strong> {deliveringStaff.email}
+            </p>
+          </div>
+        )}
 
         <div className="mb-6 text-sm">
           <strong className="text-gray-600">Lộ trình:</strong> {distance}

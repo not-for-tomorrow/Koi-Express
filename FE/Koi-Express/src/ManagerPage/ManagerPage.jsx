@@ -5,9 +5,9 @@ import Order from "./Order";
 import { UserProvider } from "../componentsDashboard/UserContext";
 import SaleStaffAccount from "./SaleStaffAccount";
 import DeliveringStaffAccount from "./DeliveringStaffAccount";
-import CustomerAccount from "./CustomerAccount";
+import CustomerAccount from "./CustomerAccount/CustomerAccount.jsx";
 import Dashboard from "./Dashboard.jsx";
-import CustomerDetail from "./CustomerDetail.jsx";
+import CustomerDetail from "./CustomerAccount/CustomerDetail.jsx";
 import OrderDetail from "./OrderDetail/OrderDetail.jsx";
 
 const ManagerPage = () => {
@@ -26,9 +26,18 @@ const ManagerPage = () => {
               <Route path="/order" element={<Order />} />
               <Route path="/customeraccount" element={<CustomerAccount />} />
               <Route path="/salestaffaccount" element={<SaleStaffAccount />} />
-              <Route path="/deliveringstaffaccount" element={<DeliveringStaffAccount />} />
-              <Route path="/customeraccount/:customerId" element={<CustomerDetail />} />
-              <Route path="/recentorder/detail/:orderId" element={<OrderDetail />} />
+              <Route
+                path="/deliveringstaffaccount"
+                element={<DeliveringStaffAccount />}
+              />
+              <Route
+                path="/customeraccount/:customerId"
+                element={<CustomerDetail />}
+              />
+              <Route
+                path="/recentorder/detail/:orderId"
+                element={<OrderDetail />}
+              />
             </Routes>
           </div>
         </div>

@@ -1,3 +1,4 @@
+// DeliverOrder.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import L from "leaflet";
@@ -14,7 +15,7 @@ const DeliverOrder = () => {
   const [map, setMap] = useState(null);
   const [routeBounds, setRouteBounds] = useState(null);
   const [loadingMap, setLoadingMap] = useState(true);
-  const [mapInitialized, setMapInitialized] = useState(false); // Flag to check if map is already initialized
+  const [mapInitialized, setMapInitialized] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -29,9 +30,40 @@ const DeliverOrder = () => {
             },
           }
         );
-        setOrderData(
-          response.data.result.length ? response.data.result[0] : null
-        );
+
+        // Check if order data exists and log it
+        const order = response.data.result.length
+          ? response.data.result[0]
+          : null;
+        setOrderData(order);
+
+        // Log retrieved data for verification
+        console.log("Fetched order data:", order);
+
+        // Store or update session data using the specified format
+        if (order) {
+          const staffId = order.deliveringStaff.staffId; // Assuming deliveringStaff has a staffId
+          const sessionKey = `delivering_staff_${staffId}_pickupOrder`;
+
+          sessionStorage.setItem(
+            sessionKey,
+            JSON.stringify({
+              koiQuantity: order.orderDetail.koiQuantity,
+              orderId: order.orderId,
+              distanceFee: order.orderDetail.distanceFee,
+              commitmentFee: order.orderDetail.commitmentFee,
+            })
+          );
+
+          console.log(`Session data stored for key '${sessionKey}':`, {
+            koiQuantity: order.orderDetail.koiQuantity,
+            orderId: order.orderId,
+            distanceFee: order.orderDetail.distanceFee,
+            commitmentFee: order.orderDetail.commitmentFee,
+          });
+        } else {
+          console.warn("No orders available for delivery.");
+        }
       } catch (error) {
         console.error("Failed to fetch order data:", error);
       }
@@ -40,8 +72,15 @@ const DeliverOrder = () => {
     fetchOrderData();
   }, [token]);
 
+  // Kiểm tra dữ liệu trước khi load bản đồ
   useEffect(() => {
-    if (!orderData || !orderData.originLocation || !orderData.destinationLocation || mapInitialized) return;
+    if (
+      !orderData ||
+      !orderData.originLocation ||
+      !orderData.destinationLocation ||
+      mapInitialized
+    )
+      return;
 
     const initializeMap = async () => {
       const { originLocation, destinationLocation } = orderData;
@@ -64,7 +103,8 @@ const DeliverOrder = () => {
         L.tileLayer(
           `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`,
           {
-            attribution: '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
+            attribution:
+              '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
           }
         ).addTo(newMap);
 
@@ -80,7 +120,9 @@ const DeliverOrder = () => {
           (err, routes) => {
             if (!err && routes && routes[0]) {
               const route = routes[0];
-              setDistance((route.summary.totalDistance / 1000).toFixed(2) + " km");
+              setDistance(
+                (route.summary.totalDistance / 1000).toFixed(2) + " km"
+              );
 
               const routePolyline = L.polyline(route.coordinates, {
                 color: "blue",
@@ -105,7 +147,7 @@ const DeliverOrder = () => {
 
     setLoadingMap(true);
     initializeMap();
-  }, [orderData, mapInitialized]); // Added mapInitialized as a dependency
+  }, [orderData, mapInitialized]);
 
   const handleFitBounds = () => {
     if (map && routeBounds) {
@@ -172,7 +214,7 @@ const DeliverOrder = () => {
             position: "absolute",
             top: "10px",
             right: "10px",
-            zIndex: 20,
+            zIndex: 20, // Set button above the map and loading spinner, but below popup
             padding: "10px",
             backgroundColor: "#007bff",
             color: "white",
