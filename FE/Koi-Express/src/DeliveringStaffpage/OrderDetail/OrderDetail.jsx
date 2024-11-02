@@ -17,7 +17,7 @@ const OrderDetail = () => {
   const [map, setMap] = useState(null);
   const [routeBounds, setRouteBounds] = useState(null);
   const [loadingMap, setLoadingMap] = useState(true);
-  const [mapInitialized, setMapInitialized] = useState(false); // Flag to prevent multiple map initializations
+  const [mapInitialized, setMapInitialized] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -32,6 +32,7 @@ const OrderDetail = () => {
             },
           }
         );
+        // Extracting assigned orders from the result array based on orderId
         const assignedOrder = response.data.result.find(
           (order) => order.orderId === parseInt(orderIdFromLocation)
         );
@@ -45,7 +46,12 @@ const OrderDetail = () => {
   }, [orderIdFromLocation, token]);
 
   const initializeMap = async () => {
-    if (!orderData?.originLocation || !orderData?.destinationLocation || mapInitialized) return;
+    if (
+      !orderData?.originLocation ||
+      !orderData?.destinationLocation ||
+      mapInitialized
+    )
+      return;
 
     const { originLocation, destinationLocation } = orderData;
 
@@ -67,7 +73,8 @@ const OrderDetail = () => {
       L.tileLayer(
         `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`,
         {
-          attribution: '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
+          attribution:
+            '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
         }
       ).addTo(newMap);
 
@@ -83,7 +90,9 @@ const OrderDetail = () => {
         (err, routes) => {
           if (!err && routes && routes[0]) {
             const route = routes[0];
-            setDistance((route.summary.totalDistance / 1000).toFixed(2) + " km");
+            setDistance(
+              (route.summary.totalDistance / 1000).toFixed(2) + " km"
+            );
 
             const routePolyline = L.polyline(route.coordinates, {
               color: "blue",
@@ -111,7 +120,7 @@ const OrderDetail = () => {
       setLoadingMap(true);
       initializeMap();
     }
-  }, [orderData]); // Initialize map once when orderData is available
+  }, [orderData]);
 
   const handleFitBounds = () => {
     if (map && routeBounds) {

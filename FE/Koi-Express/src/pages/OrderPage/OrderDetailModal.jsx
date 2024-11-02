@@ -73,6 +73,7 @@ const OrderDetailModal = ({ orderId, distance }) => {
     paymentMethod,
     originLocation,
     destinationLocation,
+    deliveringStaff,
   } = order;
 
   // Safely access properties and format them
@@ -97,6 +98,22 @@ const OrderDetailModal = ({ orderId, distance }) => {
           <div className="mb-4 text-2xl font-bold text-gray-800">
             Đơn hàng #{orderId}
           </div>
+
+          {/* Driver Information Section */}
+          {deliveringStaff && (
+            <div className="p-4 mb-4 border rounded-lg bg-gray-50">
+              <h3 className="mb-2 text-lg font-semibold">Thông tin tài xế</h3>
+              <p>
+                <strong>Họ tên:</strong> {deliveringStaff.fullName}
+              </p>
+              <p>
+                <strong>Số điện thoại:</strong> {deliveringStaff.phoneNumber}
+              </p>
+              <p>
+                <strong>Email:</strong> {deliveringStaff.email}
+              </p>
+            </div>
+          )}
 
           <div className="text-sm ">
             <strong className="text-gray-600">Lộ trình:</strong>{" "}

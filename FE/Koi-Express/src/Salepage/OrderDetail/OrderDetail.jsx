@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
@@ -9,22 +9,19 @@ import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { LOCATIONIQ_KEY } from "../../koi/api/api";
 
 const OrderDetail = () => {
-  const location = useLocation();
   const { orderId } = useParams();
-  const orderIdFromLocation = location.state?.orderId || orderId;
   const [orderData, setOrderData] = useState(null);
   const [distance, setDistance] = useState("");
   const [map, setMap] = useState(null);
   const [routeBounds, setRouteBounds] = useState(null);
   const [loadingMap, setLoadingMap] = useState(true);
 
-  const token = localStorage.getItem("token");
-
   useEffect(() => {
     const fetchOrderData = async () => {
+      const token = localStorage.getItem("token");
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/orders/${orderIdFromLocation}`,
+          `http://localhost:8080/api/orders/${orderId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -38,11 +35,16 @@ const OrderDetail = () => {
     };
 
     fetchOrderData();
-  }, [orderIdFromLocation, token]);
+  }, [orderId]);
 
   useEffect(() => {
     const initializeMap = async () => {
-      if (!orderData?.order?.originLocation || !orderData?.order?.destinationLocation || map) return;
+      if (
+        !orderData?.order?.originLocation ||
+        !orderData?.order?.destinationLocation ||
+        map
+      )
+        return;
 
       const { originLocation, destinationLocation } = orderData.order;
 
@@ -63,7 +65,8 @@ const OrderDetail = () => {
         L.tileLayer(
           `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`,
           {
-            attribution: '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
+            attribution:
+              '&copy; <a href="https://locationiq.com">LocationIQ</a> contributors',
           }
         ).addTo(newMap);
 
@@ -79,7 +82,9 @@ const OrderDetail = () => {
           (err, routes) => {
             if (!err && routes && routes[0]) {
               const route = routes[0];
-              setDistance((route.summary.totalDistance / 1000).toFixed(2) + " km");
+              setDistance(
+                (route.summary.totalDistance / 1000).toFixed(2) + " km"
+              );
 
               const routePolyline = L.polyline(route.coordinates, {
                 color: "blue",
@@ -135,6 +140,7 @@ const OrderDetail = () => {
         distanceFee,
         commitmentFee,
       },
+      deliveringStaff,
     },
     customer: { fullName },
   } = orderData;
@@ -143,7 +149,7 @@ const OrderDetail = () => {
     <div className="flex min-h-screen bg-white">
       <div className="w-1/3">
         <OrderDetailModal
-          orderId={orderIdFromLocation}
+          orderId={orderId}
           fullName={fullName}
           originLocation={originLocation}
           destinationLocation={destinationLocation}
@@ -156,6 +162,7 @@ const OrderDetail = () => {
           paymentMethod={paymentMethod}
           distanceFee={distanceFee}
           commitmentFee={commitmentFee}
+          deliveringStaff={deliveringStaff}
         />
       </div>
 

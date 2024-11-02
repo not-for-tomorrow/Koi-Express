@@ -15,6 +15,7 @@ const OrderDetailModal = ({
   paymentMethod,
   distanceFee,
   commitmentFee,
+  deliveringStaff, 
 }) => {
   const statusMapping = {
     PENDING: "Chờ xác nhận",
@@ -54,11 +55,28 @@ const OrderDetailModal = ({
           Đơn hàng #{orderId} của {fullName}
         </div>
 
+        {/* Driver Information Section */}
+        {deliveringStaff && (
+          <div className="p-4 mb-4 border rounded-lg bg-gray-50">
+            <h3 className="mb-2 text-lg font-semibold">Thông tin tài xế</h3>
+            <p>
+              <strong>Họ tên:</strong> {deliveringStaff.fullName}
+            </p>
+            <p>
+              <strong>Số điện thoại:</strong> {deliveringStaff.phoneNumber}
+            </p>
+            <p>
+              <strong>Email:</strong> {deliveringStaff.email}
+            </p>
+          </div>
+        )}
+
         <div className="text-sm mb-6">
           <strong className="text-gray-600">Lộ trình:</strong> {distance}
         </div>
 
         <div className="mt-6">
+          {/* Sender Information */}
           <div className="flex items-start space-x-2">
             <div className="w-4 h-4 mt-1 bg-blue-500 rounded-full"></div>
             <div>
@@ -69,6 +87,7 @@ const OrderDetailModal = ({
             </div>
           </div>
 
+          {/* Recipient Information */}
           <div className="flex items-start mt-6 space-x-2">
             <div className="w-4 h-4 mt-1 bg-green-500 rounded-full"></div>
             <div>

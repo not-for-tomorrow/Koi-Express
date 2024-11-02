@@ -23,12 +23,15 @@ const CustomerDetail = () => {
       }
 
       try {
-        const response = await fetch(`http://localhost:8080/api/manager/id/${customerId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `http://localhost:8080/api/manager/id/${customerId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch customer details");
@@ -48,7 +51,8 @@ const CustomerDetail = () => {
 
   if (loading) return <div className="text-center">Loading...</div>;
   if (error) return <div className="text-center text-red-500">{error}</div>;
-  if (!customer) return <div className="text-center">No customer details available</div>;
+  if (!customer)
+    return <div className="text-center">No customer details available</div>;
 
   return (
     <div className="min-h-screen p-8 bg-gradient-to-r from-blue-100 to-blue-50">
