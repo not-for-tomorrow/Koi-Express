@@ -31,17 +31,28 @@ public class OrderPayment {
         Map<String, String> vnpParams = request.getParameterMap().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
 
-        if (!vnpParams.containsKey("vnp_TxnRef")) {
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Missing transaction reference", null),
-                    HttpStatus.BAD_REQUEST);
+        if (!vnpParams.containsKey("vnp_TxnRef") || vnpParams.get("vnp_TxnRef") == null) {
+            logger.warn("Transaction reference (vnp_TxnRef) is missing or null in VNPay callback");
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Transaction reference is missing or null", null));
         }
 
-        long orderId = Long.parseLong(vnpParams.get("vnp_TxnRef"));
-        logger.info("Processing commit fee payment callback for order ID: {}", orderId);
+        try {
+            long orderId = Long.parseLong(vnpParams.get("vnp_TxnRef"));
+            logger.info("Processing commit fee payment callback for order ID: {}", orderId);
 
-        ApiResponse<String> response = orderService.confirmCommitFeePayment(orderId, vnpParams);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+            ApiResponse<String> response = orderService.confirmCommitFeePayment(orderId, vnpParams);
+            return ResponseEntity.status(HttpStatus.valueOf(response.getCode())).body(response);
+
+        } catch (NumberFormatException e) {
+            logger.error("Invalid transaction reference format: {}", vnpParams.get("vnp_TxnRef"), e);
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid transaction reference format", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error processing commit fee payment callback: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error processing payment callback", e.getMessage()));
+        }
     }
 
     @PostMapping("/confirm-payment")
@@ -49,6 +60,7 @@ public class OrderPayment {
 
         try {
             ApiResponse<String> paymentResponse = orderService.confirmPayment(session, request);
+            logger.info("Payment confirmation response: {}", paymentResponse.getMessage());
 
             return new ResponseEntity<>(paymentResponse, HttpStatus.valueOf(paymentResponse.getCode()));
 

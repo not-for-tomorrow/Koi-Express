@@ -7,28 +7,42 @@ import com.koi_express.entity.order.Invoice;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.repository.InvoiceRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class InvoiceBuilder {
 
+    private static final Logger logger = LoggerFactory.getLogger(InvoiceBuilder.class);
     private final InvoiceRepository invoiceRepository;
 
     public void updateInvoice(Orders order, Map<String, BigDecimal> fees) {
-        Invoice invoice = new Invoice();
-        invoice.setOrder(order);
-        invoice.setCustomer(order.getCustomer());
-        invoice.setCommitmentFee(order.getOrderDetail().getCommitmentFee());
-        invoice.setDistanceFee(order.getOrderDetail().getDistanceFee());
-        invoice.setCareFee(order.getOrderDetail().getCareFee());
-        invoice.setPackagingFee(order.getOrderDetail().getPackagingFee());
-        invoice.setReturnFee(order.getOrderDetail().getReturnFee());
-        invoice.setVat(order.getOrderDetail().getVat());
-        invoice.setKoiFee(order.getOrderDetail().getKoiFee());
-        invoice.setInsuranceFee(order.getOrderDetail().getInsuranceFee());
-        invoice.setTotalFee(fees.get("totalFee"));
-        invoice.setPaymentMethod(order.getPaymentMethod());
+        if (order == null || order.getOrderDetail() == null || fees == null) {
+            logger.error("Invalid order details or fees provided. Invoice update aborted.");
+            throw new IllegalArgumentException("Order, order details, and fees must not be null.");
+        }
+
+        Invoice invoice = buildInvoice(order, fees);
         invoiceRepository.save(invoice);
+        logger.info("Invoice for order ID {} has been updated.", order.getOrderId());
+    }
+
+    private Invoice buildInvoice(Orders order, Map<String, BigDecimal> fees) {
+        return Invoice.builder()
+                .order(order)
+                .customer(order.getCustomer())
+                .commitmentFee(order.getOrderDetail().getCommitmentFee())
+                .distanceFee(fees.getOrDefault("remainingTransportationFee", BigDecimal.ZERO))
+                .careFee(fees.getOrDefault("careFee", BigDecimal.ZERO))
+                .packagingFee(fees.getOrDefault("packagingFee", BigDecimal.ZERO))
+                .returnFee(order.getOrderDetail().getReturnFee())
+                .vat(fees.getOrDefault("vat", BigDecimal.ZERO))
+                .koiFee(fees.getOrDefault("koiFee", BigDecimal.ZERO))
+                .insuranceFee(fees.getOrDefault("insuranceFee", BigDecimal.ZERO))
+                .totalFee(fees.getOrDefault("totalFee", BigDecimal.ZERO))
+                .paymentMethod(order.getPaymentMethod())
+                .build();
     }
 }

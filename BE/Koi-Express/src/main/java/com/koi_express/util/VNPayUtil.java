@@ -3,6 +3,8 @@ package com.koi_express.util;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -79,5 +81,11 @@ public class VNPayUtil {
                 .orderInfo(params.get("vnp_OrderInfo"))
                 .transactionStatus(params.get("vnp_TransactionStatus"))
                 .build();
+    }
+
+    public static String calculateExpireDate() {
+        LocalDateTime expireDate = LocalDateTime.now().plusMinutes(15); // Set expiration to 15 minutes from now
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        return expireDate.format(formatter);
     }
 }

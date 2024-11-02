@@ -1,5 +1,6 @@
 package com.koi_express.controller.sales_staff;
 
+import com.koi_express.exception.AppException;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
@@ -75,4 +76,29 @@ public class SalesStaffController {
 
         return new ResponseEntity<>(customersPage, HttpStatus.OK);
     }
+
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<ApiResponse<Customers>> getCustomerById(
+            @PathVariable Long customerId) {
+        try {
+            // Call the service to get customer details by ID
+            Customers customer = manageCustomerService.getCustomerById(customerId);
+
+            logger.info("Fetched details for customer ID: {}", customerId);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.OK.value(), "Customer details retrieved successfully", customer),
+                    HttpStatus.OK);
+        } catch (AppException e) {
+            logger.error("Error retrieving customer details for ID: {}", customerId, e);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null),
+                    HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            logger.error("Unexpected error retrieving customer details for ID: {}", customerId, e);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error retrieving customer details", null),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

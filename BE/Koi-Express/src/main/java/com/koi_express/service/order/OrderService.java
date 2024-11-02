@@ -300,7 +300,11 @@ public class OrderService {
         String role = sessionManager.getRoleFromSession(session);
         String userId = sessionManager.getUserIdFromSession(session);
 
-        Map<String, Object> sessionData = sessionManager.retrieveSessionData(session, role, userId);
+        if (role == null || userId == null) {
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Role or User ID is missing in session", null);
+        }
+
+        Map<String, Object> sessionData = sessionManager.retrievePickupOrderSessionData(session, role, userId);
         if (sessionData == null || !sessionData.containsKey("orderId")) {
             return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Order ID not found in session", null);
         }
@@ -318,12 +322,12 @@ public class OrderService {
 
         PaymentMethod paymentMethod = order.getPaymentMethod();
         if (request.getParameter("paymentMethod") != null) {
-            paymentMethod =
-                    PaymentMethod.valueOf(request.getParameter("paymentMethod").toUpperCase());
+            paymentMethod = PaymentMethod.valueOf(request.getParameter("paymentMethod").toUpperCase());
         }
 
         return handlePaymentMethod(order, paymentMethod, totalFee, sessionData, calculationData);
     }
+
 
     public ApiResponse<String> handlePaymentMethod(Orders order, PaymentMethod paymentMethod, BigDecimal totalFee, Map<String, Object> sessionData, Map<String, BigDecimal> calculationData) {
         return switch (paymentMethod) {
@@ -332,7 +336,6 @@ public class OrderService {
             case CASH_BY_RECEIVER, CASH_BY_SENDER -> processCashPayment(order, calculationData);
         };
     }
-
 
     private ApiResponse<String> processVnPayPayment(Orders order, BigDecimal totalFee, Map<String, Object> sessionData, Map<String, BigDecimal> calculationData) {
         try {
