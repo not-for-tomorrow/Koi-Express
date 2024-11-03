@@ -52,7 +52,8 @@ public class DeliveringStaffService {
         order.setStatus(OrderStatus.PICKING_UP);
         orderRepository.save(order);
 
-        LocalDateTime pickupTime = pickupTimeCalculator.calculatePickupTime(order.getOrderDetail().getKilometers());
+        LocalDateTime pickupTime =
+                pickupTimeCalculator.calculatePickupTime(order.getOrderDetail().getKilometers());
 
         Shipments shipment = Shipments.builder()
                 .customer(order.getCustomer())
@@ -109,5 +110,4 @@ public class DeliveringStaffService {
 
         return order;
     }
-
 }

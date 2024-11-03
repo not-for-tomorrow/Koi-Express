@@ -18,5 +18,4 @@ public interface SystemAccountRepository extends JpaRepository<SystemAccount, Lo
     Optional<SystemAccount> findByPhoneNumber(String phoneNumber);
 
     List<SystemAccount> findAllByRoleAndActive(Role role, boolean active);
-
 }

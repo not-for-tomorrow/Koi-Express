@@ -1,16 +1,15 @@
 package com.koi_express.controller.customer;
 
-import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.request.UpdateRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.dto.response.BasicInfoResponse;
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.customer.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -36,20 +35,22 @@ public class CustomerController {
             String errorMessage = bindingResult.getFieldError() != null
                     ? bindingResult.getFieldError().getDefaultMessage()
                     : "Validation failed";
+            logger.warn("Validation error during update: {}", errorMessage);
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
         }
 
         String jwt = token.substring(7);
         String customerId = jwtUtil.extractCustomerId(jwt);
-
         logger.info("Extracted customerId: {}", customerId);
 
         try {
             Long parsedCustomerId = Long.parseLong(customerId);
             ApiResponse<Customers> response = customerService.updateCustomer(parsedCustomerId, updateRequest);
+            logger.info("Customer updated successfully for ID: {}", parsedCustomerId);
             return ResponseEntity.ok(response);
         } catch (NumberFormatException e) {
+            logger.error("Invalid customerId format: {}", customerId, e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid customerId", null));
         }
@@ -71,11 +72,9 @@ public class CustomerController {
             @RequestHeader("Authorization") String token) {
 
         String jwt = token.substring(7);
-
         String phoneNumber = jwtUtil.extractPhoneNumber(jwt);
 
         Customers customer = customerService.getCustomerDetails(phoneNumber);
-
         BasicInfoResponse basicInfo =
                 new BasicInfoResponse(customer.getFullName(), customer.getPhoneNumber(), customer.getEmail());
 

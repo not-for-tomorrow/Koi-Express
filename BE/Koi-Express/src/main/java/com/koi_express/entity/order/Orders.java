@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.entity.shipment.Shipments;

@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.enums.KoiType;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.order.price.KoiInvoiceCalculator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -38,11 +38,18 @@ public class OrderCalculation {
         if (session == null) {
             logger.error("Session is null. Cannot proceed.");
             return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Session is null", null),
+                    new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Session is null", null, "Session không tồn tại"),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        String token = request.getHeader("Authorization").substring(7);
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            logger.error("Authorization header missing or invalid.");
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Missing or invalid token", null, "Thiếu hoặc sai định dạng Authorization header"),
+                    HttpStatus.BAD_REQUEST);
+        }
+        String token = authHeader.substring(7);
         String role = jwtUtil.extractRole(token);
         String userId = jwtUtil.extractUserId(token, role);
 
@@ -51,12 +58,16 @@ public class OrderCalculation {
                 || !sessionData.containsKey("distanceFee")
                 || !sessionData.containsKey("commitmentFee")) {
             return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Session data missing", null),
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Session data missing", null, "Dữ liệu trong session bị thiếu"),
                     HttpStatus.BAD_REQUEST);
         }
 
-        BigDecimal distanceFee = sessionData.get("distanceFee") != null ? (BigDecimal) sessionData.get("distanceFee") : BigDecimal.ZERO;
-        BigDecimal commitmentFee = sessionData.get("commitmentFee") != null ? (BigDecimal) sessionData.get("commitmentFee") : BigDecimal.ZERO;
+        BigDecimal distanceFee =
+                sessionData.get("distanceFee") != null ? (BigDecimal) sessionData.get("distanceFee") : BigDecimal.ZERO;
+        BigDecimal commitmentFee = sessionData.get("commitmentFee") != null
+                ? (BigDecimal) sessionData.get("commitmentFee")
+                : BigDecimal.ZERO;
+        Integer sessionKoiQuantity = (Integer) sessionData.get("koiQuantity");
 
         List<Map<String, Object>> koiList = requestBody.get("koiList");
 
@@ -68,26 +79,49 @@ public class OrderCalculation {
         BigDecimal totalVat = BigDecimal.ZERO;
         BigDecimal grandTotalFee = BigDecimal.ZERO;
 
+        int totalKoiQuantity = koiList.stream().mapToInt(koi -> (Integer) koi.get("quantity")).sum();
+
+        if (sessionKoiQuantity != null && totalKoiQuantity != sessionKoiQuantity) {
+            String errorDetails = String.format("Số lượng cá không khớp. Số lượng từ session: %d, Số lượng thực tế: %d", sessionKoiQuantity, totalKoiQuantity);
+            logger.error(errorDetails);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Inconsistent koi quantity", null, errorDetails),
+                    HttpStatus.BAD_REQUEST);
+        }
+
         for (Map<String, Object> koi : koiList) {
             KoiType koiType = KoiType.valueOf((String) koi.get("koiType"));
             Integer koiQuantity = koi.get("quantity") != null ? (Integer) koi.get("quantity") : 0;
-            BigDecimal koiSize = koi.get("koiSize") != null ? new BigDecimal(koi.get("koiSize").toString()) : BigDecimal.ZERO;
+            BigDecimal koiSize = koi.get("koiSize") != null
+                    ? new BigDecimal(koi.get("koiSize").toString())
+                    : BigDecimal.ZERO;
 
             ApiResponse<Map<String, BigDecimal>> feeResponse =
                     koiInvoiceCalculator.calculateTotalPrice(koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
-            Map<String, BigDecimal> individualFee = feeResponse.getResult();
+            Map<String, BigDecimal> individualFee = feeResponse != null ? feeResponse.getResult() : null;
 
-            // Tính tổng các loại phí
-            totalKoiFee = totalKoiFee.add(individualFee.getOrDefault("koiFee", BigDecimal.ZERO));
-            totalCareFee = totalCareFee.add(individualFee.getOrDefault("careFee", BigDecimal.ZERO));
-            totalPackagingFee = totalPackagingFee.add(individualFee.getOrDefault("packagingFee", BigDecimal.ZERO));
-            totalRemainingTransportationFee = totalRemainingTransportationFee.add(individualFee.getOrDefault("remainingTransportationFee", BigDecimal.ZERO));
-            totalInsuranceFee = totalInsuranceFee.add(individualFee.getOrDefault("insuranceFee", BigDecimal.ZERO));
-            totalVat = totalVat.add(individualFee.getOrDefault("vat", BigDecimal.ZERO));
-            grandTotalFee = grandTotalFee.add(individualFee.getOrDefault("totalFee", BigDecimal.ZERO));
+            if (individualFee != null) {
+                totalKoiFee = totalKoiFee.add(individualFee.getOrDefault("koiFee", BigDecimal.ZERO));
+                totalCareFee = totalCareFee.add(individualFee.getOrDefault("careFee", BigDecimal.ZERO));
+                totalPackagingFee = totalPackagingFee.add(individualFee.getOrDefault("packagingFee", BigDecimal.ZERO));
+                totalRemainingTransportationFee = totalRemainingTransportationFee.add(
+                        individualFee.getOrDefault("remainingTransportationFee", BigDecimal.ZERO));
+                totalInsuranceFee = totalInsuranceFee.add(individualFee.getOrDefault("insuranceFee", BigDecimal.ZERO));
+                totalVat = totalVat.add(individualFee.getOrDefault("vat", BigDecimal.ZERO));
+                grandTotalFee = grandTotalFee.add(individualFee.getOrDefault("totalFee", BigDecimal.ZERO));
+
+                logger.info("Calculated for koiType {}: koiFee={}, careFee={}, packagingFee={}, totalFee={}",
+                        koiType, individualFee.get("koiFee"), individualFee.get("careFee"),
+                        individualFee.get("packagingFee"), individualFee.get("totalFee"));
+            } else {
+                String errorDetail = "Fee calculation returned null for koiType: " + koiType;
+                logger.warn(errorDetail);
+                return new ResponseEntity<>(
+                        new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Fee calculation error", null, errorDetail),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
 
-        // Chuẩn bị phản hồi
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("koiFee", totalKoiFee);
         responseData.put("careFee", totalCareFee);
@@ -99,7 +133,7 @@ public class OrderCalculation {
 
         sessionManager.storeCalculationSessionData(session, role, userId, responseData);
 
-        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Total fee calculated", responseData), HttpStatus.OK);
+        return new ResponseEntity<>(
+                new ApiResponse<>(HttpStatus.OK.value(), "Total fee calculated", responseData), HttpStatus.OK);
     }
-
 }

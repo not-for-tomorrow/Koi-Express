@@ -1,8 +1,8 @@
 package com.koi_express.dto;
 
-import lombok.Data;
-
 import java.math.BigDecimal;
+
+import lombok.Data;
 
 @Data
 public class KoiDataDTO {

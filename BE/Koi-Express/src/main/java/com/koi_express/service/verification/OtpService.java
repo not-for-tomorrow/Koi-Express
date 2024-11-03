@@ -103,7 +103,6 @@ public class OtpService {
         return phoneNumber;
     }
 
-
     public void saveTempRegisterRequest(RegisterRequest registerRequest) {
         String formattedPhoneNumber = formatPhoneNumber(registerRequest.getPhoneNumber());
         tempRegisterData.put(formattedPhoneNumber, registerRequest);
