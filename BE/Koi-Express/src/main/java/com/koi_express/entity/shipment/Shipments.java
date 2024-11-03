@@ -1,16 +1,13 @@
 package com.koi_express.entity.shipment;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.ShipmentCondition;
 import com.koi_express.enums.ShipmentStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
@@ -62,5 +59,4 @@ public class Shipments { // quản lý vận chuyển
 
     @UpdateTimestamp
     LocalDateTime updatedAt;
-    
 }

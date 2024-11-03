@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mysql-db:
-    container_name: some-mysql
+    container_name: mysql-db
     image: mysql:latest
     restart: always
     environment:
@@ -11,22 +11,21 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: 12345
     volumes:
-      - ./mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql # Sử dụng volume để lưu trữ dữ liệu của MySQL
     ports:
-      - "3306:3306"
+      - "3306:3306" # Mở cổng 3306 để kết nối bên ngoài, nếu cần
     networks:
       - koi-express-net
 
-  koi-express-app:
-    container_name: koi-express-container
-    image: koi-express:latest
+  backend:
+    container_name: koi-express-backend
     build:
-      context: .
-      dockerfile: Dockerfile
+      dockerfile: /Dockerfile
+    image: koi-express-backend:latest
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://some-mysql:3306/koi_express
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/koi_express
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: 12345
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -34,7 +33,26 @@ services:
       - mysql-db
     networks:
       - koi-express-net
+    restart: always # Tự động khởi động lại nếu container gặp sự cố
+
+  frontend:
+    container_name: koi-express-frontend
+    build:
+      context: ./frontend # Đảm bảo Dockerfile của React (Vite) có trong thư mục này
+      dockerfile: Dockerfile
+    image: koi-express-frontend:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - backend # Chờ backend sẵn sàng trước khi khởi động
+    networks:
+      - koi-express-net
+    restart: always # Tự động khởi động lại nếu container gặp sự cố
 
 networks:
   koi-express-net:
     driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local

@@ -10,8 +10,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.koi_express.entity.shipment.Shipments;
-import com.koi_express.jwt.JwtUtil;
 import com.koi_express.controller.order.OrderSessionManager;
 import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.OrderRequest;
@@ -22,6 +20,7 @@ import com.koi_express.enums.OrderStatus;
 import com.koi_express.enums.PaymentMethod;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.service.manager.ManagerService;
 import com.koi_express.service.order.builder.InvoiceBuilder;
@@ -291,7 +290,8 @@ public class OrderService {
     }
 
     public OrderWithCustomerDTO getOrderWithDetails(Long orderId) {
-        return orderRepository.findOrderWithCustomerAndShipment(orderId)
+        return orderRepository
+                .findOrderWithCustomerAndShipment(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
     }
 
@@ -322,14 +322,19 @@ public class OrderService {
 
         PaymentMethod paymentMethod = order.getPaymentMethod();
         if (request.getParameter("paymentMethod") != null) {
-            paymentMethod = PaymentMethod.valueOf(request.getParameter("paymentMethod").toUpperCase());
+            paymentMethod =
+                    PaymentMethod.valueOf(request.getParameter("paymentMethod").toUpperCase());
         }
 
         return handlePaymentMethod(order, paymentMethod, totalFee, sessionData, calculationData);
     }
 
-
-    public ApiResponse<String> handlePaymentMethod(Orders order, PaymentMethod paymentMethod, BigDecimal totalFee, Map<String, Object> sessionData, Map<String, BigDecimal> calculationData) {
+    public ApiResponse<String> handlePaymentMethod(
+            Orders order,
+            PaymentMethod paymentMethod,
+            BigDecimal totalFee,
+            Map<String, Object> sessionData,
+            Map<String, BigDecimal> calculationData) {
         return switch (paymentMethod) {
             case VNPAY -> processVnPayPayment(order, totalFee, sessionData, calculationData);
 
@@ -337,7 +342,11 @@ public class OrderService {
         };
     }
 
-    private ApiResponse<String> processVnPayPayment(Orders order, BigDecimal totalFee, Map<String, Object> sessionData, Map<String, BigDecimal> calculationData) {
+    private ApiResponse<String> processVnPayPayment(
+            Orders order,
+            BigDecimal totalFee,
+            Map<String, Object> sessionData,
+            Map<String, BigDecimal> calculationData) {
         try {
             ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPaymentWithTotalFee(order, totalFee);
             if (paymentLinkResponse.getCode() != HttpStatus.OK.value()) {
@@ -350,11 +359,13 @@ public class OrderService {
             orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
             invoiceBuilder.updateInvoice(order, calculationData);
 
-            return new ApiResponse<>(HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult());
+            return new ApiResponse<>(
+                    HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult());
 
         } catch (Exception e) {
             logger.error("Error creating VNPay payment link: ", e);
-            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage());
+            return new ApiResponse<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage());
         }
     }
 

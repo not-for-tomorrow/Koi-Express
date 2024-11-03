@@ -1,5 +1,11 @@
 package com.koi_express.service.manager;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
@@ -15,12 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -81,7 +81,8 @@ public class ManagerService {
     }
 
     public void autoUpdateDeliveringStaffLevel(Long staffId) {
-        DeliveringStaff staff = deliveringStaffRepository.findById(staffId)
+        DeliveringStaff staff = deliveringStaffRepository
+                .findById(staffId)
                 .orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND, "Delivering staff not found"));
 
         staff.updateLevel(); // Calls the automatic level update logic
@@ -90,7 +91,8 @@ public class ManagerService {
     }
 
     public ApiResponse<String> promoteDeliveringStaff(Long staffId, DeliveringStaffLevel targetLevel) {
-        DeliveringStaff staff = deliveringStaffRepository.findById(staffId)
+        DeliveringStaff staff = deliveringStaffRepository
+                .findById(staffId)
                 .orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND, "Delivering staff not found"));
 
         if (staff.getLevel().compareTo(targetLevel) >= 0) {
@@ -113,7 +115,9 @@ public class ManagerService {
     }
 
     public BigDecimal calculateMonthlyRevenue(YearMonth month) {
-        return orderRepository.findTotalRevenueByMonth(month.getYear(), month.getMonthValue()).orElse(BigDecimal.ZERO);
+        return orderRepository
+                .findTotalRevenueByMonth(month.getYear(), month.getMonthValue())
+                .orElse(BigDecimal.ZERO);
     }
 
     public BigDecimal calculateYearlyRevenue(int year) {
@@ -153,7 +157,9 @@ public class ManagerService {
         if (previous.compareTo(BigDecimal.ZERO) == 0) {
             return BigDecimal.ZERO;
         }
-        return (current.subtract(previous)).divide(previous, 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+        return (current.subtract(previous))
+                .divide(previous, 2, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
     }
 
     // Highest Revenue Calculations
@@ -170,7 +176,8 @@ public class ManagerService {
     }
 
     public boolean deactivateDeliveringStaff(Long staffId) {
-        DeliveringStaff deliveringStaff = deliveringStaffRepository.findById(staffId)
+        DeliveringStaff deliveringStaff = deliveringStaffRepository
+                .findById(staffId)
                 .orElseThrow(() -> new IllegalArgumentException("Staff not found with id: " + staffId));
 
         if (!deliveringStaff.isActive()) {
@@ -184,7 +191,8 @@ public class ManagerService {
     }
 
     public boolean deactivateSalesStaff(Long accountId) {
-        com.koi_express.entity.account.SystemAccount account = systemAccountRepository.findById(accountId)
+        com.koi_express.entity.account.SystemAccount account = systemAccountRepository
+                .findById(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + accountId));
 
         if (account.getRole() != Role.SALES_STAFF) {
@@ -200,5 +208,4 @@ public class ManagerService {
 
         return true;
     }
-
 }

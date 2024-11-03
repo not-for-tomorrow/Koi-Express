@@ -19,10 +19,10 @@ public class OrderSessionManager {
     private static final String ROLE_SESSION_KEY = "role";
     private static final String USER_ID_SESSION_KEY = "userId";
 
-    // Lưu session dữ liệu của order
     public void storeSessionData(HttpSession session, String role, String userId, Orders order) {
         String sessionKey = getSessionKey(role, userId);
         Customers customer = order.getCustomer();
+
         Map<String, Object> sessionData = Map.of(
                 "koiQuantity", order.getOrderDetail().getKoiQuantity(),
                 "distanceFee", order.getOrderDetail().getDistanceFee(),
@@ -30,9 +30,11 @@ public class OrderSessionManager {
                 "orderId", order.getOrderId(),
                 "customerId", customer.getCustomerId(),
                 "email", customer.getEmail());
+
         session.setAttribute(sessionKey, sessionData);
         session.setAttribute(ROLE_SESSION_KEY, role);
         session.setAttribute(USER_ID_SESSION_KEY, userId);
+
         logger.info("Session data stored for key '{}': {}", sessionKey, sessionData);
     }
 
@@ -45,17 +47,15 @@ public class OrderSessionManager {
                 "distanceFee", order.getOrderDetail().getDistanceFee(),
                 "commitmentFee", order.getOrderDetail().getCommitmentFee(),
                 "customerId", order.getCustomer().getCustomerId(),
-                "email", order.getCustomer().getEmail()
-        );
+                "email", order.getCustomer().getEmail());
 
         session.setAttribute(sessionKey, sessionData);
         session.setAttribute(ROLE_SESSION_KEY, role);
         session.setAttribute(USER_ID_SESSION_KEY, userId);
+
         logger.info("Pickup order session data stored for key '{}': {}", sessionKey, sessionData);
     }
 
-    // Lấy dữ liệu session của order
-    @SuppressWarnings("unchecked")
     public Map<String, Object> retrieveSessionData(HttpSession session, String role, String userId) {
         String sessionKey = getSessionKey(role, userId);
         Map<String, Object> sessionData = (Map<String, Object>) session.getAttribute(sessionKey);
@@ -69,7 +69,6 @@ public class OrderSessionManager {
         return sessionData;
     }
 
-    // Lưu dữ liệu tính toán vào session
     public void storeCalculationSessionData(
             HttpSession session, String role, String userId, Map<String, Object> calculationData) {
         String sessionKey = getSessionKey(role, userId) + "_calculation";
@@ -77,7 +76,6 @@ public class OrderSessionManager {
         logger.info("Calculation session data stored for key '{}': {}", sessionKey, calculationData);
     }
 
-    // Lấy dữ liệu tính toán từ session
     public Map<String, BigDecimal> retrieveCalculationSessionData(HttpSession session, String role, String userId) {
         String sessionKey = getSessionKey(role, userId) + "_calculation";
         Map<String, BigDecimal> calculationData = (Map<String, BigDecimal>) session.getAttribute(sessionKey);
@@ -104,8 +102,6 @@ public class OrderSessionManager {
         return sessionData;
     }
 
-
-    // Lấy role từ session
     public String getRoleFromSession(HttpSession session) {
         String role = (String) session.getAttribute(ROLE_SESSION_KEY);
         if (role == null) {
@@ -114,7 +110,6 @@ public class OrderSessionManager {
         return role;
     }
 
-    // Lấy userId từ session
     public String getUserIdFromSession(HttpSession session) {
         String userId = (String) session.getAttribute(USER_ID_SESSION_KEY);
         if (userId == null) {
@@ -137,5 +132,4 @@ public class OrderSessionManager {
             default -> throw new IllegalArgumentException("Invalid role: " + role);
         };
     }
-
 }

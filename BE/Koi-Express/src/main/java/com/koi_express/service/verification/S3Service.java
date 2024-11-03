@@ -35,7 +35,8 @@ public class S3Service {
             LocalDateTime localDateTime;
 
             if (date.length() == 10) {
-                localDateTime = LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
+                localDateTime =
+                        LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
             } else {
                 localDateTime = LocalDateTime.parse(date, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             }
@@ -47,24 +48,18 @@ public class S3Service {
 
             String fileTypeFolder = isImage ? "image" : "file";
 
-            String keyName = String.format("%s/%s/%s/%s/%s/%s/%s",
-                    category,
-                    year,
-                    month,
-                    day,
-                    title,
-                    fileTypeFolder,
-                    UUID.randomUUID(),
-                    file.getOriginalFilename());
+            String keyName = String.format(
+                    "%s/%s/%s/%s/%s/%s/%s",
+                    category, year, month, day, title, fileTypeFolder, UUID.randomUUID(), file.getOriginalFilename());
 
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(keyName)
-                    .build();
+            PutObjectRequest putObjectRequest =
+                    PutObjectRequest.builder().bucket(bucketName).key(keyName).build();
 
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
-            return s3Client.utilities().getUrl(builder -> builder.bucket(bucketName).key(keyName)).toExternalForm();
+            return s3Client.utilities()
+                    .getUrl(builder -> builder.bucket(bucketName).key(keyName))
+                    .toExternalForm();
 
         } catch (Exception e) {
             throw new S3UploadException("Error uploading file", e);
@@ -73,14 +68,13 @@ public class S3Service {
 
     public File downloadFile(String keyName) {
         try {
-            String tempFilePath = "/tmp/" + UUID.randomUUID() + "_" + Paths.get(keyName).getFileName();
+            String tempFilePath =
+                    "/tmp/" + UUID.randomUUID() + "_" + Paths.get(keyName).getFileName();
             File file = new File(tempFilePath);
             Files.createDirectories(file.getParentFile().toPath());
 
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(keyName)
-                    .build();
+            GetObjectRequest getObjectRequest =
+                    GetObjectRequest.builder().bucket(bucketName).key(keyName).build();
 
             s3Client.getObject(getObjectRequest, ResponseTransformer.toFile(Paths.get(tempFilePath)));
             return file;
@@ -96,5 +90,4 @@ public class S3Service {
         }
         return convertedFile;
     }
-
 }

@@ -30,15 +30,14 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
 
     List<Orders> findByStatusAndDeliveringStaffId(OrderStatus status, Long deliveringStaffId);
 
-    @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c, s) " +
-            "FROM Orders o JOIN o.customer c LEFT JOIN o.shipment s")
+    @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c, s) "
+            + "FROM Orders o JOIN o.customer c LEFT JOIN o.shipment s")
     List<OrderWithCustomerDTO> findAllWithCustomer();
 
-    @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c, s) " +
-            "FROM Orders o " +
-            "JOIN o.customer c " +
-            "LEFT JOIN FETCH o.shipment s " +
-            "WHERE o.orderId = :orderId")
+    @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c, s) " + "FROM Orders o "
+            + "JOIN o.customer c "
+            + "LEFT JOIN FETCH o.shipment s "
+            + "WHERE o.orderId = :orderId")
     Optional<OrderWithCustomerDTO> findOrderWithCustomerAndShipment(@Param("orderId") Long orderId);
 
     boolean existsByStatusAndDeliveringStaff_StaffId(OrderStatus status, Long deliveringStaffId);
@@ -61,7 +60,8 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
     @Query("SELECT o.createdAt FROM Orders o GROUP BY o.createdAt ORDER BY SUM(o.totalFee) DESC LIMIT 1")
     Optional<LocalDate> findHighestRevenueDay();
 
-    @Query("SELECT YEAR(o.createdAt), MONTH(o.createdAt) FROM Orders o GROUP BY YEAR(o.createdAt), MONTH(o.createdAt) ORDER BY SUM(o.totalFee) DESC LIMIT 1")
+    @Query(
+            "SELECT YEAR(o.createdAt), MONTH(o.createdAt) FROM Orders o GROUP BY YEAR(o.createdAt), MONTH(o.createdAt) ORDER BY SUM(o.totalFee) DESC LIMIT 1")
     Optional<YearMonth> findHighestRevenueMonth();
 
     @Query("SELECT YEAR(o.createdAt) FROM Orders o GROUP BY YEAR(o.createdAt) ORDER BY SUM(o.totalFee) DESC LIMIT 1")

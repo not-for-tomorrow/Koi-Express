@@ -80,7 +80,6 @@ public class KoiInvoiceCalculator {
         }
 
         return new ApiResponse<>(200, "Total price calculated successfully", feeDetails);
-
     }
 
     private BigDecimal calculateRemainingTransportationFee(BigDecimal distanceFee, BigDecimal commitmentFee) {

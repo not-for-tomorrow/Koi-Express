@@ -3,10 +3,10 @@ package com.koi_express.controller.delivering_staff;
 import java.util.List;
 
 import com.koi_express.controller.order.OrderSessionManager;
-import com.koi_express.exception.AppException;
-import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.exception.AppException;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.delivering_staff.DeliveringStaffService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,8 @@ public class DeliveringStaffController {
     }
 
     @GetMapping("/assigned-orders")
-    public ResponseEntity<ApiResponse<List<Orders>>> getAssignedOrdersByDeliveringStaff(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse<List<Orders>>> getAssignedOrdersByDeliveringStaff(
+            @RequestHeader("Authorization") String token) {
         try {
             Long deliveringStaffId = extractDeliveringStaffId(token);
             List<Orders> orders = deliveringStaffService.getAssignedOrdersByDeliveringStaff(deliveringStaffId);
@@ -50,7 +51,8 @@ public class DeliveringStaffController {
         } catch (Exception e) {
             logger.error("{} for delivering staff ID: {}", ERROR_RETRIEVING_ASSIGNED_ORDERS, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
         }
     }
 
@@ -63,14 +65,16 @@ public class DeliveringStaffController {
 
             if (!orders.isEmpty()) {
                 Orders order = orders.get(0);
-                session.storePickupOrderSessionData(httpSession, "DELIVERING_STAFF", deliveringStaffId.toString(), order);
+                session.storePickupOrderSessionData(
+                        httpSession, "DELIVERING_STAFF", deliveringStaffId.toString(), order);
             }
 
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Assigned orders retrieved", orders));
         } catch (Exception e) {
             logger.error("{} for delivering staff ID: {}", ERROR_RETRIEVING_ASSIGNED_ORDERS, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
         }
     }
 
@@ -90,7 +94,8 @@ public class DeliveringStaffController {
         } catch (Exception e) {
             logger.error("{} for order ID: {}, staff ID: {}", ERROR_PICKUP_ORDER, orderId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_PICKUP_ORDER, e.getMessage()));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_PICKUP_ORDER, e.getMessage()));
         }
     }
 
@@ -109,8 +114,8 @@ public class DeliveringStaffController {
         } catch (Exception e) {
             logger.error("Error completing order ID: {} for delivering staff ID: {}", orderId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to complete order", null));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to complete order", null));
         }
     }
-
 }

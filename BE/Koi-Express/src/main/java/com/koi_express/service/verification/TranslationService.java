@@ -1,5 +1,8 @@
 package com.koi_express.service.verification;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.koi_express.exception.TranslationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -7,16 +10,15 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Service
 public class TranslationService {
 
     private final RestTemplate restTemplate;
     private final String libreTranslateUrl;
 
-    public TranslationService(RestTemplate restTemplate, @Value("${libretranslate.url:https://libretranslate.com/translate}") String libreTranslateUrl) {
+    public TranslationService(
+            RestTemplate restTemplate,
+            @Value("${libretranslate.url:https://libretranslate.com/translate}") String libreTranslateUrl) {
         this.restTemplate = restTemplate;
         this.libreTranslateUrl = libreTranslateUrl;
     }
@@ -45,11 +47,7 @@ public class TranslationService {
 
         try {
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.POST,
-                    request,
-                    new ParameterizedTypeReference<Map<String, Object>>() {}
-            );
+                    url, HttpMethod.POST, request, new ParameterizedTypeReference<Map<String, Object>>() {});
 
             Map<String, Object> responseBody = response.getBody();
             if (responseBody != null && responseBody.containsKey("translatedText")) {
