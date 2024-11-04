@@ -59,10 +59,29 @@ public class DeliveringStaffController {
             List<Orders> orders = deliveringStaffService.getPickupOrdersByDeliveringStaff(deliveringStaffId);
 
             if (orders.isEmpty()) {
-                return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "No assigned orders found", orders));
+                return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "No pick-up orders found", orders));
             }
 
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Assigned orders retrieved", orders));
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Pick-up orders retrieved", orders));
+        } catch (Exception e) {
+            logger.error("{} for delivering staff ID: {}", ERROR_RETRIEVING_ASSIGNED_ORDERS, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
+        }
+    }
+
+    @GetMapping("/intransit-orders")
+    public ResponseEntity<ApiResponse<List<Orders>>> getIntransitOrdersByDeliveringStaff(
+            @RequestHeader("Authorization") String token) {
+        try {
+            Long deliveringStaffId = extractDeliveringStaffId(token);
+            List<Orders> orders = deliveringStaffService.getInTransitOrdersByDeliveringStaff(deliveringStaffId);
+
+            if (orders.isEmpty()) {
+                return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "No in-transit order found", orders));
+            }
+
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "In-transit orders retrieved", orders));
         } catch (Exception e) {
             logger.error("{} for delivering staff ID: {}", ERROR_RETRIEVING_ASSIGNED_ORDERS, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
