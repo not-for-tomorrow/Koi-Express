@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import axios from "axios";
 import DeliverOrderUpdate from "./DeliverOrderUpdate";
 import PaymentModal from "./PaymentModal";
 import VNPayLogo from "../../assets/images/LogoPayments/VNPay.png";
@@ -29,14 +29,11 @@ const DeliverOrderModal = ({
   distance,
   status,
   paymentMethod,
-  distanceFee,
-  commitmentFee,
   koiQuantity,
 }) => {
   const [showDetailPopup, setShowDetailPopup] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] =
-    useState(paymentMethod);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(paymentMethod);
   const [remainingTransportationFee, setRemainingTransportationFee] = useState(null);
 
   const handleSelectPaymentMethod = (methodLabel) => {
@@ -46,6 +43,32 @@ const DeliverOrderModal = ({
   const onSubmitSuccess = (feeData) => {
     setRemainingTransportationFee(feeData.totalFee);
     setShowDetailPopup(false);
+  };
+
+  const handleDeliveryClick = async () => {
+    if (selectedPaymentMethod === "VNPAY" && remainingTransportationFee > 0) {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.post(
+          "http://localhost:8080/api/orders/confirm-payment",
+          { paymentMethod: "VNPAY" },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.result) {
+          window.location.href = response.data.result; 
+        }
+      } catch (error) {
+        console.error("Failed to confirm payment:", error);
+        alert("Đã xảy ra lỗi khi xác nhận thanh toán.");
+      }
+    } else if (remainingTransportationFee === 0) {
+      alert("Tổng phí phải lớn hơn 0đ để có thể giao hàng.");
+    }
   };
 
   const statusMapping = {
@@ -83,7 +106,7 @@ const DeliverOrderModal = ({
     <div className="relative z-20 flex flex-col w-full h-full max-w-lg p-6 bg-white border border-gray-200 shadow-lg">
       <div className="flex-grow">
         <div className="mb-4 text-2xl font-bold text-gray-800">
-          Đơn hàng #{orderId} của {fullName}
+          Đơn hàng #{orderId}
         </div>
         <div className="mb-6 text-sm">
           <strong className="text-gray-600">Lộ trình:</strong> {distance}
@@ -164,14 +187,15 @@ const DeliverOrderModal = ({
             {translatedStatus}
           </span>
         </p>
-        <p className="mt-3">
-          <strong>Phương thức thanh toán:</strong> {paymentMethod || "N/A"}
-        </p>
       </div>
 
       <div className="flex-shrink-0 mt-6">
-        <button className="w-full p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600">
-          <Link to="/deliveringstaffpage">Giao Hàng</Link>
+        <button
+          onClick={handleDeliveryClick}
+          className="w-full p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600"
+          disabled={remainingTransportationFee === 0} // Chỉ bật nút khi tổng phí khác 0
+        >
+          Giao Hàng
         </button>
       </div>
 
@@ -179,7 +203,7 @@ const DeliverOrderModal = ({
         <DeliverOrderUpdate
           koiQuantity={koiQuantity}
           onClose={() => setShowDetailPopup(false)}
-          onSubmitSuccess={onSubmitSuccess} // Truyền hàm này vào DeliverOrderUpdate
+          onSubmitSuccess={onSubmitSuccess}
         />
       )}
 

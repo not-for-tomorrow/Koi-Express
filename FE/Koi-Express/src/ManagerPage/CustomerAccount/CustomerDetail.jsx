@@ -89,14 +89,6 @@ const CustomerDetail = () => {
               <td className="p-2">{customer.phoneNumber || "N/A"}</td>
             </tr>
             <tr className="border-b border-gray-200">
-              <td className="p-2 font-semibold text-gray-700">Address</td>
-              <td className="p-2">{customer.address || "Not available"}</td>
-            </tr>
-            <tr className="border-b border-gray-200">
-              <td className="p-2 font-semibold text-gray-700">Role</td>
-              <td className="p-2">{customer.role}</td>
-            </tr>
-            <tr className="border-b border-gray-200">
               <td className="p-2 font-semibold text-gray-700">Created At</td>
               <td className="p-2">
                 {new Date(customer.createdAt).toLocaleString("vi-VN")}

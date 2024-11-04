@@ -5,6 +5,8 @@ import Order from "./Order";
 import { UserProvider } from "../componentsDashboard/UserContext";
 import OrderDetail from "./OrderDetail/OrderDetail";
 import DeliverOrder from "./DeliverOrder/DeliverOrder";
+import PaymentSuccessful from "./PaymentSuccessful";
+import PaymentFailed from "./PaymentFailed";
 
 const DeliveringStaffpage = () => {
   return (
@@ -22,6 +24,8 @@ const DeliveringStaffpage = () => {
               <Route path="/Order" element={<Order />} />
               <Route path="/Order/detail/:orderId" element={<OrderDetail />} />
               <Route path="/deliverorder" element={<DeliverOrder />} />
+              <Route path="/payment-successful" element={<PaymentSuccessful />} />
+              <Route path="/payment-failed" element={<PaymentFailed />} />
             </Routes>
           </div>
         </div>

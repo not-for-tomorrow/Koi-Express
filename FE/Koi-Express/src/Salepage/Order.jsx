@@ -20,7 +20,8 @@ const Order = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [orders, setOrders] = useState([]);
-  const [showDeliveringStaffColumn, setShowDeliveringStaffColumn] = useState(false);
+  const [showDeliveringStaffColumn, setShowDeliveringStaffColumn] =
+    useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,7 +45,7 @@ const Order = () => {
     };
     fetchOrders();
   }, []);
-  
+
   const handleTimeFilterClick = () => {
     setTempSelectedTimeFilter(selectedTimeFilter);
     setIsTimeFilterExpanded(!isTimeFilterExpanded);
@@ -327,12 +328,14 @@ const Order = () => {
                         <td className="p-2 text-sm font-medium text-center text-blue-600 align-middle">
                           {order.totalFee !== null
                             ? `₫ ${order.totalFee.toLocaleString("vi-VN")}`
-                            : order.orderDetail.commitmentFee !== null
+                            : order.orderDetail &&
+                              order.orderDetail.commitmentFee
                             ? `₫ ${order.orderDetail.commitmentFee.toLocaleString(
                                 "vi-VN"
                               )}`
                             : "N/A"}
                         </td>
+
                         {showDeliveringStaffColumn && (
                           <td className="p-2 text-sm text-gray-700">
                             {deliveringStaff ? deliveringStaff.fullName : ""}
