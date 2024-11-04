@@ -20,6 +20,7 @@ const Order = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [orders, setOrders] = useState([]);
+  const [showDeliveringStaffColumn, setShowDeliveringStaffColumn] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +29,12 @@ const Order = () => {
         setLoading(true);
         const ordersData = await fetchAllOrders();
         setOrders(ordersData);
+
+        // Cập nhật biến hiển thị cột "Người giao hàng"
+        const hasDeliveringStaff = ordersData.some(
+          (orderWrapper) => orderWrapper.order.deliveringStaff
+        );
+        setShowDeliveringStaffColumn(hasDeliveringStaff);
       } catch (err) {
         console.error("Failed to fetch orders:", err.message);
         setError(err.message);
@@ -37,7 +44,7 @@ const Order = () => {
     };
     fetchOrders();
   }, []);
-
+  
   const handleTimeFilterClick = () => {
     setTempSelectedTimeFilter(selectedTimeFilter);
     setIsTimeFilterExpanded(!isTimeFilterExpanded);
@@ -259,15 +266,22 @@ const Order = () => {
                     <th className="w-1/4 p-2 font-semibold">Điểm giao hàng</th>
                     <th className="p-2 font-semibold w-1/10">Thời gian tạo</th>
                     <th className="w-1/12 p-2 font-semibold">Phí cam kết</th>
+                    {showDeliveringStaffColumn && (
+                      <th className="p-2 font-semibold w-1/10">
+                        Người giao hàng
+                      </th>
+                    )}
                     <th className="p-2 font-semibold text-center w-1/9">
                       Trạng thái
                     </th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {filterOrders().map((orderWrapper, index) => {
                     const order = orderWrapper.order;
                     const customer = orderWrapper.customer;
+                    const deliveringStaff = order.deliveringStaff;
                     const statusColor = getStatusColor(
                       getTranslatedStatus(order.status)
                     );
@@ -279,7 +293,9 @@ const Order = () => {
                         onClick={() =>
                           navigate(
                             `/salepage/allorder/detail/${order.orderId}`,
-                            { state: { orderId: order.orderId } }
+                            {
+                              state: { orderId: order.orderId },
+                            }
                           )
                         }
                       >
@@ -297,7 +313,7 @@ const Order = () => {
                             </span>
                           </div>
                         </td>
-                        <td className="p-2 text-sm text-gray-700 ">
+                        <td className="p-2 text-sm text-gray-700">
                           <div className="tooltip">
                             {truncateAddress(order.destinationLocation)}
                             <span className="tooltip-text">
@@ -317,7 +333,11 @@ const Order = () => {
                               )}`
                             : "N/A"}
                         </td>
-
+                        {showDeliveringStaffColumn && (
+                          <td className="p-2 text-sm text-gray-700">
+                            {deliveringStaff ? deliveringStaff.fullName : ""}
+                          </td>
+                        )}
                         <td className="p-2 text-center">
                           <span
                             className="inline-block px-4 py-2 text-xs font-semibold rounded-full"
