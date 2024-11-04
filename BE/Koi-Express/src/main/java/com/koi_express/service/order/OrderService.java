@@ -208,7 +208,7 @@ public class OrderService {
     //    Get All Orders
     public ApiResponse<List<OrderWithCustomerDTO>> getAllOrders() {
         try {
-            List<OrderWithCustomerDTO> ordersWithCustomers = orderRepository.findAllWithCustomer();
+            List<OrderWithCustomerDTO> ordersWithCustomers = orderRepository.findAllWithCustomerAndShipment();
             if (ordersWithCustomers.isEmpty()) {
                 return new ApiResponse<>(HttpStatus.OK.value(), "No orders found", null);
             }
@@ -255,7 +255,7 @@ public class OrderService {
     }
 
     @Transactional
-    public ApiResponse<List<Orders>> getOrderHistoryByFilters(
+    public ApiResponse<List<OrderWithCustomerDTO>> getOrderHistoryByFilters(
             String token, String status, String fromDate, String toDate) {
         try {
             String customerId = jwtUtil.extractCustomerId(token);
@@ -266,7 +266,7 @@ public class OrderService {
             OrderStatus orderStatus =
                     (status != null && !status.isEmpty()) ? OrderStatus.valueOf(status.toUpperCase()) : null;
 
-            List<Orders> orders =
+            List<OrderWithCustomerDTO> orders =
                     orderRepository.findOrdersWithFilters(Long.parseLong(customerId), orderStatus, from, to);
             if (orders.isEmpty()) {
                 logger.info("No orders found for customer with filters");

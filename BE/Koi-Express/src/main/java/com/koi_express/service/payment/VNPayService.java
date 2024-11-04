@@ -94,7 +94,6 @@ public class VNPayService {
         vnpParamsMap.put("vnp_BankCode", bankCode);
         vnpParamsMap.put("vnp_IpAddr", "127.0.0.1");
 
-        // Optional expiration date parameter
         vnpParamsMap.put("vnp_ExpireDate", VNPayUtil.calculateExpireDate());
 
         return vnpParamsMap;

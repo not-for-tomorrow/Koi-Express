@@ -70,14 +70,14 @@ public class OrderController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<ApiResponse<List<Orders>>> getOrderHistory(
+    public ResponseEntity<ApiResponse<List<OrderWithCustomerDTO>>> getOrderHistory(
             @RequestHeader("Authorization") String authorizationHeader,
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "fromDate", required = false) String fromDate,
             @RequestParam(value = "toDate", required = false) String toDate) {
         logger.info("Fetching order history with status: {}, fromDate: {}, toDate: {}", status, fromDate, toDate);
         String token = authorizationHeader.substring(7);
-        ApiResponse<List<Orders>> response = orderService.getOrderHistoryByFilters(token, status, fromDate, toDate);
+        ApiResponse<List<OrderWithCustomerDTO>> response = orderService.getOrderHistoryByFilters(token, status, fromDate, toDate);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
