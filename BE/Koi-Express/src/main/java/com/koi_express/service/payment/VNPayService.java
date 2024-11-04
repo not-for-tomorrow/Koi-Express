@@ -28,6 +28,11 @@ public class VNPayService {
         }
 
         BigDecimal amount = order.getOrderDetail().getCommitmentFee().multiply(BigDecimal.valueOf(100));
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            logger.error("Invalid commitment fee amount for order ID: {}", order.getOrderId());
+            return new ApiResponse<>(400, "Commitment fee must be greater than zero", null);
+        }
+
         String transactionRef = String.valueOf(order.getOrderId());
 
         return generateVnPayPaymentUrl(order, amount, transactionRef);
@@ -40,30 +45,31 @@ public class VNPayService {
         }
 
         BigDecimal amount = totalFee.multiply(BigDecimal.valueOf(100));
-        String transactionRef = generateUniqueTxnRef(order.getOrderId());
+        String transactionRef = order.getOrderId() + "_" + System.currentTimeMillis();
 
         return generateVnPayPaymentUrl(order, amount, transactionRef);
     }
 
-    private String generateUniqueTxnRef(Long orderId) {
-        return "TXN" + orderId + "_" + System.currentTimeMillis();
-    }
-
     private ApiResponse<String> generateVnPayPaymentUrl(Orders order, BigDecimal amount, String transactionRef) {
-        String bankCode = "NCB";
-        Map<String, String> vnpParamsMap = buildVnPayParams(order, amount, bankCode, transactionRef);
+        try {
+            String bankCode = "NCB";
+            Map<String, String> vnpParamsMap = buildVnPayParams(order, amount, bankCode, transactionRef);
 
-        String queryUrl = VNPayUtil.getPaymentURL(vnpParamsMap);
-        logger.info("Request params: {}", vnpParamsMap);
-        logger.info("Query string before signature: {}", queryUrl);
+            String queryUrl = VNPayUtil.getPaymentURL(vnpParamsMap);
+            logger.info("Request params: {}", vnpParamsMap);
+            logger.info("Query string before signature: {}", queryUrl);
 
-        String vnpSecureHash = VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), queryUrl);
-        vnpParamsMap.put("vnp_SecureHash", vnpSecureHash);
+            String vnpSecureHash = VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), queryUrl);
+            vnpParamsMap.put("vnp_SecureHash", vnpSecureHash);
 
-        String fullPaymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + VNPayUtil.getPaymentURL(vnpParamsMap);
-        logger.info("Generated VNPay payment URL: {}", fullPaymentUrl);
+            String fullPaymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + VNPayUtil.getPaymentURL(vnpParamsMap);
+            logger.info("Generated VNPay payment URL: {}", fullPaymentUrl);
 
-        return new ApiResponse<>(200, "Payment URL generated successfully", fullPaymentUrl);
+            return new ApiResponse<>(200, "Payment URL generated successfully", fullPaymentUrl);
+        } catch (Exception e) {
+            logger.error("Failed to generate VNPay payment URL for order ID: {}", order.getOrderId(), e);
+            return new ApiResponse<>(500, "Error generating payment URL", null);
+        }
     }
 
     public boolean verifyPayment(Map<String, String> vnpParams) throws IOException {
@@ -90,7 +96,7 @@ public class VNPayService {
 
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount.longValue()));
         vnpParamsMap.put("vnp_TxnRef", transactionRef);
-        vnpParamsMap.put("vnp_OrderInfo", "Thanh toan commit fee cho don hang: " + order.getOrderId());
+        vnpParamsMap.put("vnp_OrderInfo", "Thanh toan: " + order.getOrderId());
         vnpParamsMap.put("vnp_BankCode", bankCode);
         vnpParamsMap.put("vnp_IpAddr", "127.0.0.1");
 
