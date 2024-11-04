@@ -27,8 +27,6 @@ const newsOptions = [{ label: "Tin tức", path: "/blog" }];
 
 export default function Header() {
   return (
-
-
     <div className="sticky top-0 z-[9999] w-full bg-white">
       <div className="flex justify-between items-center max-w-[1300px] mx-auto px-6 py-4">
         {/* Logo Section */}
