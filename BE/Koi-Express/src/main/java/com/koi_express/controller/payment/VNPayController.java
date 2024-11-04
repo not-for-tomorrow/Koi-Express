@@ -63,8 +63,7 @@ public class VNPayController {
                     .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
 
             if (!vnpParams.containsKey("vnp_TxnRef") || !vnpParams.containsKey("vnp_ResponseCode")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Missing transaction reference or response code");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing transaction reference or response code");
             }
 
             long orderId = Long.parseLong(vnpParams.get("vnp_TxnRef"));
@@ -72,16 +71,26 @@ public class VNPayController {
 
             logger.info("Received payment callback for order ID: {} with response code: {}", orderId, responseCode);
 
+            // Process the payment response from VNPAY
             ApiResponse<String> response = orderService.confirmCommitFeePayment(orderId, vnpParams);
 
-            String redirectUrl = "00".equals(responseCode)
-                    ? System.getenv("RETURN_URL_SUCCESS")
-                    : System.getenv("RETURN_URL_FAILURE");
-
-            return ResponseEntity.status(HttpStatus.FOUND).header("Location", redirectUrl).build();
+            // Check VNPAY response code
+            if ("00".equals(responseCode)) {
+                // Payment success, redirect to success URL
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .header("Location", System.getenv("RETURN_URL_SUCCESS"))
+                        .build();
+            } else {
+                // Payment failed or canceled, redirect to failure URL
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .header("Location", System.getenv("RETURN_URL_FAILURE"))
+                        .build();
+            }
         } catch (Exception e) {
             logger.error("Error handling payment callback", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error handling payment callback");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error handling payment callback");
         }
     }
+
 }

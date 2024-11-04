@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.koi_express.controller.order.OrderSessionManager;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -20,7 +20,6 @@ import com.koi_express.enums.OrderStatus;
 import com.koi_express.enums.PaymentMethod;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
-import com.koi_express.jwt.JwtUtil;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.service.manager.ManagerService;
 import com.koi_express.service.order.builder.InvoiceBuilder;
@@ -30,9 +29,9 @@ import com.koi_express.service.order.price.TransportationFeeCalculator;
 import com.koi_express.service.payment.VNPayService;
 import com.koi_express.service.staff_assignment.StaffAssignmentService;
 import com.koi_express.service.verification.EmailService;
+import com.koi_express.store.TemporaryStorage;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +58,7 @@ public class OrderService {
     private final TransportationFeeCalculator transportationFeeCalculator;
     private final InvoiceBuilder invoiceBuilder;
     private final OrderDetailBuilder orderDetailBuilder;
-    private final OrderSessionManager sessionManager;
+
 
     @Autowired
     public OrderService(
@@ -72,8 +71,7 @@ public class OrderService {
             @Lazy VNPayService vnPayService,
             TransportationFeeCalculator transportationFeeCalculator,
             InvoiceBuilder invoiceBuilder,
-            OrderDetailBuilder orderDetailBuilder,
-            OrderSessionManager sessionManager) {
+            OrderDetailBuilder orderDetailBuilder) {
         this.orderRepository = orderRepository;
         this.jwtUtil = jwtUtil;
         this.managerService = managerService;
@@ -84,7 +82,6 @@ public class OrderService {
         this.transportationFeeCalculator = transportationFeeCalculator;
         this.invoiceBuilder = invoiceBuilder;
         this.orderDetailBuilder = orderDetailBuilder;
-        this.sessionManager = sessionManager;
     }
 
     public ApiResponse<Map<String, Object>> createOrder(OrderRequest orderRequest, String token) {
@@ -289,87 +286,78 @@ public class OrderService {
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND, ORDER_NOT_FOUND_MESSAGE));
     }
 
-    public OrderWithCustomerDTO getOrderWithDetails(Long orderId) {
-        return orderRepository
-                .findOrderWithCustomerAndShipment(orderId)
+    public OrderWithCustomerDTO getOrderWithDetails(Long orderId, HttpServletRequest request) {
+        return orderRepository.findOrderWithCustomerAndShipment(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
     }
 
-    @Transactional
-    public ApiResponse<String> confirmPayment(HttpSession session, HttpServletRequest request) {
-        String role = sessionManager.getRoleFromSession(session);
-        String userId = sessionManager.getUserIdFromSession(session);
+    public ApiResponse<String> confirmPaymentFromStorage(Long userId) {
+        Map<String, Object> sessionData = TemporaryStorage.getInstance().retrieveData(userId);
 
-        if (role == null || userId == null) {
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Role or User ID is missing in session", null);
+        if (sessionData == null || !sessionData.containsKey("totalFee") || !sessionData.containsKey("orderId")) {
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Thông tin thanh toán không tìm thấy.", null);
         }
 
-        Map<String, Object> sessionData = sessionManager.retrievePickupOrderSessionData(session, role, userId);
-        if (sessionData == null || !sessionData.containsKey("orderId")) {
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Order ID not found in session", null);
-        }
-
+        BigDecimal totalFee = (BigDecimal) sessionData.get("totalFee");
         Long orderId = (Long) sessionData.get("orderId");
 
-        Map<String, BigDecimal> calculationData = sessionManager.retrieveCalculationSessionData(session, role, userId);
-        if (calculationData == null || !calculationData.containsKey("totalFee")) {
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Calculation data missing", null);
+        Orders order = findOrderById(orderId);
+
+        if (order == null) {
+            logger.error("Không tìm thấy đơn hàng với ID: {}", orderId);
+            return new ApiResponse<>(HttpStatus.NOT_FOUND.value(), "Không tìm thấy đơn hàng.", null);
         }
-
-        BigDecimal totalFee = calculationData.get("totalFee");
-
-        Orders order = this.findOrderById(orderId);
 
         PaymentMethod paymentMethod = order.getPaymentMethod();
-        if (request.getParameter("paymentMethod") != null) {
-            paymentMethod =
-                    PaymentMethod.valueOf(request.getParameter("paymentMethod").toUpperCase());
-        }
+        Map<String, BigDecimal> calculationData = new HashMap<>();
+        calculationData.put("totalFee", totalFee);
 
-        return handlePaymentMethod(order, paymentMethod, totalFee, sessionData, calculationData);
+        ApiResponse<String> paymentResponse = handlePaymentMethod(order, paymentMethod, totalFee, calculationData);
+        if (paymentMethod == PaymentMethod.VNPAY && paymentResponse.getCode() == HttpStatus.OK.value()) {
+            return new ApiResponse<>(HttpStatus.OK.value(), "Link thanh toán được tạo thành công.", paymentResponse.getResult());
+        } else if (paymentResponse.getCode() == HttpStatus.OK.value()) {
+            order.setStatus(OrderStatus.IN_TRANSIT);
+            order.setPaymentConfirmed(true);
+            orderRepository.save(order);
+
+            TemporaryStorage.getInstance().removeData(userId);
+
+            return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán thành công và đơn hàng đang trên đường vận chuyển.", null);
+        } else {
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null);
+        }
     }
 
-    public ApiResponse<String> handlePaymentMethod(
-            Orders order,
-            PaymentMethod paymentMethod,
-            BigDecimal totalFee,
-            Map<String, Object> sessionData,
-            Map<String, BigDecimal> calculationData) {
+
+    public ApiResponse<String> handlePaymentMethod(Orders order, PaymentMethod paymentMethod, BigDecimal totalFee, Map<String, BigDecimal> calculationData) {
         return switch (paymentMethod) {
-            case VNPAY -> processVnPayPayment(order, totalFee, sessionData, calculationData);
+            case VNPAY -> processVnPayPayment(order, totalFee, calculationData);
 
             case CASH_BY_RECEIVER, CASH_BY_SENDER -> processCashPayment(order, calculationData);
         };
     }
 
-    private ApiResponse<String> processVnPayPayment(
-            Orders order,
-            BigDecimal totalFee,
-            Map<String, Object> sessionData,
-            Map<String, BigDecimal> calculationData) {
+    private ApiResponse<String> processVnPayPayment(Orders order, BigDecimal totalFee, Map<String, BigDecimal> calculationData) {
         try {
             ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPaymentWithTotalFee(order, totalFee);
             if (paymentLinkResponse.getCode() != HttpStatus.OK.value()) {
                 return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null);
             }
 
-            String email = (String) sessionData.get("email");
-            emailService.sendPaymentLink(email, paymentLinkResponse.getResult(), order);
+            order.setStatus(OrderStatus.IN_TRANSIT);
+            order.setPaymentConfirmed(true);
 
             orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
             invoiceBuilder.updateInvoice(order, calculationData);
 
-            return new ApiResponse<>(
-                    HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult());
+            return new ApiResponse<>(HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult());
 
         } catch (Exception e) {
             logger.error("Error creating VNPay payment link: ", e);
-            return new ApiResponse<>(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage());
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage());
         }
     }
 
-    // Xử lý thanh toán bằng tiền mặt
     private ApiResponse<String> processCashPayment(Orders order, Map<String, BigDecimal> calculationData) {
         order.setStatus(OrderStatus.IN_TRANSIT);
         order.setPaymentConfirmed(false);

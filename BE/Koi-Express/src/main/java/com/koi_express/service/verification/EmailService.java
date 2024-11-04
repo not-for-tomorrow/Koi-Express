@@ -62,6 +62,7 @@ public class EmailService {
     public static final String PACKAGING_FEE_PLACEHOLDER = "{{PackagingFee}}";
     public static final String VAT_PLACEHOLDER = "{{VAT}}";
 
+
     @Async
     public void sendOrderConfirmationEmail(String recipientEmail, Orders order) {
         try {
@@ -115,8 +116,7 @@ public class EmailService {
                 placeholders.put(PASSWORD_PLACEHOLDER, rawPassword);
                 placeholders.put(ROLE_PLACEHOLDER, deliveringStaff.getRole().toString());
                 placeholders.put(LEVEL_PLACEHOLDER, deliveringStaff.getLevel().name());
-                placeholders.put(
-                        CREATED_AT_PLACEHOLDER, deliveringStaff.getCreatedAt().toString());
+                placeholders.put(CREATED_AT_PLACEHOLDER, deliveringStaff.getCreatedAt().toString());
             } else {
                 SystemAccount systemAccount = (SystemAccount) account;
                 placeholders.put(FULL_NAME_PLACEHOLDER, systemAccount.getFullName());
@@ -125,8 +125,7 @@ public class EmailService {
                 placeholders.put(PHONE_NUMBER_PLACEHOLDER, systemAccount.getPhoneNumber());
                 placeholders.put(PASSWORD_PLACEHOLDER, rawPassword);
                 placeholders.put(ROLE_PLACEHOLDER, systemAccount.getRole().toString());
-                placeholders.put(
-                        CREATED_AT_PLACEHOLDER, systemAccount.getCreatedAt().toString());
+                placeholders.put(CREATED_AT_PLACEHOLDER, systemAccount.getCreatedAt().toString());
             }
 
             sendEmail(
@@ -152,8 +151,7 @@ public class EmailService {
             placeholders.put("{{InvoiceDate}}", order.getCreatedAt().toString());
             placeholders.put(ADDRESS_PLACEHOLDER, order.getDestinationLocation());
             placeholders.put(
-                    KOI_QUANTITY_PLACEHOLDER,
-                    String.valueOf(order.getOrderDetail().getKoiQuantity()));
+                    KOI_QUANTITY_PLACEHOLDER, String.valueOf(order.getOrderDetail().getKoiQuantity()));
             placeholders.put(SUBTOTAL_PLACEHOLDER, String.format("%.2f", calculationData.get("subtotal")));
             placeholders.put(CARE_FEE_PLACEHOLDER, String.format("%.2f", calculationData.get("careFee")));
             placeholders.put(INSURANCE_FEE_PLACEHOLDER, String.format("%.2f", calculationData.get("insuranceFee")));

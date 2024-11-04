@@ -1,10 +1,5 @@
 package com.koi_express.controller.manager;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
-
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.account.SystemAccount;
@@ -12,6 +7,7 @@ import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.DeliveringStaffLevel;
 import com.koi_express.service.delivering_staff.DeliveringStaffService;
+import com.koi_express.service.manager.DeliveringStaffAccount;
 import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.manager.ManagerService;
 import jakarta.validation.Valid;
@@ -20,6 +16,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/manager")
@@ -47,7 +48,7 @@ public class ManagerController {
         return ResponseEntity.status(response.getCode()).body(response);
     }
 
-    @GetMapping("/customers")
+    @GetMapping( "/customers")
     public ResponseEntity<ApiResponse<List<Customers>>> getAllCustomers() {
 
         ApiResponse<List<Customers>> customersPage = manageCustomerService.getAllCustomers();
@@ -56,7 +57,8 @@ public class ManagerController {
     }
 
     @GetMapping("/id/{customerId}")
-    public ResponseEntity<ApiResponse<Customers>> getCustomerById(@PathVariable Long customerId) {
+    public ResponseEntity<ApiResponse<Customers>> getCustomerById(
+            @PathVariable Long customerId) {
 
         Customers customers = managerService.getCustomerById(customerId);
         return new ResponseEntity<>(
@@ -64,14 +66,16 @@ public class ManagerController {
     }
 
     @GetMapping("/phone/{phoneNumber}")
-    public ResponseEntity<Customers> getCustomerByPhoneNumber(@PathVariable String phoneNumber) {
+    public ResponseEntity<Customers> getCustomerByPhoneNumber(
+            @PathVariable String phoneNumber) {
 
         Customers customers = managerService.findByPhoneNumber(phoneNumber);
         return ResponseEntity.ok(customers);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteCustomer(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<String>> deleteCustomer(
+            @PathVariable Long id) {
 
         managerService.deleteCustomer(id);
         return new ResponseEntity<>(
@@ -80,7 +84,9 @@ public class ManagerController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse<String>> updateCustomer(
-            @PathVariable Long id, @RequestParam String fullName, @RequestParam String address) {
+            @PathVariable Long id,
+            @RequestParam String fullName,
+            @RequestParam String address) {
 
         managerService.updateCustomer(id, fullName, address);
         return new ResponseEntity<>(
@@ -103,7 +109,8 @@ public class ManagerController {
 
     @PutMapping("/delivering-staff/{staffId}/update-level")
     public ResponseEntity<ApiResponse<String>> updateDeliveringStaffLevel(
-            @PathVariable Long staffId, @RequestParam DeliveringStaffLevel targetLevel) {
+            @PathVariable Long staffId,
+            @RequestParam DeliveringStaffLevel targetLevel) {
 
         ApiResponse<String> response = managerService.promoteDeliveringStaff(staffId, targetLevel);
         return ResponseEntity.status(response.getCode()).body(response);
@@ -168,25 +175,25 @@ public class ManagerController {
     }
 
     @PutMapping("/delivering-staff/{staffId}/deactivate")
-    public ResponseEntity<ApiResponse<String>> deactivateDeliveringStaff(@PathVariable Long staffId) {
+    public ResponseEntity<ApiResponse<String>> deactivateDeliveringStaff(
+            @PathVariable Long staffId) {
 
         boolean deactivated = managerService.deactivateDeliveringStaff(staffId);
 
         if (deactivated) {
             return new ResponseEntity<>(
-                    new ApiResponse<>(
-                            HttpStatus.OK.value(), "Delivering staff account deactivated successfully.", null),
+                    new ApiResponse<>(HttpStatus.OK.value(), "Delivering staff account deactivated successfully.", null),
                     HttpStatus.OK);
         } else {
             return new ResponseEntity<>(
-                    new ApiResponse<>(
-                            HttpStatus.BAD_REQUEST.value(), "Delivering staff account is already inactive.", null),
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Delivering staff account is already inactive.", null),
                     HttpStatus.BAD_REQUEST);
         }
     }
 
     @PutMapping("/sales-staff/{accountId}/deactivate")
-    public ResponseEntity<ApiResponse<String>> deactivateSalesStaff(@PathVariable Long accountId) {
+    public ResponseEntity<ApiResponse<String>> deactivateSalesStaff(
+            @PathVariable Long accountId) {
 
         try {
             boolean deactivated = managerService.deactivateSalesStaff(accountId);
@@ -197,14 +204,16 @@ public class ManagerController {
                         HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(
-                        new ApiResponse<>(
-                                HttpStatus.BAD_REQUEST.value(), "Sales staff account is already inactive.", null),
+                        new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Sales staff account is already inactive.", null),
                         HttpStatus.BAD_REQUEST);
             }
 
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null), HttpStatus.BAD_REQUEST);
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null),
+                    HttpStatus.BAD_REQUEST);
         }
     }
+
+
 }

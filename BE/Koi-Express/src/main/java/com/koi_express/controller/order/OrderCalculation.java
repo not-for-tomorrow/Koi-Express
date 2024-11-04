@@ -4,11 +4,17 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import com.koi_express.enums.ShipmentCondition;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.enums.KoiType;
-import com.koi_express.jwt.JwtUtil;
+import com.koi_express.service.delivering_staff.DeliveringStaffService;
+import com.koi_express.service.order.OrderService;
 import com.koi_express.service.order.price.KoiInvoiceCalculator;
+import com.koi_express.entity.order.Orders;
+import com.koi_express.store.TemporaryStorage;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -26,50 +32,58 @@ public class OrderCalculation {
     private static final Logger logger = LoggerFactory.getLogger(OrderCalculation.class);
 
     private final KoiInvoiceCalculator koiInvoiceCalculator;
-    private final OrderSessionManager sessionManager;
+    private final OrderService orderService;
     private final JwtUtil jwtUtil;
+    private final DeliveringStaffService deliveringStaffService;
 
     @PostMapping("/calculate-total-fee")
     public ResponseEntity<ApiResponse<Map<String, Object>>> calculateTotalFee(
-            @RequestBody Map<String, List<Map<String, Object>>> requestBody,
-            HttpSession session,
-            HttpServletRequest request) {
+            @RequestBody Map<String, Object> requestBody,
+            HttpServletRequest request,
+            HttpSession session) {
 
-        if (session == null) {
-            logger.error("Session is null. Cannot proceed.");
+        String token;
+        try {
+            token = request.getHeader("Authorization").substring(7);
+        } catch (Exception e) {
+            logger.error("Authorization header is missing or malformed");
             return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Session is null", null, "Session không tồn tại"),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+                    new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Authorization token is missing or malformed", null),
+                    HttpStatus.UNAUTHORIZED);
         }
 
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            logger.error("Authorization header missing or invalid.");
+        String role;
+        Long staffId;
+        try {
+            role = jwtUtil.extractRole(token);
+            staffId = Long.parseLong(jwtUtil.extractUserId(token, role));
+        } catch (Exception e) {
+            logger.error("Error extracting role or userId from token: ", e);
             return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Missing or invalid token", null, "Thiếu hoặc sai định dạng Authorization header"),
+                    new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid token", null),
+                    HttpStatus.UNAUTHORIZED);
+        }
+
+        Optional<Orders> assignedOrder = deliveringStaffService.getPickupOrdersByDeliveringStaff(staffId).stream().findFirst();
+        if (assignedOrder.isEmpty()) {
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "No assigned order data for this staff", null),
                     HttpStatus.BAD_REQUEST);
         }
-        String token = authHeader.substring(7);
-        String role = jwtUtil.extractRole(token);
-        String userId = jwtUtil.extractUserId(token, role);
 
-        Map<String, Object> sessionData = sessionManager.retrievePickupOrderSessionData(session, role, userId);
-        if (sessionData == null
-                || !sessionData.containsKey("distanceFee")
-                || !sessionData.containsKey("commitmentFee")) {
+        Orders order = assignedOrder.get();
+        BigDecimal distanceFee = order.getOrderDetail().getDistanceFee();
+        BigDecimal commitmentFee = order.getOrderDetail().getCommitmentFee();
+
+        List<Map<String, Object>> koiList;
+        try {
+            koiList = (List<Map<String, Object>>) requestBody.get("koiList");
+        } catch (ClassCastException e) {
+            logger.error("Failed to cast koiList: ", e);
             return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Session data missing", null, "Dữ liệu trong session bị thiếu"),
+                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid koiList format", null),
                     HttpStatus.BAD_REQUEST);
         }
-
-        BigDecimal distanceFee =
-                sessionData.get("distanceFee") != null ? (BigDecimal) sessionData.get("distanceFee") : BigDecimal.ZERO;
-        BigDecimal commitmentFee = sessionData.get("commitmentFee") != null
-                ? (BigDecimal) sessionData.get("commitmentFee")
-                : BigDecimal.ZERO;
-        Integer sessionKoiQuantity = (Integer) sessionData.get("koiQuantity");
-
-        List<Map<String, Object>> koiList = requestBody.get("koiList");
 
         BigDecimal totalKoiFee = BigDecimal.ZERO;
         BigDecimal totalCareFee = BigDecimal.ZERO;
@@ -79,46 +93,28 @@ public class OrderCalculation {
         BigDecimal totalVat = BigDecimal.ZERO;
         BigDecimal grandTotalFee = BigDecimal.ZERO;
 
-        int totalKoiQuantity = koiList.stream().mapToInt(koi -> (Integer) koi.get("quantity")).sum();
-
-        if (sessionKoiQuantity != null && totalKoiQuantity != sessionKoiQuantity) {
-            String errorDetails = String.format("Số lượng cá không khớp. Số lượng từ session: %d, Số lượng thực tế: %d", sessionKoiQuantity, totalKoiQuantity);
-            logger.error(errorDetails);
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Inconsistent koi quantity", null, errorDetails),
-                    HttpStatus.BAD_REQUEST);
-        }
-
         for (Map<String, Object> koi : koiList) {
-            KoiType koiType = KoiType.valueOf((String) koi.get("koiType"));
-            Integer koiQuantity = koi.get("quantity") != null ? (Integer) koi.get("quantity") : 0;
-            BigDecimal koiSize = koi.get("koiSize") != null
-                    ? new BigDecimal(koi.get("koiSize").toString())
-                    : BigDecimal.ZERO;
+            try {
+                KoiType koiType = KoiType.valueOf((String) koi.get("koiType"));
+                BigDecimal koiSize = new BigDecimal(koi.get("koiSize").toString());
+                ShipmentCondition shipmentCondition = ShipmentCondition.valueOf((String) koi.get("shipmentCondition"));
+                int quantity = (int) koi.get("quantity");
 
-            ApiResponse<Map<String, BigDecimal>> feeResponse =
-                    koiInvoiceCalculator.calculateTotalPrice(koiType, koiQuantity, koiSize, distanceFee, commitmentFee);
-            Map<String, BigDecimal> individualFee = feeResponse != null ? feeResponse.getResult() : null;
+                ApiResponse<Map<String, BigDecimal>> feeResponse = koiInvoiceCalculator.calculateTotalPrice(
+                        koiType, quantity, koiSize, distanceFee, commitmentFee);
 
-            if (individualFee != null) {
-                totalKoiFee = totalKoiFee.add(individualFee.getOrDefault("koiFee", BigDecimal.ZERO));
-                totalCareFee = totalCareFee.add(individualFee.getOrDefault("careFee", BigDecimal.ZERO));
-                totalPackagingFee = totalPackagingFee.add(individualFee.getOrDefault("packagingFee", BigDecimal.ZERO));
-                totalRemainingTransportationFee = totalRemainingTransportationFee.add(
-                        individualFee.getOrDefault("remainingTransportationFee", BigDecimal.ZERO));
-                totalInsuranceFee = totalInsuranceFee.add(individualFee.getOrDefault("insuranceFee", BigDecimal.ZERO));
-                totalVat = totalVat.add(individualFee.getOrDefault("vat", BigDecimal.ZERO));
-                grandTotalFee = grandTotalFee.add(individualFee.getOrDefault("totalFee", BigDecimal.ZERO));
+                Map<String, BigDecimal> individualFee = feeResponse.getResult();
+                totalKoiFee = totalKoiFee.add(individualFee.get("koiFee"));
+                totalCareFee = totalCareFee.add(individualFee.get("careFee"));
+                totalPackagingFee = totalPackagingFee.add(individualFee.get("packagingFee"));
+                totalRemainingTransportationFee = totalRemainingTransportationFee.add(individualFee.get("remainingTransportationFee"));
+                totalInsuranceFee = totalInsuranceFee.add(individualFee.get("insuranceFee"));
+                totalVat = totalVat.add(individualFee.get("vat"));
+                grandTotalFee = grandTotalFee.add(individualFee.get("totalFee"));
 
-                logger.info("Calculated for koiType {}: koiFee={}, careFee={}, packagingFee={}, totalFee={}",
-                        koiType, individualFee.get("koiFee"), individualFee.get("careFee"),
-                        individualFee.get("packagingFee"), individualFee.get("totalFee"));
-            } else {
-                String errorDetail = "Fee calculation returned null for koiType: " + koiType;
-                logger.warn(errorDetail);
-                return new ResponseEntity<>(
-                        new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Fee calculation error", null, errorDetail),
-                        HttpStatus.INTERNAL_SERVER_ERROR);
+            } catch (IllegalArgumentException e) {
+                logger.error("Error calculating fees for koi: ", e);
+                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null), HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -130,10 +126,10 @@ public class OrderCalculation {
         responseData.put("insuranceFee", totalInsuranceFee);
         responseData.put("vat", totalVat);
         responseData.put("totalFee", grandTotalFee);
+        responseData.put("orderId", order.getOrderId());
 
-        sessionManager.storeCalculationSessionData(session, role, userId, responseData);
+        TemporaryStorage.getInstance().storeData(staffId, responseData);
 
-        return new ResponseEntity<>(
-                new ApiResponse<>(HttpStatus.OK.value(), "Total fee calculated", responseData), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Total fee calculated", responseData), HttpStatus.OK);
     }
 }

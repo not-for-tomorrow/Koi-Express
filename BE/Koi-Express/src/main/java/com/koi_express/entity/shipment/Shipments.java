@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.ShipmentCondition;
-import com.koi_express.enums.ShipmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -47,9 +46,6 @@ public class Shipments { // quản lý vận chuyển
     LocalDateTime estimatedDeliveryTime;
 
     @Enumerated(EnumType.STRING)
-    ShipmentStatus status;
-
-    @Enumerated(EnumType.STRING)
     @Column(name = "shipment_condition")
     ShipmentCondition condition;
 
@@ -59,4 +55,5 @@ public class Shipments { // quản lý vận chuyển
 
     @UpdateTimestamp
     LocalDateTime updatedAt;
+    
 }

@@ -89,8 +89,7 @@ public class CustomerService {
     }
 
     public ApiResponse<String> reactivateCustomer(Long customerId) {
-        Customers customer = customersRepository
-                .findById(customerId)
+        Customers customer = customersRepository.findById(customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
 
         if (!customer.isActive()) {
@@ -103,8 +102,8 @@ public class CustomerService {
     }
 
     public Customers getCustomerById(Long customerId) {
-        return customersRepository
-                .findById(customerId)
+        return customersRepository.findById(customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
     }
+
 }

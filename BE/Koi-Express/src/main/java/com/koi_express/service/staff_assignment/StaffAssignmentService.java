@@ -49,8 +49,7 @@ public class StaffAssignmentService {
         BigDecimal kilometers = order.getOrderDetail().getKilometers();
         if (kilometers == null) {
             log.error("Order ID {} has null kilometers in order details, cannot determine staff level", orderId);
-            throw new AppException(
-                    ErrorCode.MISSING_ORDER_DETAILS, "Order details missing kilometers for ID: " + orderId);
+            throw new AppException(ErrorCode.MISSING_ORDER_DETAILS, "Order details missing kilometers for ID: " + orderId);
         }
 
         DeliveringStaffLevel level;
