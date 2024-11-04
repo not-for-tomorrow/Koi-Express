@@ -315,6 +315,8 @@ public class OrderService {
             ApiResponse<String> paymentResponse = handlePaymentMethod(order, paymentMethod, totalFee, calculationData);
 
             if (paymentResponse.getCode() == HttpStatus.OK.value() ) {
+                order.setStatus(OrderStatus.IN_TRANSIT);
+                order.setPaymentConfirmed(true);
                 orderRepository.save(order);
                 return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán xác nhận thành công", paymentResponse.getResult());
             } else {
@@ -329,6 +331,7 @@ public class OrderService {
             return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error processing payment", e.getMessage());
         }
     }
+
 
     public ApiResponse<String> handlePaymentMethod(Orders order, PaymentMethod paymentMethod, BigDecimal totalFee, Map<String, BigDecimal> calculationData) {
         return switch (paymentMethod) {

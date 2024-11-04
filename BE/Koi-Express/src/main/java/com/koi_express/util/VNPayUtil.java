@@ -39,17 +39,15 @@ public class VNPayUtil {
     }
 
     public static String getIpAddress(HttpServletRequest request) {
-        String ipAdress;
-        try {
-            ipAdress = request.getHeader("X-Forwarded-For");
-            if (ipAdress == null) {
-                ipAdress = request.getRemoteAddr();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to get IP address", e);
+        String ipAdress = request.getHeader("X-Forwarded-For");
+        if (ipAdress != null && !ipAdress.isEmpty()) {
+            ipAdress = ipAdress.split(",")[0];
+        } else {
+            ipAdress = request.getRemoteAddr();
         }
         return ipAdress;
     }
+
 
     public static String getRandomNumber(int len) {
         Random rmd = new Random();
@@ -71,20 +69,23 @@ public class VNPayUtil {
     }
 
     public static PaymentData getPaymentData(Map<String, String> params) {
-
-        return PaymentData.builder()
-                .transactionId(params.get("vnp_TxnRef"))
-                .amount(new BigDecimal(params.get("vnp_Amount")).divide(BigDecimal.valueOf(100)))
-                .responseCode(params.get("vnp_ResponseCode"))
-                .bankCode(params.get("vnp_BankCode"))
-                .secureHash(params.get("vnp_SecureHash"))
-                .orderInfo(params.get("vnp_OrderInfo"))
-                .transactionStatus(params.get("vnp_TransactionStatus"))
-                .build();
+        try {
+            return PaymentData.builder()
+                    .transactionId(params.get("vnp_TxnRef"))
+                    .amount(new BigDecimal(params.getOrDefault("vnp_Amount", "0")).divide(BigDecimal.valueOf(100)))
+                    .responseCode(params.get("vnp_ResponseCode"))
+                    .bankCode(params.get("vnp_BankCode"))
+                    .secureHash(params.get("vnp_SecureHash"))
+                    .orderInfo(params.get("vnp_OrderInfo"))
+                    .transactionStatus(params.get("vnp_TransactionStatus"))
+                    .build();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error parsing payment data from params", e);
+        }
     }
 
     public static String calculateExpireDate() {
-        LocalDateTime expireDate = LocalDateTime.now().plusMinutes(15); // Set expiration to 15 minutes from now
+        LocalDateTime expireDate = LocalDateTime.now().plusMinutes(10); // Set expiration to 15 minutes from now
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         return expireDate.format(formatter);
     }

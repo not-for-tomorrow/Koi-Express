@@ -67,29 +67,30 @@ public class VNPayController {
             }
 
             String transactionRef = vnpParams.get("vnp_TxnRef");
+            String responseCode = vnpParams.get("vnp_ResponseCode");
             if (transactionRef == null || transactionRef.isEmpty()) {
                 logger.error("Transaction reference is missing or empty in callback.");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid transaction reference");
             }
 
-            if (transactionRef.contains("_")) {
-                transactionRef = transactionRef.split("_")[0];
-            }
+            boolean isFinalPayment = isFinalPayment(transactionRef);
+            Long orderId = parseOrderIdFromTransactionRef(transactionRef.split("_")[0]);
 
-            Long orderId = parseOrderIdFromTransactionRef(transactionRef);
             if (orderId == null) {
                 logger.error("Invalid order ID in transaction reference.");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid order ID in transaction reference");
             }
 
-            String responseCode = vnpParams.get("vnp_ResponseCode");
             logger.info("Received payment callback for order ID: {} with response code: {}", orderId, responseCode);
 
-            ApiResponse<String> response = isFinalPayment(transactionRef)
-                    ? orderService.confirmPaymentFromStorage(orderId)
-                    : orderService.confirmCommitFeePayment(orderId, vnpParams);
+            ApiResponse<String> response;
+            if (isFinalPayment) {
+                response = orderService.confirmPaymentFromStorage(orderId);
+            } else {
+                response = orderService.confirmCommitFeePayment(orderId, vnpParams);
+            }
 
-            return redirectToUrlBasedOnResponse(responseCode, isFinalPayment(transactionRef));
+            return redirectToUrlBasedOnResponse(responseCode, isFinalPayment);
         } catch (Exception e) {
             logger.error("Error handling payment callback", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
