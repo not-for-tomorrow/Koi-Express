@@ -50,36 +50,6 @@ const CustomerAccount = () => {
     fetchCustomers();
   }, []);
 
-  const deleteCustomer = async (customerId) => {
-    const token = getToken();
-    if (!token) {
-      setError("No token found");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `http://localhost:8080/api/manager/delete/${customerId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        setCustomers((prevCustomers) =>
-          prevCustomers.filter((customer) => customer.customerId !== customerId)
-        );
-      } else {
-        throw new Error("Failed to delete customer");
-      }
-    } catch (error) {
-      setError(error.message);
-    }
-  };
-
   const filterCustomers = () => {
     if (!searchQuery) return customers;
     return customers.filter((customer) =>
@@ -126,7 +96,6 @@ const CustomerAccount = () => {
                       Số điện thoại
                     </th>
                     <th className="p-3 font-semibold text-left">Ngày tạo</th>
-                    <th className="p-3 font-semibold text-left">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -150,17 +119,6 @@ const CustomerAccount = () => {
                       </td>
                       <td className="p-3 text-gray-700">
                         {new Date(customer.createdAt).toLocaleString("vi-VN")}
-                      </td>
-                      <td className="p-3 text-gray-700">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation(); // Prevents row click navigation
-                            deleteCustomer(customer.customerId);
-                          }}
-                          className="px-3 py-1 text-white transition-all bg-red-500 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-                        >
-                          Delete
-                        </button>
                       </td>
                     </tr>
                   ))}
