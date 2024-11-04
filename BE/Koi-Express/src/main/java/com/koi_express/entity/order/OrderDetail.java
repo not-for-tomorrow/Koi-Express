@@ -5,8 +5,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.koi_express.enums.KoiType;
 import com.koi_express.enums.PaymentMethod;
+import com.koi_express.enums.ShipmentCondition;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -57,6 +59,9 @@ public class OrderDetail implements Serializable {
 
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
+
+    @Enumerated(EnumType.STRING)
+    ShipmentCondition shipmentCondition;
 
     boolean insurance;
 

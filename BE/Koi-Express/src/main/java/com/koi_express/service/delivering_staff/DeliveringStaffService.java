@@ -8,7 +8,6 @@ import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.entity.shipment.Shipments;
 import com.koi_express.enums.OrderStatus;
-import com.koi_express.enums.ShipmentStatus;
 import com.koi_express.enums.StaffStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
@@ -52,14 +51,12 @@ public class DeliveringStaffService {
         order.setStatus(OrderStatus.PICKING_UP);
         orderRepository.save(order);
 
-        LocalDateTime pickupTime =
-                pickupTimeCalculator.calculatePickupTime(order.getOrderDetail().getKilometers());
+        LocalDateTime pickupTime = pickupTimeCalculator.calculatePickupTime(order.getOrderDetail().getKilometers());
 
         Shipments shipment = Shipments.builder()
                 .customer(order.getCustomer())
                 .order(order)
                 .deliveringStaff(order.getDeliveringStaff())
-                .status(ShipmentStatus.PREPARING)
                 .estimatedPickupTime(pickupTime)
                 .build();
 
@@ -76,11 +73,9 @@ public class DeliveringStaffService {
 
         Orders order = validateOrderAssignment(orderId, deliveringStaffId);
 
-        // Update the order status to DELIVERED
         order.setStatus(OrderStatus.DELIVERED);
         orderRepository.save(order);
 
-        // Update the delivering staff status to AVAILABLE if this is their only active order
         DeliveringStaff staff = order.getDeliveringStaff();
         if (!orderRepository.existsByStatusAndDeliveringStaff_StaffId(OrderStatus.PICKING_UP, deliveringStaffId)) {
             staff.setStatus(StaffStatus.AVAILABLE);
@@ -110,4 +105,5 @@ public class DeliveringStaffService {
 
         return order;
     }
+
 }

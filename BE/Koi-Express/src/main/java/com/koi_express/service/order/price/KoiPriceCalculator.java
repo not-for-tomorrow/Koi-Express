@@ -49,6 +49,7 @@ public class KoiPriceCalculator {
         };
     }
 
+
     private static BigDecimal calculateBasePriceForType(
             double length, BigDecimal priceSmall, BigDecimal priceMedium, BigDecimal priceLarge) {
         if (length <= 30) {

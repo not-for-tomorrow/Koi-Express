@@ -36,4 +36,5 @@ public enum ErrorCode {
 
     private final int code;
     private final String message;
+
 }

@@ -9,6 +9,8 @@ spring:
         max-swallow-size: -1
       session:
         timeout: 30m
+        cookie:
+          same-site: Lax
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver

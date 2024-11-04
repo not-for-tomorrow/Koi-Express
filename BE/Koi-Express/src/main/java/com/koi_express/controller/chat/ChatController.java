@@ -24,4 +24,5 @@ public class ChatController {
         chatMessage.setType(MessageType.JOIN);
         return chatMessage;
     }
+
 }

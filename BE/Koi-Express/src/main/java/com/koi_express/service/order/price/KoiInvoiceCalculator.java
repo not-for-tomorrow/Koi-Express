@@ -49,7 +49,7 @@ public class KoiInvoiceCalculator {
 
     public ApiResponse<Map<String, BigDecimal>> calculateTotalPrice(
             KoiType koiType, int quantity, BigDecimal koiSize, BigDecimal distanceFee, BigDecimal commitmentFee) {
-        validateInputs(quantity, koiSize, distanceFee);
+        validateInputs(quantity, koiSize, distanceFee, commitmentFee);
 
         CareFee.Size size = convertLengthToSize(koiSize);
 
@@ -80,6 +80,7 @@ public class KoiInvoiceCalculator {
         }
 
         return new ApiResponse<>(200, "Total price calculated successfully", feeDetails);
+
     }
 
     private BigDecimal calculateRemainingTransportationFee(BigDecimal distanceFee, BigDecimal commitmentFee) {
@@ -109,7 +110,7 @@ public class KoiInvoiceCalculator {
         return subtotal.multiply(BigDecimal.valueOf(vatRate));
     }
 
-    private void validateInputs(int quantity, BigDecimal koiSize, BigDecimal distanceFee) {
+    private void validateInputs(int quantity, BigDecimal koiSize, BigDecimal distanceFee, BigDecimal commitmentFee) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
@@ -118,6 +119,9 @@ public class KoiInvoiceCalculator {
         }
         if (distanceFee.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Distance fee cannot be negative");
+        }
+        if (commitmentFee.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Commitment fee cannot be negative");
         }
     }
 

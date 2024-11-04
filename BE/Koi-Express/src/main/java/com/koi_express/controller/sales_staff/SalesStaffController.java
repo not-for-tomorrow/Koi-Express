@@ -1,12 +1,10 @@
 package com.koi_express.controller.sales_staff;
 
-import java.util.List;
-
+import com.koi_express.exception.AppException;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
-import com.koi_express.exception.AppException;
-import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.sale_staff.SalesStaffService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/sales")
@@ -51,6 +51,7 @@ public class SalesStaffController {
             logger.info("Processing order acceptance for order ID: {}", orderId);
 
             String cleanedToken = token.replace("Bearer ", "").trim();
+
             String role = jwtUtil.extractRole(cleanedToken);
             String userId = jwtUtil.extractUserId(cleanedToken, role);
 
@@ -68,32 +69,36 @@ public class SalesStaffController {
         }
     }
 
-    @GetMapping("/customers")
+    @GetMapping( "/customers")
     public ResponseEntity<ApiResponse<List<Customers>>> getAllCustomers() {
 
         ApiResponse<List<Customers>> customersPage = manageCustomerService.getAllCustomers();
+
         return new ResponseEntity<>(customersPage, HttpStatus.OK);
     }
 
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<ApiResponse<Customers>> getCustomerById(@PathVariable Long customerId) {
+    public ResponseEntity<ApiResponse<Customers>> getCustomerById(
+            @PathVariable Long customerId) {
         try {
+            // Call the service to get customer details by ID
             Customers customer = manageCustomerService.getCustomerById(customerId);
-            logger.info("Fetched details for customer ID: {}", customerId);
 
+            logger.info("Fetched details for customer ID: {}", customerId);
             return new ResponseEntity<>(
                     new ApiResponse<>(HttpStatus.OK.value(), "Customer details retrieved successfully", customer),
                     HttpStatus.OK);
         } catch (AppException e) {
             logger.error("Error retrieving customer details for ID: {}", customerId, e);
             return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null), HttpStatus.NOT_FOUND);
+                    new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null),
+                    HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             logger.error("Unexpected error retrieving customer details for ID: {}", customerId, e);
             return new ResponseEntity<>(
-                    new ApiResponse<>(
-                            HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error retrieving customer details", null),
+                    new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error retrieving customer details", null),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 }
