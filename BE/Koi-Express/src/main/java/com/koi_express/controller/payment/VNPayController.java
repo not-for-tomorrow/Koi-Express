@@ -72,31 +72,43 @@ public class VNPayController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid transaction reference");
             }
 
-            Long orderId;
-            if (transactionRef.contains("_")) {
-                transactionRef = transactionRef.split("_")[0];
-            }
+            boolean isFinalPayment = transactionRef.contains("_final");
 
-            try {
+            Long orderId;
+            Long userId = null;
+            if (transactionRef.contains("_")) {
+                String[] parts = transactionRef.split("_");
+                orderId = Long.parseLong(parts[0]);
+                if (isFinalPayment && parts.length > 2) {
+                    userId = Long.parseLong(parts[1]);
+                }
+            } else {
                 orderId = Long.parseLong(transactionRef);
-            } catch (NumberFormatException e) {
-                logger.error("Invalid transaction reference format for order ID: {}", transactionRef, e);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid order ID format");
             }
 
             String responseCode = vnpParams.get("vnp_ResponseCode");
-
             logger.info("Received payment callback for order ID: {} with response code: {}", orderId, responseCode);
 
-            ApiResponse<String> response = orderService.confirmCommitFeePayment(orderId, vnpParams);
+            ApiResponse<String> response;
+            if (isFinalPayment) {
+                if (userId == null) {
+                    logger.error("User ID is missing for final payment in transaction reference.");
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User ID missing for final payment");
+                }
+                response = orderService.confirmPaymentFromStorage(userId);
+            } else {
+                response = orderService.confirmCommitFeePayment(orderId, vnpParams);
+            }
 
             if ("00".equals(responseCode)) {
+                String successUrl = isFinalPayment ? System.getenv("RETURN_URL_FINAL_PAYMENT_SUCCESS") : System.getenv("RETURN_URL_COMMIT_FEE_SUCCESS");
                 return ResponseEntity.status(HttpStatus.FOUND)
-                        .header("Location", System.getenv("RETURN_URL_SUCCESS"))
+                        .header("Location", successUrl)
                         .build();
             } else {
+                String failureUrl = isFinalPayment ? System.getenv("RETURN_URL_FINAL_PAYMENT_FAILURE") : System.getenv("RETURN_URL_COMMIT_FEE_FAILURE");
                 return ResponseEntity.status(HttpStatus.FOUND)
-                        .header("Location", System.getenv("RETURN_URL_FAILURE"))
+                        .header("Location", failureUrl)
                         .build();
             }
         } catch (Exception e) {
