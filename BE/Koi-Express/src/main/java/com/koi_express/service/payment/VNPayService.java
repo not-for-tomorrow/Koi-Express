@@ -33,7 +33,7 @@ public class VNPayService {
             return new ApiResponse<>(400, "Commitment fee must be greater than zero", null);
         }
 
-        String transactionRef = String.valueOf(order.getOrderId());
+        String transactionRef = order.getOrderId() + "_" + System.currentTimeMillis();
 
         return generateVnPayPaymentUrl(order, amount, transactionRef);
     }

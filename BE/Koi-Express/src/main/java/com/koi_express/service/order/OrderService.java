@@ -302,9 +302,7 @@ public class OrderService {
         try {
             BigDecimal totalFee = (BigDecimal) sessionData.get("totalFee");
             Long orderId = (Long) sessionData.get("orderId");
-
             Orders order = findOrderById(orderId);
-
             if (order == null) {
                 logger.error("Không tìm thấy đơn hàng với ID: {}", orderId);
                 return new ApiResponse<>(HttpStatus.NOT_FOUND.value(), "Không tìm thấy đơn hàng.", null);
@@ -317,16 +315,10 @@ public class OrderService {
             ApiResponse<String> paymentResponse = handlePaymentMethod(order, paymentMethod, totalFee, calculationData);
 
             if (paymentResponse.getCode() == HttpStatus.OK.value()) {
-                order.setStatus(OrderStatus.IN_TRANSIT);
-                order.setPaymentConfirmed(true);
                 orderRepository.save(order);
-
-                TemporaryStorage.getInstance().removeData(userId);
-
-                logger.info("Final payment confirmed for order ID: {}. Status set to IN_TRANSIT.", orderId);
-                return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán thành công và đơn hàng đang trên đường vận chuyển.", null);
+                return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán xác nhận thành công", paymentResponse.getResult());
             } else {
-                return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to process payment", null);
+                return paymentResponse;
             }
 
         } catch (AppException e) {
@@ -337,7 +329,6 @@ public class OrderService {
             return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error processing payment", e.getMessage());
         }
     }
-
 
     public ApiResponse<String> handlePaymentMethod(Orders order, PaymentMethod paymentMethod, BigDecimal totalFee, Map<String, BigDecimal> calculationData) {
         return switch (paymentMethod) {
@@ -359,6 +350,8 @@ public class OrderService {
 
             orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
             invoiceBuilder.updateInvoice(order, calculationData);
+
+            orderRepository.save(order);
 
             return new ApiResponse<>(HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult());
 
