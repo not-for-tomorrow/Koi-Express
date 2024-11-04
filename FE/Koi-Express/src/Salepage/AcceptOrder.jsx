@@ -3,12 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchPendingOrders } from "/src/koi/api/api.js";
 
 const AcceptOrder = () => {
-  const [isTimeFilterExpanded, setIsTimeFilterExpanded] = useState(false);
-  const [selectedTimeFilter, setSelectedTimeFilter] = useState("all");
-  const [tempSelectedTimeFilter, setTempSelectedTimeFilter] = useState("all");
-  const [customDateRange, setCustomDateRange] = useState({ from: "", to: "" });
-  const [displayDateRange, setDisplayDateRange] = useState("");
-  const [selectedTab, setSelectedTab] = useState("Tất cả");
+  const [selectedTab] = useState("Tất cả");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

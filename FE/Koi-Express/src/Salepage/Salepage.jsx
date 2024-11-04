@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import Sidebar from "../componentsDashboard/Salecomponents/Sidebar/Sidebar";
 import Order from "./Order";
 import CustomerAccount from "./CustomerAccount";
+// import CustomerDetail from "./CustomerAccount/CustomerDetail.jsx";
 import AcceptOrder from "./AcceptOrder";
 import { UserProvider } from "../componentsDashboard/UserContext"; // Import UserProvider
 import OrderDetail from "./OrderDetail/OrderDetail";
@@ -34,6 +35,10 @@ const Salepage = () => {
                 path="/accept/detail/:orderId"
                 element={<OrderDetailForAccept />}
               />
+              {/* <Route
+                path="/customeraccount/:customerId"
+                element={<CustomerDetail />}
+              /> */}
             </Routes>
           </div>
         </div>
