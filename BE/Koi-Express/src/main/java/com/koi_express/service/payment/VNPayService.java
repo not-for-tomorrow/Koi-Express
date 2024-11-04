@@ -45,7 +45,7 @@ public class VNPayService {
         }
 
         BigDecimal amount = totalFee.multiply(BigDecimal.valueOf(100));
-        String transactionRef = order.getOrderId() + "_" + System.currentTimeMillis();
+        String transactionRef = order.getOrderId() + "_" + System.currentTimeMillis() + "_final";
 
         return generateVnPayPaymentUrl(order, amount, transactionRef);
     }
