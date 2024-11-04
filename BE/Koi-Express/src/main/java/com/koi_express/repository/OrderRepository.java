@@ -19,11 +19,15 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OrderRepository extends JpaRepository<Orders, Long> {
 
-    @Query("SELECT o FROM Orders o WHERE o.customer.customerId = :customerId "
-            + "AND (:status IS NULL OR o.status = :status) "
-            + "AND (:fromDate IS NULL OR o.createdAt >= :fromDate) "
-            + "AND (:toDate IS NULL OR o.createdAt <= :toDate)")
-    List<Orders> findOrdersWithFilters(
+    @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c, s) " +
+            "FROM Orders o " +
+            "JOIN o.customer c " +
+            "LEFT JOIN FETCH o.shipment s " +
+            "WHERE o.customer.customerId = :customerId " +
+            "AND (:status IS NULL OR o.status = :status) " +
+            "AND (:fromDate IS NULL OR o.createdAt >= :fromDate) " +
+            "AND (:toDate IS NULL OR o.createdAt <= :toDate)")
+    List<OrderWithCustomerDTO> findOrdersWithFilters(
             @Param("customerId") Long customerId,
             @Param("status") OrderStatus status,
             @Param("fromDate") LocalDate fromDate,
@@ -32,8 +36,10 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
     List<Orders> findByStatusAndDeliveringStaffId(OrderStatus status, Long deliveringStaffId);
 
     @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c, s) " +
-            "FROM Orders o JOIN o.customer c LEFT JOIN o.shipment s")
-    List<OrderWithCustomerDTO> findAllWithCustomer();
+            "FROM Orders o " +
+            "JOIN o.customer c " +
+            "LEFT JOIN FETCH o.shipment s")
+    List<OrderWithCustomerDTO> findAllWithCustomerAndShipment();
 
     @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c, s) " +
             "FROM Orders o " +

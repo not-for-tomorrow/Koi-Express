@@ -71,17 +71,13 @@ public class VNPayController {
 
             logger.info("Received payment callback for order ID: {} with response code: {}", orderId, responseCode);
 
-            // Process the payment response from VNPAY
             ApiResponse<String> response = orderService.confirmCommitFeePayment(orderId, vnpParams);
 
-            // Check VNPAY response code
             if ("00".equals(responseCode)) {
-                // Payment success, redirect to success URL
                 return ResponseEntity.status(HttpStatus.FOUND)
                         .header("Location", System.getenv("RETURN_URL_SUCCESS"))
                         .build();
             } else {
-                // Payment failed or canceled, redirect to failure URL
                 return ResponseEntity.status(HttpStatus.FOUND)
                         .header("Location", System.getenv("RETURN_URL_FAILURE"))
                         .build();
