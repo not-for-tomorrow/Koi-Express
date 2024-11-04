@@ -6,8 +6,11 @@ import VNPayLogo from "../../assets/images/LogoPayments/VNPay.png";
 import Cashbysender from "../../assets/images/LogoPayments/Cashbysender.png";
 import Cashbyrep from "../../assets/images/LogoPayments/Cashbyrep.png";
 
-export const paymentMethods = [{ label: "VNPAY", icon: VNPayLogo },{ label: "Người gửi trả tiền", icon: Cashbysender },
-  { label: "Người nhận trả tiền", icon: Cashbyrep }];
+export const paymentMethods = [
+  { label: "VNPAY", icon: VNPayLogo },
+  { label: "Người gửi trả tiền", icon: Cashbysender },
+  { label: "Người nhận trả tiền", icon: Cashbyrep },
+];
 
 export const getPaymentMethodIcon = (methodLabel) => {
   const method = paymentMethods.find((m) => m.label === methodLabel);
@@ -32,12 +35,17 @@ const DeliverOrderModal = ({
 }) => {
   const [showDetailPopup, setShowDetailPopup] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(paymentMethod);
-
-  const totalFee = distanceFee + commitmentFee;
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState(paymentMethod);
+  const [remainingTransportationFee, setRemainingTransportationFee] = useState(null);
 
   const handleSelectPaymentMethod = (methodLabel) => {
     setSelectedPaymentMethod(methodLabel);
+  };
+
+  const onSubmitSuccess = (feeData) => {
+    setRemainingTransportationFee(feeData.totalFee);
+    setShowDetailPopup(false);
   };
 
   const statusMapping = {
@@ -110,12 +118,14 @@ const DeliverOrderModal = ({
         </div>
       </button>
 
-      <div className="p-4 mt-4 border rounded-lg bg-gray-50">
-        <div className="flex justify-between">
-          <p>Tổng phí</p>
-          <p>{totalFee.toLocaleString()} VND</p>
+      {remainingTransportationFee !== null && (
+        <div className="p-4 mt-4 border rounded-lg bg-gray-50">
+          <div className="flex justify-between">
+            <p>Tổng phí</p>
+            <p>{remainingTransportationFee.toLocaleString()} VND</p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex items-center justify-between p-2 mt-4 transition duration-300 bg-white rounded-lg shadow-md hover:shadow-lg">
         <div className="flex-grow sm:pr-4">
@@ -158,8 +168,6 @@ const DeliverOrderModal = ({
           <strong>Phương thức thanh toán:</strong> {paymentMethod || "N/A"}
         </p>
       </div>
-     
-      
 
       <div className="flex-shrink-0 mt-6">
         <button className="w-full p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600">
@@ -171,10 +179,11 @@ const DeliverOrderModal = ({
         <DeliverOrderUpdate
           koiQuantity={koiQuantity}
           onClose={() => setShowDetailPopup(false)}
+          onSubmitSuccess={onSubmitSuccess} // Truyền hàm này vào DeliverOrderUpdate
         />
       )}
 
-{showPaymentModal && (
+      {showPaymentModal && (
         <PaymentModal
           onClose={() => setShowPaymentModal(false)}
           onSelectPaymentMethod={handleSelectPaymentMethod}

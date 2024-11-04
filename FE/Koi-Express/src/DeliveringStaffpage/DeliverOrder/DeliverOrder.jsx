@@ -192,6 +192,7 @@ const DeliverOrder = () => {
           paymentMethod={paymentMethod}
           distanceFee={distanceFee}
           commitmentFee={commitmentFee}
+          koiQuantity={orderData.orderDetail.koiQuantity} // Thêm dòng này
         />
       </div>
       <div className="relative w-2/3">
