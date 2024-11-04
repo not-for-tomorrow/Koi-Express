@@ -71,7 +71,7 @@ const OrderDetailModal = ({
           </div>
         )}
 
-        <div className="text-sm mb-6">
+        <div className="mb-6 text-sm">
           <strong className="text-gray-600">Lộ trình:</strong> {distance}
         </div>
 

@@ -9,6 +9,7 @@ import { UserProvider } from "../componentsDashboard/UserContext"; // Import Use
 import OrderDetail from "./OrderDetail/OrderDetail";
 import OrderDetailForAccept from "./OrderDetailForAccept/OrderDetail";
 import ChatPage from "./ChatPage.jsx";
+import CreateBlog from "./CreateBlog.jsx";
 
 const Salepage = () => {
   return (
@@ -35,11 +36,9 @@ const Salepage = () => {
                 path="/accept/detail/:orderId"
                 element={<OrderDetailForAccept />}
               />
-              {/* <Route
-                path="/customeraccount/:customerId"
-                element={<CustomerDetail />}
-              /> */}
+              <Route path="/createblog" element={<CreateBlog />} />
             </Routes>
+            
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
 import DeliverOrderModal from "./DeliverOrderModal";
+import InTransitOrderModal from "./InTransitOrderModal";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import NoOrderToDeliver from "./NoOderToDeliver";
 import { LOCATIONIQ_KEY } from "../../koi/api/api";
@@ -22,7 +23,8 @@ const DeliverOrder = () => {
   useEffect(() => {
     const fetchOrderData = async () => {
       try {
-        const response = await axios.get(
+        // Thử gọi API pickup-orders trước
+        let response = await axios.get(
           `http://localhost:8080/api/delivering/orders/pickup-orders`,
           {
             headers: {
@@ -31,18 +33,26 @@ const DeliverOrder = () => {
           }
         );
 
-        // Check if order data exists and log it
+        // Nếu không có đơn hàng nào trong pickup-orders, gọi API intransit-orders
+        if (!response.data.result.length) {
+          response = await axios.get(
+            `http://localhost:8080/api/delivering/orders/intransit-orders`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+        }
+
         const order = response.data.result.length
           ? response.data.result[0]
           : null;
         setOrderData(order);
 
-        // Log retrieved data for verification
-        console.log("Fetched order data:", order);
-
-        // Store or update session data using the specified format
         if (order) {
-          const staffId = order.deliveringStaff.staffId; // Assuming deliveringStaff has a staffId
+          console.log("Fetched order data:", order);
+          const staffId = order.deliveringStaff.staffId;
           const sessionKey = `delivering_staff_${staffId}_pickupOrder`;
 
           sessionStorage.setItem(
@@ -54,13 +64,6 @@ const DeliverOrder = () => {
               commitmentFee: order.orderDetail.commitmentFee,
             })
           );
-
-          console.log(`Session data stored for key '${sessionKey}':`, {
-            koiQuantity: order.orderDetail.koiQuantity,
-            orderId: order.orderId,
-            distanceFee: order.orderDetail.distanceFee,
-            commitmentFee: order.orderDetail.commitmentFee,
-          });
         } else {
           console.warn("No orders available for delivery.");
         }
@@ -159,6 +162,9 @@ const DeliverOrder = () => {
     return <NoOrderToDeliver />;
   }
 
+  const ModalComponent =
+    orderData.status === "IN_TRANSIT" ? InTransitOrderModal : DeliverOrderModal;
+
   const {
     originLocation,
     destinationLocation,
@@ -178,7 +184,7 @@ const DeliverOrder = () => {
   return (
     <div className="flex min-h-screen bg-white">
       <div className="w-1/3">
-        <DeliverOrderModal
+        <ModalComponent
           orderId={orderData.orderId}
           fullName={fullName}
           originLocation={originLocation}
@@ -192,7 +198,7 @@ const DeliverOrder = () => {
           paymentMethod={paymentMethod}
           distanceFee={distanceFee}
           commitmentFee={commitmentFee}
-          koiQuantity={orderData.orderDetail.koiQuantity} // Thêm dòng này
+          koiQuantity={orderData.orderDetail.koiQuantity}
         />
       </div>
       <div className="relative w-2/3">

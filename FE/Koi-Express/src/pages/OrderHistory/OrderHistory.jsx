@@ -118,10 +118,12 @@ const OrderHistory = () => {
   const filterOrders = () => {
     let filteredOrders = Array.isArray(orders) ? orders : [];
 
-    // Filter by selected tab (status)
     if (selectedTab !== "Tất cả") {
       filteredOrders = filteredOrders.filter(
-        (order) => getVietnameseStatus(order.status) === selectedTab
+        (order) =>
+          getVietnameseStatus(order.order.status) === selectedTab &&
+          order.order.status !== "ASSIGNED" && // Loại bỏ trạng thái "Đã phân công"
+          order.order.status !== "COMMIT_FEE_PENDING" // Loại bỏ trạng thái "Chờ thanh toán cam kết"
       );
     }
 
@@ -159,12 +161,14 @@ const OrderHistory = () => {
     // Filter by search query
     if (searchQuery) {
       filteredOrders = filteredOrders.filter((order) => {
-        const orderId = order.orderId ? order.orderId.toString() : ""; // Convert orderId to a string
-        const originLocation = order.originLocation
-          ? order.originLocation.toLowerCase()
+        const orderId = order.order.orderId
+          ? order.order.orderId.toString()
           : "";
-        const destinationLocation = order.destinationLocation
-          ? order.destinationLocation.toLowerCase()
+        const originLocation = order.order.originLocation
+          ? order.order.originLocation.toLowerCase()
+          : "";
+        const destinationLocation = order.order.destinationLocation
+          ? order.order.destinationLocation.toLowerCase()
           : "";
 
         return (
@@ -364,22 +368,40 @@ const OrderHistory = () => {
                     <th className="w-1/4 p-2 font-semibold">Điểm lấy hàng</th>
                     <th className="w-1/3 p-2 font-semibold">Điểm giao hàng</th>
                     <th className="p-2 font-semibold w-1/10">Thời gian tạo</th>
-                    <th className="w-1/12 p-2 font-semibold">Tổng COD</th>
+                    {orders.some(
+                      (order) =>
+                        order.order.status === "IN_TRANSIT" ||
+                        order.order.status === "DELIVERED"
+                    ) && (
+                      <>
+                        <th className="p-2 font-semibold text-center w-1/10">
+                          Người giao hàng
+                        </th>
+                        <th className="p-2 font-semibold text-center w-1/10">
+                          Tổng tiền
+                        </th>
+                      </>
+                    )}
+
                     <th className="p-2 font-semibold text-center w-1/9">
                       Trạng thái
                     </th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  {filterOrders().map((order, index) => {
-                    const statusColor =
-                      statusColors[getVietnameseStatus(order.status)] ||
-                      defaultStatusColor;
+                  {filterOrders().map((orderData, index) => {
+                    const order = orderData.order;
+                    const deliveringStaff = order.deliveringStaff;
+                    const statusColor = statusColors[
+                      getVietnameseStatus(order.status)
+                    ] || { background: "#f0f0f0", text: "#000" };
+
                     return (
                       <tr
                         key={index}
                         className="transition duration-300 border-b border-gray-200 cursor-pointer hover:bg-blue-50"
-                        onClick={() => goToOrderDetail(order)} // Correctly pass the entire order object
+                        onClick={() => goToOrderDetail(order)}
                       >
                         <td className="p-2 font-semibold text-blue-600">
                           {order.orderId}
@@ -393,21 +415,33 @@ const OrderHistory = () => {
                         <td className="p-2 text-sm text-gray-700">
                           {new Date(order.createdAt).toLocaleString("vi-VN")}
                         </td>
-                        <td className="p-2 text-sm font-medium text-blue-600">
-                          {order.totalFee !== null
-                            ? `₫ ${order.totalFee.toLocaleString("vi-VN")}`
-                            : "N/A"}
-                        </td>
+                        {(order.status === "IN_TRANSIT" ||
+                          order.status === "DELIVERED") && (
+                          <>
+                            <td className="p-2 text-sm text-center text-gray-700">
+                              {deliveringStaff
+                                ? deliveringStaff.fullName
+                                : "N/A"}
+                            </td>
+                            <td className="p-2 text-sm font-medium text-center text-blue-600">
+                              {order.totalFee !== null &&
+                              order.totalFee !== undefined
+                                ? `₫ ${order.totalFee.toLocaleString("vi-VN")}`
+                                : "N/A"}
+                            </td>
+                          </>
+                        )}
+
                         <td className="p-2 text-center">
                           <span
                             className="inline-block px-4 py-2 text-xs font-semibold rounded-full"
                             style={{
                               backgroundColor: statusColor.background,
                               color: statusColor.text,
-                              minWidth: "120px", // Đảm bảo kích thước tối thiểu cho trạng thái đồng nhất
-                              textAlign: "center", // Căn giữa văn bản
-                              padding: "6px 12px", // Đồng bộ padding
-                              whiteSpace: "nowrap", // Ngăn trạng thái xuống dòng
+                              minWidth: "120px",
+                              textAlign: "center",
+                              padding: "6px 12px",
+                              whiteSpace: "nowrap",
                             }}
                           >
                             {getVietnameseStatus(order.status)}

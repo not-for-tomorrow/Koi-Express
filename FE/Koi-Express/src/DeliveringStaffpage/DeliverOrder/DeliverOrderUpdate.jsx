@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-
 const DeliverOrderUpdate = ({ onClose, koiQuantity, onSubmitSuccess }) => {
   const [fishStatus, setFishStatus] = useState("HEALTHY");
 
@@ -81,12 +80,19 @@ const DeliverOrderUpdate = ({ onClose, koiQuantity, onSubmitSuccess }) => {
   };
 
   return (
-  
     <div
       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
       style={{ zIndex: 1000 }}
     >
       <div className="relative w-full max-w-3xl p-6 bg-white rounded-lg shadow-lg">
+        {/* Nút đóng ở góc phải */}
+        <button
+          onClick={onClose}
+          className="absolute text-gray-500 top-3 right-3 hover:text-gray-700 focus:outline-none"
+        >
+          &#10005; {/* Dấu "x" */}
+        </button>
+        
         <h2 className="mb-4 text-lg font-bold">Chi tiết cá</h2>
         <div className="mb-2">Số lượng: {koiQuantity}</div>
 
@@ -159,4 +165,3 @@ const DeliverOrderUpdate = ({ onClose, koiQuantity, onSubmitSuccess }) => {
 };
 
 export default DeliverOrderUpdate;
-

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import RatingPopup from "./RatingPopup"; // Import the RatingPopup component
 
 const OrderDetailModal = ({ orderId, distance }) => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isRatingPopupOpen, setIsRatingPopupOpen] = useState(false); // State to toggle RatingPopup
 
   const statusMapping = {
     PENDING: "Chờ xác nhận",
@@ -37,18 +40,18 @@ const OrderDetailModal = ({ orderId, distance }) => {
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
-      const token = localStorage.getItem("token"); // Retrieve the token from localStorage
+      const token = localStorage.getItem("token");
 
       try {
         const response = await axios.get(
           `http://localhost:8080/api/orders/${orderId}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Include the token in the request headers
+              Authorization: `Bearer ${token}`,
             },
           }
         );
-        setOrder(response.data.order); // Adjusted to access the order object within the response
+        setOrder(response.data.order);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -58,6 +61,20 @@ const OrderDetailModal = ({ orderId, distance }) => {
 
     fetchOrderDetails();
   }, [orderId]);
+
+  const handleStarClick = () => {
+    setIsRatingPopupOpen(true); // Open the rating popup
+  };
+
+  const handleRatingSubmit = (data) => {
+    // Handle the submitted rating data here
+    console.log("Submitted Rating:", data);
+    setIsRatingPopupOpen(false); // Close the popup after submission
+  };
+
+  const handleRatingClose = () => {
+    setIsRatingPopupOpen(false); // Close the popup without submission
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -73,10 +90,10 @@ const OrderDetailModal = ({ orderId, distance }) => {
     paymentMethod,
     originLocation,
     destinationLocation,
-    deliveringStaff,
+    driverName, 
+    driverRating, 
   } = order;
 
-  // Safely access properties and format them
   const formattedDistanceFee = new Intl.NumberFormat("vi-VN").format(
     orderDetail?.distanceFee || 0
   );
@@ -90,6 +107,10 @@ const OrderDetailModal = ({ orderId, distance }) => {
     text: "#000",
   };
 
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
     <div className="relative z-20 flex flex-col w-full h-full max-w-lg p-6 bg-white border border-gray-200 shadow-lg">
       <div className="flex-grow">
@@ -99,22 +120,26 @@ const OrderDetailModal = ({ orderId, distance }) => {
             Đơn hàng #{orderId}
           </div>
 
-          {/* Driver Information Section */}
-          {deliveringStaff && (
-            <div className="p-4 mb-4 border rounded-lg bg-gray-50">
-              <h3 className="mb-2 text-lg font-semibold">Thông tin tài xế</h3>
+          <div className="p-4 mb-4 border rounded-lg bg-gray-50">
+            <div className="flex justify-between">
               <p>
-                <strong>Họ tên:</strong> {deliveringStaff.fullName}
-              </p>
-              <p>
-                <strong>Số điện thoại:</strong> {deliveringStaff.phoneNumber}
-              </p>
-              <p>
-                <strong>Email:</strong> {deliveringStaff.email}
+                Tài xế {driverName || "N/A"} đã hoàn tất đơn hàng. Hãy cho chúng tôi biết đánh giá của bạn nhé!
               </p>
             </div>
-          )}
 
+            <div className="flex justify-center mt-2 space-x-1 text-3xl">
+              {[...Array(5)].map((_, index) => (
+                <span 
+                  key={index} 
+                  className="text-yellow-500 cursor-pointer"
+                  onClick={handleStarClick} // Open the rating popup on star click
+                >
+                  ⭐
+                </span>
+              ))}
+            </div>
+          </div>
+          
           <div className="text-sm ">
             <strong className="text-gray-600">Lộ trình:</strong>{" "}
             {distance?.toFixed(2)} km
@@ -215,6 +240,12 @@ const OrderDetailModal = ({ orderId, distance }) => {
           <Link to="/appkoiexpress/history">Đóng</Link>
         </button>
       </div>
+         {/* Include the RatingPopup component and pass required props */}
+         <RatingPopup
+        isOpen={isRatingPopupOpen}
+        onClose={handleRatingClose}
+        onSubmit={handleRatingSubmit}
+      />
     </div>
   );
 };
