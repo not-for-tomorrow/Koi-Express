@@ -85,12 +85,9 @@ public class VNPayController {
             String responseCode = vnpParams.get("vnp_ResponseCode");
             logger.info("Received payment callback for order ID: {} with response code: {}", orderId, responseCode);
 
-            ApiResponse<String> response;
-            if (isFinalPayment(transactionRef)) {
-                response = orderService.confirmPaymentFromStorage(orderId);
-            } else {
-                response = orderService.confirmCommitFeePayment(orderId, vnpParams);
-            }
+            ApiResponse<String> response = isFinalPayment(transactionRef)
+                    ? orderService.confirmPaymentFromStorage(orderId)
+                    : orderService.confirmCommitFeePayment(orderId, vnpParams);
 
             return redirectToUrlBasedOnResponse(responseCode, isFinalPayment(transactionRef));
         } catch (Exception e) {
@@ -106,16 +103,6 @@ public class VNPayController {
             return Long.parseLong(parts[0]);
         } catch (Exception e) {
             logger.error("Error parsing order ID from transaction reference: {}", transactionRef, e);
-            return null;
-        }
-    }
-
-    private Long parseUserIdFromTransactionRef(String transactionRef) {
-        try {
-            String[] parts = transactionRef.split("_");
-            return parts.length > 2 ? Long.parseLong(parts[1]) : null;
-        } catch (Exception e) {
-            logger.error("Error parsing user ID from transaction reference: {}", transactionRef, e);
             return null;
         }
     }

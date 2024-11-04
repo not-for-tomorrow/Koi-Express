@@ -314,7 +314,7 @@ public class OrderService {
 
             ApiResponse<String> paymentResponse = handlePaymentMethod(order, paymentMethod, totalFee, calculationData);
 
-            if (paymentResponse.getCode() == HttpStatus.OK.value()) {
+            if (paymentResponse.getCode() == HttpStatus.OK.value() ) {
                 orderRepository.save(order);
                 return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán xác nhận thành công", paymentResponse.getResult());
             } else {
@@ -345,7 +345,9 @@ public class OrderService {
                 return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null);
             }
 
-            order.setStatus(OrderStatus.IN_TRANSIT);
+            if (OrderStatus.PICKING_UP.equals(order.getStatus())) {
+                order.setStatus(OrderStatus.IN_TRANSIT);
+            }
             order.setPaymentConfirmed(true);
 
             orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
@@ -362,7 +364,9 @@ public class OrderService {
     }
 
     private ApiResponse<String> processCashPayment(Orders order, Map<String, BigDecimal> calculationData) {
-        order.setStatus(OrderStatus.IN_TRANSIT);
+        if (OrderStatus.PICKING_UP.equals(order.getStatus())) {
+            order.setStatus(OrderStatus.IN_TRANSIT);
+        }
         order.setPaymentConfirmed(true);
 
         orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
