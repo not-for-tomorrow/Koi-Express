@@ -291,6 +291,7 @@ public class OrderService {
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
     }
 
+    @Transactional
     public ApiResponse<String> confirmPaymentFromStorage(Long userId) {
         Map<String, Object> sessionData = TemporaryStorage.getInstance().retrieveData(userId);
 
@@ -298,33 +299,42 @@ public class OrderService {
             return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Thông tin thanh toán không tìm thấy.", null);
         }
 
-        BigDecimal totalFee = (BigDecimal) sessionData.get("totalFee");
-        Long orderId = (Long) sessionData.get("orderId");
+        try {
+            BigDecimal totalFee = (BigDecimal) sessionData.get("totalFee");
+            Long orderId = (Long) sessionData.get("orderId");
 
-        Orders order = findOrderById(orderId);
+            Orders order = findOrderById(orderId);
 
-        if (order == null) {
-            logger.error("Không tìm thấy đơn hàng với ID: {}", orderId);
-            return new ApiResponse<>(HttpStatus.NOT_FOUND.value(), "Không tìm thấy đơn hàng.", null);
-        }
+            if (order == null) {
+                logger.error("Không tìm thấy đơn hàng với ID: {}", orderId);
+                return new ApiResponse<>(HttpStatus.NOT_FOUND.value(), "Không tìm thấy đơn hàng.", null);
+            }
 
-        PaymentMethod paymentMethod = order.getPaymentMethod();
-        Map<String, BigDecimal> calculationData = new HashMap<>();
-        calculationData.put("totalFee", totalFee);
+            PaymentMethod paymentMethod = order.getPaymentMethod();
+            Map<String, BigDecimal> calculationData = new HashMap<>();
+            calculationData.put("totalFee", totalFee);
 
-        ApiResponse<String> paymentResponse = handlePaymentMethod(order, paymentMethod, totalFee, calculationData);
-        if (paymentMethod == PaymentMethod.VNPAY && paymentResponse.getCode() == HttpStatus.OK.value()) {
-            return new ApiResponse<>(HttpStatus.OK.value(), "Link thanh toán được tạo thành công.", paymentResponse.getResult());
-        } else if (paymentResponse.getCode() == HttpStatus.OK.value()) {
-            order.setStatus(OrderStatus.IN_TRANSIT);
-            order.setPaymentConfirmed(true);
-            orderRepository.save(order);
+            ApiResponse<String> paymentResponse = handlePaymentMethod(order, paymentMethod, totalFee, calculationData);
 
-            TemporaryStorage.getInstance().removeData(userId);
+            if (paymentResponse.getCode() == HttpStatus.OK.value()) {
+                order.setStatus(OrderStatus.IN_TRANSIT);
+                order.setPaymentConfirmed(true);
+                orderRepository.save(order);
 
-            return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán thành công và đơn hàng đang trên đường vận chuyển.", null);
-        } else {
-            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null);
+                TemporaryStorage.getInstance().removeData(userId);
+
+                logger.info("Final payment confirmed for order ID: {}. Status set to IN_TRANSIT.", orderId);
+                return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán thành công và đơn hàng đang trên đường vận chuyển.", null);
+            } else {
+                return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to process payment", null);
+            }
+
+        } catch (AppException e) {
+            logger.error("Order not found for userId {}: {}", userId, e.getMessage());
+            return new ApiResponse<>(HttpStatus.NOT_FOUND.value(), "Không tìm thấy đơn hàng.", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error confirming payment from storage for userId {}: ", userId, e);
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error processing payment", e.getMessage());
         }
     }
 
@@ -360,7 +370,7 @@ public class OrderService {
 
     private ApiResponse<String> processCashPayment(Orders order, Map<String, BigDecimal> calculationData) {
         order.setStatus(OrderStatus.IN_TRANSIT);
-        order.setPaymentConfirmed(false);
+        order.setPaymentConfirmed(true);
 
         orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
         invoiceBuilder.updateInvoice(order, calculationData);

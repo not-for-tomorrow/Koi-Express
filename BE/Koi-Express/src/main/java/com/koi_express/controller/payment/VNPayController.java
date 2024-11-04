@@ -66,7 +66,24 @@ public class VNPayController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing transaction reference or response code");
             }
 
-            long orderId = Long.parseLong(vnpParams.get("vnp_TxnRef"));
+            String transactionRef = vnpParams.get("vnp_TxnRef");
+            if (transactionRef == null || transactionRef.isEmpty()) {
+                logger.error("Transaction reference is missing or empty in callback.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid transaction reference");
+            }
+
+            Long orderId;
+            if (transactionRef.contains("_")) {
+                transactionRef = transactionRef.split("_")[0];
+            }
+
+            try {
+                orderId = Long.parseLong(transactionRef);
+            } catch (NumberFormatException e) {
+                logger.error("Invalid transaction reference format for order ID: {}", transactionRef, e);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid order ID format");
+            }
+
             String responseCode = vnpParams.get("vnp_ResponseCode");
 
             logger.info("Received payment callback for order ID: {} with response code: {}", orderId, responseCode);
