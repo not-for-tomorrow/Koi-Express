@@ -14,11 +14,6 @@ const PlaceOrderModal = ({ onClose, commitmentFee, paymentUrl }) => {
     }
   };
 
-  // // Use this if you get a message after payment, otherwise use handleConfirm directly
-  // const handlePaymentSuccess = () => {
-  //   navigate("/payment-successful"); // Navigate to the success page after payment
-  // };
-
   return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="absolute inset-0 bg-gray-800 opacity-50"></div>
