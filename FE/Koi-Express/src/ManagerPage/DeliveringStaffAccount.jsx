@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 const DeliveringStaffAccount = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -174,23 +175,23 @@ const DeliveringStaffAccount = () => {
             ) : (
               <table className="w-full text-sm text-left border-collapse shadow-md table-auto">
                 <thead className="sticky top-0 z-10 bg-blue-100">
-                  <tr className="text-blue-900 border-b border-blue-200">
-                    <th className="p-2 font-semibold w-1/10">Mã nhân viên</th>
-                    <th className="p-2 font-semibold w-1/10">Tên đầy đủ</th>
-                    <th className="p-2 font-semibold w-1/10">Email</th>
-                    <th className="p-2 font-semibold w-1/10">Số điện thoại</th>
-                    <th className="p-2 font-semibold w-1/10">Địa chỉ</th>
-                    <th className="p-2 font-semibold w-1/10">Đánh giá</th>
-                    <th className="p-2 font-semibold w-1/10">Trạng thái</th>
-                    <th className="p-2 font-semibold w-1/10">Cấp bậc</th>
-                    <th className="p-2 font-semibold w-1/10">Ngày tạo</th>
-                  </tr>
+                <tr className="text-blue-900 border-b border-blue-200">
+                  <th className="p-2 font-semibold w-1/10">ID</th>
+                  <th className="p-2 font-semibold w-1/10">Tên</th>
+                  <th className="p-2 font-semibold w-1/10">Email</th>
+                  <th className="p-2 font-semibold w-1/10">Số điện thoại</th>
+                  <th className="p-2 font-semibold w-1/10">Đánh giá</th>
+                  <th className="p-2 font-semibold w-1/10">Trạng thái</th>
+                  <th className="p-2 font-semibold w-1/10">Cấp bậc</th>
+                  <th className="p-2 font-semibold w-1/10">Ngày tạo</th>
+                  <th className="p-2 font-semibold w-1/10 pl-8">Hành động</th>
+                </tr>
                 </thead>
                 <tbody>
-                  {filterDeliveringStaff().map((staff, index) => (
+                {filterDeliveringStaff().map((staff, index) => (
                     <tr
-                      key={index}
-                      className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
+                        key={index}
+                        className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
                     >
                       <td className="p-2 font-semibold text-blue-600 w-1/10">
                         {staff.staffId}
@@ -205,9 +206,6 @@ const DeliveringStaffAccount = () => {
                         {staff.phoneNumber || "N/A"}
                       </td>
                       <td className="p-2 text-sm text-gray-700 w-1/10">
-                        {staff.address || "N/A"}
-                      </td>
-                      <td className="p-2 text-sm text-gray-700 w-1/10">
                         {staff.averageRating}
                       </td>
                       <td className="p-2 text-sm text-gray-700 w-1/10">
@@ -217,10 +215,17 @@ const DeliveringStaffAccount = () => {
                         {staff.level}
                       </td>
                       <td className="p-2 text-sm text-gray-700 w-1/10">
-                        {new Date(staff.createdAt).toLocaleString("vi-VN")}
+                        {new Date(staff.createdAt).toLocaleDateString("vi-VN")}
                       </td>
+                      <td className="p-2 text-sm text-gray-700 w-1/10">
+                        <button
+                            className="text-white bg-red-500 px-4 py-2 rounded transition duration-300 ease-in-out transform hover:bg-red-700 hover:scale-105">
+                          Dừng hoạt động
+                        </button>
+                      </td>
+
                     </tr>
-                  ))}
+                ))}
                 </tbody>
               </table>
             )}
@@ -229,7 +234,15 @@ const DeliveringStaffAccount = () => {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modal-title"
+          >
           <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
             <h2 className="mb-4 text-lg font-semibold text-gray-700">
               Tạo Tài Khoản Nhân Viên Giao Hàng
@@ -368,7 +381,7 @@ const DeliveringStaffAccount = () => {
                   onChange={(e) =>
                     setNewStaff({ ...newStaff, level: e.target.value })
                   }
-                  className="w-full p-2 border rounded border-gray-300"
+                  className="w-full p-3 border rounded-lg border-gray-300 bg-gray-50 text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition ease-in-out duration-200 hover:border-blue-400 hover:bg-blue-100"
                 >
                   <option value="BASIC">BASIC</option>
                   <option value="INTERMEDIATE">INTERMEDIATE</option>
@@ -383,23 +396,24 @@ const DeliveringStaffAccount = () => {
 
               {/* Buttons */}
               <div className="flex justify-end">
-                <button
+                <motion.button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 mr-2 text-sm font-semibold text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300"
+                  className="px-4 py-2 mr-3 text-sm font-semibold text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300"
                 >
                   Hủy
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                </motion.button>
+                <motion.button
+                    type="submit"
+                    whileHover={{ scale: 1.05 }}
+                    className="px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600"
                 >
                   Tạo
-                </button>
+                </motion.button>
               </div>
             </form>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
