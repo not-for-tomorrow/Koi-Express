@@ -33,6 +33,13 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
             @Param("fromDate") LocalDate fromDate,
             @Param("toDate") LocalDate toDate);
 
+    @Query("SELECT o FROM Orders o " +
+            "WHERE o.customer.customerId = :customerId " +
+            "AND o.status = 'IN_PROGRESS' " + // or another relevant status
+            "ORDER BY o.createdAt DESC")
+    Optional<Orders> findCurrentOrderForCustomer(@Param("customerId") Long customerId);
+
+
     List<Orders> findByStatusAndDeliveringStaffId(OrderStatus status, Long deliveringStaffId);
 
     @Query("SELECT new com.koi_express.dto.OrderWithCustomerDTO(o, c, s) " +
