@@ -75,8 +75,6 @@ const SaleStaffAccount = () => {
       errors.password = "Mật khẩu là bắt buộc";
     } else if (newStaff.password.length < 8) {
       errors.password = "Mật khẩu phải có ít nhất 8 ký tự";
-    } else if (!/[A-Z]/.test(newStaff.password)) {
-      errors.password = "Mật khẩu phải chứa ít nhất một chữ cái viết hoa";
     }
     if (!newStaff.phoneNumber.trim()) {
       errors.phoneNumber = "Số điện thoại là bắt buộc";

@@ -8,7 +8,7 @@ const OrderHistory = () => {
   const [tempSelectedTimeFilter, setTempSelectedTimeFilter] = useState("all");
   const [customDateRange, setCustomDateRange] = useState({ from: "", to: "" });
   const [displayDateRange, setDisplayDateRange] = useState("");
-  const [selectedTab, setSelectedTab] = useState("Tất cả");
+  const [selectedTab, setSelectedTab] = useState("Chờ xác nhận");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -102,7 +102,7 @@ const OrderHistory = () => {
         }
         break;
       default:
-        setDisplayDateRange("Tất cả");
+        setDisplayDateRange("Chờ xác nhận");
         break;
     }
   };
@@ -122,8 +122,8 @@ const OrderHistory = () => {
       filteredOrders = filteredOrders.filter(
         (order) =>
           getVietnameseStatus(order.order.status) === selectedTab &&
-          order.order.status !== "ASSIGNED" && // Loại bỏ trạng thái "Đã phân công"
-          order.order.status !== "COMMIT_FEE_PENDING" // Loại bỏ trạng thái "Chờ thanh toán cam kết"
+          order.order.status !== "ASSIGNED" &&
+          order.order.status !== "COMMIT_FEE_PENDING"
       );
     }
 
@@ -197,10 +197,8 @@ const OrderHistory = () => {
     vietnameseStatusMapping[status] || status;
 
   const statusColors = {
-    "Tất cả": { background: "rgba(59, 130, 246, 0.1)", text: "#1E3A8A" },
     "Chờ xác nhận": { background: "rgba(254, 240, 138, 0.2)", text: "#854D0E" },
     "Đã xác nhận": { background: "rgba(233, 213, 255, 0.2)", text: "#2c2c54" },
-    "Đã phân công": { background: "rgba(253, 230, 138, 0.2)", text: "#CA8A04" },
     "Chuẩn bị lấy hàng": {
       background: "rgba(153, 246, 228, 0.2)",
       text: "#0D9488",
@@ -208,13 +206,12 @@ const OrderHistory = () => {
     "Đang giao": { background: "rgba(191, 219, 254, 0.2)", text: "#1E3A8A" },
     "Hoàn thành": { background: "rgba(187, 247, 208, 0.2)", text: "#065F46" },
     "Đã hủy": { background: "rgba(254, 202, 202, 0.2)", text: "#c0392b" },
-    "Chờ thanh toán cam kết": {
-      background: "rgba(255, 199, 199, 0.2)",
-      text: "#C0392B",
-    },
   };
 
-  const defaultStatusColor = { background: "#f0f0f0", text: "#000" };
+  const totalFeeHeaderTitle = ["Chờ xác nhận", "Đã xác nhận", "Chuẩn bị lấy hàng"].includes(selectedTab)
+      ? "Phí cam kết"
+      : "Tổng tiền";
+
 
   return (
     <div className="min-h-screen p-8 bg-gradient-to-r from-blue-100 to-blue-50">
@@ -361,97 +358,80 @@ const OrderHistory = () => {
                 Không tìm thấy đơn hàng
               </div>
             ) : (
-              <table className="w-full text-sm text-left border-collapse shadow-md table-auto">
-                <thead className="sticky top-0 z-10 bg-blue-100">
+                <table className="w-full text-sm text-left border-collapse shadow-md table-auto">
+                  <thead className="sticky top-0 z-10 bg-blue-100">
                   <tr className="text-blue-900 border-b border-blue-200">
                     <th className="p-2 font-semibold w-1/8">Mã đơn hàng</th>
                     <th className="w-1/4 p-2 font-semibold">Điểm lấy hàng</th>
                     <th className="w-1/3 p-2 font-semibold">Điểm giao hàng</th>
                     <th className="p-2 font-semibold w-1/10">Thời gian tạo</th>
-                    {orders.some(
-                      (order) =>
-                        order.order.status === "IN_TRANSIT" ||
-                        order.order.status === "DELIVERED"
-                    ) && (
-                      <>
-                        <th className="p-2 font-semibold text-center w-1/10">
-                          Người giao hàng
-                        </th>
-                        <th className="p-2 font-semibold text-center w-1/10">
-                          Tổng tiền
-                        </th>
-                      </>
-                    )}
-
-                    <th className="p-2 font-semibold text-center w-1/9">
-                      Trạng thái
-                    </th>
+                    <th className="w-1/4 p-4 font-semibold text-center w-1/10">Người giao hàng</th>
+                    <th className="w-1/4 p-4 font-semibold text-center w-1/10"> {totalFeeHeaderTitle} </th>
+                    <th className="p-4 font-semibold text-center w-1/10">Trạng thái</th>
                   </tr>
-                </thead>
+                  </thead>
 
-                <tbody>
+                  <tbody>
                   {filterOrders().map((orderData, index) => {
                     const order = orderData.order;
                     const deliveringStaff = order.deliveringStaff;
                     const statusColor = statusColors[
-                      getVietnameseStatus(order.status)
-                    ] || { background: "#f0f0f0", text: "#000" };
+                        getVietnameseStatus(order.status)
+                        ] || {background: "#f0f0f0", text: "#000"};
 
                     return (
-                      <tr
-                        key={index}
-                        className="transition duration-300 border-b border-gray-200 cursor-pointer hover:bg-blue-50"
-                        onClick={() => goToOrderDetail(order)}
-                      >
-                        <td className="p-2 font-semibold text-blue-600">
-                          {order.orderId}
-                        </td>
-                        <td className="p-2 text-sm text-gray-700">
-                          {order.originLocation}
-                        </td>
-                        <td className="p-2 text-sm text-gray-700">
-                          {order.destinationLocation}
-                        </td>
-                        <td className="p-2 text-sm text-gray-700">
-                          {new Date(order.createdAt).toLocaleString("vi-VN")}
-                        </td>
-                        {(order.status === "IN_TRANSIT" ||
-                          order.status === "DELIVERED") && (
-                          <>
-                            <td className="p-2 text-sm text-center text-gray-700">
-                              {deliveringStaff
-                                ? deliveringStaff.fullName
-                                : "N/A"}
-                            </td>
-                            <td className="p-2 text-sm font-medium text-center text-blue-600">
-                              {order.totalFee !== null &&
-                              order.totalFee !== undefined
-                                ? `₫ ${order.totalFee.toLocaleString("vi-VN")}`
-                                : "N/A"}
-                            </td>
-                          </>
-                        )}
+                        <tr
+                            key={index}
+                            className="transition duration-300 border-b border-gray-200 cursor-pointer hover:bg-blue-50"
+                            onClick={() => goToOrderDetail(order)}
+                        >
+                          <td className="p-2 font-semibold text-blue-600">
+                            {order.orderId}
+                          </td>
+                          <td className="p-2 text-sm text-gray-700">
+                            {order.originLocation}
+                          </td>
+                          <td className="p-2 text-sm text-gray-700">
+                            {order.destinationLocation}
+                          </td>
+                          <td className="p-2 text-sm text-gray-700">
+                            {new Date(order.createdAt).toLocaleString("vi-VN")}
+                          </td>
+                          <td className="p-2 text-sm text-center text-gray-700">
+                            {deliveringStaff ? deliveringStaff.fullName : "N/A"}
+                          </td>
+                          <td className="p-2 text-sm font-medium text-center text-blue-600">
+                            {["PENDING", "ACCEPTED", "PICKING_UP"].includes(order.status)
+                                ? order.orderDetail?.commitmentFee != null
+                                    ? `₫ ${order.orderDetail.commitmentFee.toLocaleString("vi-VN")}`
+                                    : "N/A"
+                                : order.totalFee != null
+                                    ? `₫ ${order.totalFee.toLocaleString("vi-VN")}`
+                                    : "N/A"}
+                          </td>
 
-                        <td className="p-2 text-center">
-                          <span
-                            className="inline-block px-4 py-2 text-xs font-semibold rounded-full"
-                            style={{
-                              backgroundColor: statusColor.background,
-                              color: statusColor.text,
-                              minWidth: "120px",
-                              textAlign: "center",
-                              padding: "6px 12px",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {getVietnameseStatus(order.status)}
-                          </span>
-                        </td>
-                      </tr>
+                          <td className="p-2 text-center" style={{width: "120px"}}>
+          <span
+              className="inline-block px-4 py-2 text-xs font-semibold rounded-full"
+              style={{
+                backgroundColor: statusColor.background,
+                color: statusColor.text,
+                minWidth: "120px",
+                textAlign: "center",
+                padding: "6px 12px",
+                whiteSpace: "nowrap",
+              }}
+          >
+            {getVietnameseStatus(order.status)}
+          </span>
+                          </td>
+                        </tr>
                     );
                   })}
-                </tbody>
-              </table>
+                  </tbody>
+
+
+                </table>
             )}
           </div>
         </div>
