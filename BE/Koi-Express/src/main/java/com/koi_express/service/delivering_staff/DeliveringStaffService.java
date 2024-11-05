@@ -52,7 +52,7 @@ public class DeliveringStaffService {
     public ApiResponse<String> pickupOrder(Long orderId, Long deliveringStaffId) {
         log.info("Attempting to pick up order with ID: {} by staff with ID: {}", orderId, deliveringStaffId);
 
-        Orders order = validateOrderAssignment(orderId, deliveringStaffId);
+        Orders order = validate(orderId, deliveringStaffId);
 
         order.setStatus(OrderStatus.PICKING_UP);
         orderRepository.save(order);
@@ -110,5 +110,25 @@ public class DeliveringStaffService {
 
         return order;
     }
+
+    private Orders validate(Long orderId, Long deliveringStaffId) {
+        Orders order = orderRepository.findById(orderId).orElseThrow(() -> {
+            log.error("Order with ID: {} not found", orderId);
+            return new AppException(ErrorCode.ORDER_NOT_FOUND, "Order not found with ID: " + orderId);
+        });
+
+        if (!order.getDeliveringStaff().getStaffId().equals(deliveringStaffId)) {
+            log.error("Order ID: {} is not assigned to staff ID: {}", orderId, deliveringStaffId);
+            throw new AppException(ErrorCode.ORDER_NOT_ASSIGNED, "Order is not assigned to this staff member");
+        }
+
+        if (order.getStatus() != OrderStatus.ASSIGNED) {
+            log.error("Order ID: {} is not in the required status, current status: {}", orderId, order.getStatus());
+            throw new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order is not in the required status");
+        }
+
+        return order;
+    }
+
 
 }
