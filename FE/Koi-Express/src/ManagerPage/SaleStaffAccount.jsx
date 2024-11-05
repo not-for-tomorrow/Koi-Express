@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 const SaleStaffAccount = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -171,6 +172,7 @@ const SaleStaffAccount = () => {
                         <th className="w-1/4 p-2 font-semibold">Email</th>
                         <th className="p-2 font-semibold w-1/8">Số điện thoại</th>
                         <th className="p-2 font-semibold w-1/8">Ngày tạo</th>
+                        <th className="p-2 font-semibold w-1/10 pl-8">Hành động</th>
                       </tr>
                       </thead>
                       <tbody>
@@ -192,7 +194,13 @@ const SaleStaffAccount = () => {
                               {staff.phoneNumber || "N/A"}
                             </td>
                             <td className="p-2 text-sm text-gray-700">
-                              {new Date(staff.createdAt).toLocaleString("vi-VN")}
+                              {new Date(staff.createdAt).toLocaleDateString("vi-VN")}
+                            </td>
+                            <td className="p-2 text-sm text-gray-700 w-1/10">
+                              <button
+                                  className="text-white bg-red-500 px-4 py-2 rounded transition duration-300 ease-in-out transform hover:bg-red-700 hover:scale-105">
+                                Dừng hoạt động
+                              </button>
                             </td>
                           </tr>
                       ))}
@@ -205,7 +213,10 @@ const SaleStaffAccount = () => {
 
         {/* Modal */}
         {showModal && (
-            <div
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
                 className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
                 role="dialog"
                 aria-modal="true"
@@ -236,6 +247,7 @@ const SaleStaffAccount = () => {
                             formErrors.fullName ? "border-red-500" : "border-gray-300"
                         }`}
                         required
+                        whileFocus={{ scale: 1.05, borderColor: "#3b82f6" }}
                     />
                     {formErrors.fullName && (
                         <p className="mt-1 text-sm text-red-500">{formErrors.fullName}</p>
@@ -327,23 +339,24 @@ const SaleStaffAccount = () => {
                   )}
 
                   <div className="flex justify-end">
-                    <button
+                    <motion.button
                         type="button"
                         onClick={() => setShowModal(false)}
                         className="px-4 py-2 mr-2 text-sm font-semibold text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300"
                     >
                       Hủy
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                         type="submit"
+                        whileHover={{ scale: 1.05 }}
                         className="px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600"
                     >
                       Tạo
-                    </button>
+                    </motion.button>
                   </div>
                 </form>
               </div>
-            </div>
+            </motion.div>
         )}
       </div>
   );

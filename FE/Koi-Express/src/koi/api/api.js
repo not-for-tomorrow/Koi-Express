@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const BASE_URL = "http://localhost:8080/api";
-export const LOCATIONIQ_KEY = "pk.4832744c400b1c1374d42f3c316cff92";
+export const LOCATIONIQ_KEY = "pk.9e089bdc743d4f8dd817821e0c53d8ad";
 
 export const fetchSalesStaffAPI = async () => {
   const token = localStorage.getItem("token");

@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 
 const InTransitOrderModal = ({
                                  orderId,
@@ -79,7 +79,7 @@ const InTransitOrderModal = ({
                     onClick={handleUpdateStatus}
                     className="w-full p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600"
                 >
-                    Đóng
+                    <Link to="/deliveringstaffpage">Đóng</Link>
                 </button>
             </div>
 
@@ -89,7 +89,7 @@ const InTransitOrderModal = ({
                     onClick={handleUpdateStatus}
                     className="w-full p-3 text-base font-semibold text-white transition-all transform bg-green-500 rounded-lg hover:bg-green-600"
                 >
-                    Giao hàng thành công
+                    <Link to="/deliveringstaffpage">Giao hàng thành công</Link>
                 </button>
             </div>
         </div>
