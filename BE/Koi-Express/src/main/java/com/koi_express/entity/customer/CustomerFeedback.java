@@ -51,7 +51,7 @@ public class CustomerFeedback { // thu thập phản hồi và đánh gi từ kh
     @Column(nullable = false)
     @Min(1)
     @Max(5)
-    int rating; // 1 -> 5
+    int rating;
 
     @Column(nullable = false)
     LocalDateTime submittedAt;
