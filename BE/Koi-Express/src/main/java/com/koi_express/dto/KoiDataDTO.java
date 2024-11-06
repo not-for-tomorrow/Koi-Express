@@ -8,6 +8,8 @@ import java.math.BigDecimal;
 public class KoiDataDTO {
 
     private String koiType;
+
     private BigDecimal koiSize;
+
     private Integer koiQuantity;
 }

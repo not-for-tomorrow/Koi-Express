@@ -30,6 +30,5 @@ public class CreateStaffRequest {
 
     DeliveringStaffLevel level;
 
-    //    @NotEmpty(message = "Role is required")
     Role role;
 }

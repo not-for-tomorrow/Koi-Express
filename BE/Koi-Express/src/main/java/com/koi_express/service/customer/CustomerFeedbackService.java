@@ -4,6 +4,7 @@ import com.koi_express.entity.customer.CustomerFeedback;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
+import com.koi_express.enums.FeedbackTag;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.repository.CustomerFeedbackRepository;
 import com.koi_express.repository.CustomersRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,30 +27,25 @@ public class CustomerFeedbackService {
     private final CustomersRepository customersRepository;
     private final DeliveringStaffRepository deliveringStaffRepository;
 
-    // Phương thức kiểm tra đơn hàng đã giao chưa
     public boolean isOrderDelivered(Long orderId) {
         Orders order = orderRepository.findById(orderId).orElse(null);
         return order != null && OrderStatus.DELIVERED.equals(order.getStatus());
     }
 
-    public CustomerFeedback submitFeedback(int rating, Set<String> tags, String comments, Long customerId) {
+    public CustomerFeedback submitFeedback(int rating, Set<FeedbackTag> tags, String comments, Long customerId) {
         Customers customer = customersRepository.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
         Orders order = orderRepository.findDeliveredOrderForCustomer(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("No delivered order found for this customer"));
 
-        // Kiểm tra trạng thái của đơn hàng đã giao chưa
         if (!isOrderDelivered(order.getOrderId())) {
-            throw new IllegalArgumentException("Feedback can only be submitted for delivered orders");
-        }
-
-        if (!"DELIVERED".equalsIgnoreCase(order.getStatus().name())) {
             throw new IllegalArgumentException("Feedback can only be submitted for delivered orders");
         }
 
         DeliveringStaff deliveringStaff = deliveringStaffRepository.findByOrderId(order.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("No staff assigned for this order"));
+
 
         CustomerFeedback feedback = CustomerFeedback.builder()
                 .order(order)

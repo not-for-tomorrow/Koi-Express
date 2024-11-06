@@ -13,10 +13,16 @@ import java.math.BigDecimal;
 public class PaymentData {
 
     String transactionId;
+
     BigDecimal amount;
+
     String responseCode;
+
     String bankCode;
+
     String secureHash;
+
     String orderInfo;
+
     String transactionStatus;
 }
