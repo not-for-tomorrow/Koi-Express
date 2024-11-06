@@ -30,13 +30,16 @@ public class CustomerFeedbackController {
                                             @Valid @RequestBody FeedbackRequest feedbackRequest) {
 
         String jwtToken = token.startsWith("Bearer ") ? token.substring(7) : token;
-
         String phoneNumber = jwtUtil.extractPhoneNumber(jwtToken);
-
         UserDetails userDetails = userDetailsService.loadUserByUsername(phoneNumber);
 
         if (!jwtUtil.validateToken(jwtToken, userDetails)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+
+        boolean isOrderDelivered = feedbackService.isOrderDelivered(feedbackRequest.getOrderId());
+        if (!isOrderDelivered) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Feedback can only be submitted for delivered orders.");
         }
 
         try {
@@ -53,6 +56,7 @@ public class CustomerFeedbackController {
                     .body("An error occurred while submitting feedback: " + e.getMessage());
         }
     }
+
 
     @GetMapping("/order/{orderId}")
     public ResponseEntity<List<CustomerFeedback>> getFeedbackByOrder(@PathVariable Long orderId) {

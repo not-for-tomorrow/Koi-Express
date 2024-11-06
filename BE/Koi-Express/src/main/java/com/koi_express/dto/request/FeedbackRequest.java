@@ -28,4 +28,6 @@ public class FeedbackRequest {
     @NotNull
     Long customerId;
 
+    @NotNull // Thêm annotation này để đảm bảo orderId không được null
+    Long orderId; // Thêm trường orderId
 }
