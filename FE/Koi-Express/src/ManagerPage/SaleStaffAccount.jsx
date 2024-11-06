@@ -17,6 +17,8 @@ const SaleStaffAccount = () => {
   const [formErrors, setFormErrors] = useState({});
   const [creationError, setCreationError] = useState(null);
 
+  const [successMessage, setSuccessMessage] = useState("");
+
   const getToken = () => {
     return localStorage.getItem("token");
   };
@@ -108,7 +110,7 @@ const SaleStaffAccount = () => {
 
       if (!response.ok) {
         if (response.status === 409) {
-          setCreationError("Email đã tồn tại"); // Error message for duplicate email
+          setCreationError("Email đã tồn tại");
         } else {
           setCreationError("Không thể tạo tài khoản nhân viên bán hàng");
         }
@@ -119,7 +121,12 @@ const SaleStaffAccount = () => {
       setNewStaff({ fullName: "", email: "", password: "", phoneNumber: "", address: ""});
       setFormErrors({});
       setCreationError(null);
-      fetchSalesStaff(); // Refresh the list after creating a new account
+      await fetchSalesStaff();
+
+      setSuccessMessage("Tạo tài khoản thành công");
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
     } catch (error) {
       setCreationError("Đã xảy ra lỗi trong quá trình tạo tài khoản");
     }
@@ -144,6 +151,43 @@ const SaleStaffAccount = () => {
                   >
                     Tạo Tài Khoản
                   </button>
+
+                  {successMessage && (
+                      <motion.div
+                          initial={{ x: "100%", opacity: 0 }}
+                          animate={{ x: "0%", opacity: 1 }}
+                          exit={{ x: "100%", opacity: 0 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                          className="fixed top-6 right-6 w-80 p-4 bg-white rounded-lg shadow-xl border-l-4 border-green-500 flex flex-col items-start space-y-2"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-6 w-6 text-green-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m2-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <div className="text-sm font-medium text-green-700">
+                            {successMessage}
+                          </div>
+                        </div>
+                        {/* Subtle Divider */}
+                        <div className="w-full border-t border-gray-200 my-1"></div>
+                        {/* Countdown Progress Bar */}
+                        <div className="relative w-full h-1 bg-gray-300 rounded overflow-hidden">
+                          <motion.div
+                              initial={{ width: "100%" }}
+                              animate={{ width: 0 }}
+                              transition={{ duration: 3, ease: "linear" }}
+                              className="absolute top-0 left-0 h-full bg-green-600"
+                          />
+                        </div>
+                      </motion.div>
+                  )}
+
                 </div>
 
                 <div className="flex items-center mb-6 space-x-6">
@@ -176,7 +220,7 @@ const SaleStaffAccount = () => {
                       </tr>
                       </thead>
                       <tbody>
-                      {filterSalesStaff().map((staff, index) => (
+                      {filterSalesStaff().map((staff) => (
                           <tr
                               key={staff.accountId}
                               className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
@@ -216,8 +260,8 @@ const SaleStaffAccount = () => {
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                transition={{ duration: 0.1 }}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-50"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-title"
