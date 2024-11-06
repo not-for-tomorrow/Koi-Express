@@ -6,9 +6,9 @@ import { UserProvider } from "../componentsDashboard/UserContext";
 import SaleStaffAccount from "./SaleStaffAccount";
 import DeliveringStaffAccount from "./DeliveringStaffAccount";
 import CustomerAccount from "./CustomerAccount/CustomerAccount.jsx";
-import Dashboard from "./Dashboard.jsx";
 import CustomerDetail from "./CustomerAccount/CustomerDetail.jsx";
 import OrderDetail from "./OrderDetail/OrderDetail.jsx";
+import Dashboard from "./Dashboard.jsx";
 
 const ManagerPage = () => {
   return (

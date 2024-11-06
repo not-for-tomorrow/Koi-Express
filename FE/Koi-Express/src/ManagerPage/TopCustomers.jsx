@@ -16,7 +16,7 @@ function TopCustomers() {
                         "Content-Type": "application/json"
                     }
                 });
-                
+
                 const data = await response.json();
 
                 if (data.code === 200) {

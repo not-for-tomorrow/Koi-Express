@@ -22,7 +22,7 @@ const RatingPopup = ({ isOpen, onClose, onSubmit, orderId }) => { // Nhận thê
     if (token) {
       try {
         const decoded = jwt_decode(token);
-        setCustomerId(decoded.customerId); // Ensure your JWT contains customerId as a claim
+        setCustomerId(decoded.customerId); 
       } catch (error) {
         console.error("Error decoding token:", error);
       }
@@ -52,7 +52,8 @@ const RatingPopup = ({ isOpen, onClose, onSubmit, orderId }) => { // Nhận thê
       ),
       comments: comment,
       customerId: customerId,
-      orderId: orderId, // Thêm orderId vào dữ liệu gửi đi
+      orderId: orderId, 
+
     };
 
     try {
@@ -87,6 +88,7 @@ const RatingPopup = ({ isOpen, onClose, onSubmit, orderId }) => { // Nhận thê
       setLoading(false);
     }
   };
+
 
   if (!isOpen) return null;
 
