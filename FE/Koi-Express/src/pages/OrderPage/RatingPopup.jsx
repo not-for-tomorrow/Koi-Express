@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import jwt_decode from "jwt-decode";
 
-const RatingPopup = ({ isOpen, onClose, onSubmit }) => {
+const RatingPopup = ({ isOpen, onClose, onSubmit, orderId }) => { // Nhận thêm prop orderId
   const [selectedRating, setSelectedRating] = useState(0);
   const [comment, setComment] = useState("");
   const [selectedFeedback, setSelectedFeedback] = useState([]);
@@ -22,7 +22,7 @@ const RatingPopup = ({ isOpen, onClose, onSubmit }) => {
     if (token) {
       try {
         const decoded = jwt_decode(token);
-        setCustomerId(decoded.customerId); // Ensure your JWT contains customerId as a claim
+        setCustomerId(decoded.customerId); 
       } catch (error) {
         console.error("Error decoding token:", error);
       }
@@ -52,6 +52,8 @@ const RatingPopup = ({ isOpen, onClose, onSubmit }) => {
       ),
       comments: comment,
       customerId: customerId,
+      orderId: orderId, 
+
     };
 
     try {
