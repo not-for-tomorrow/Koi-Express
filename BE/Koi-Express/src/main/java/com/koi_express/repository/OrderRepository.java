@@ -35,10 +35,9 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
 
     @Query("SELECT o FROM Orders o " +
             "WHERE o.customer.customerId = :customerId " +
-            "AND o.status = 'IN_PROGRESS' " + // or another relevant status
+            "AND o.status = 'DELIVERED' " +
             "ORDER BY o.createdAt DESC")
-    Optional<Orders> findCurrentOrderForCustomer(@Param("customerId") Long customerId);
-
+    Optional<Orders> findDeliveredOrderForCustomer(@Param("customerId") Long customerId);
 
     List<Orders> findByStatusAndDeliveringStaffId(OrderStatus status, Long deliveringStaffId);
 

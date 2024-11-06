@@ -8,6 +8,6 @@ import java.util.List;
 @Repository
 public interface CustomerFeedbackRepository extends JpaRepository<CustomerFeedback, Long> {
     List<CustomerFeedback> findByOrder_OrderId(Long orderId);
-    List<CustomerFeedback> findByCustomerId(Long customerId);
-    List<CustomerFeedback> findByDeliveringStaffId(Long deliveringStaffId);
+    List<CustomerFeedback> findByCustomer_Id(Long customerId);
+    List<CustomerFeedback> findByDeliveringStaff_Id(Long deliveringStaffId);
 }
