@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import {motion, useAnimation} from "framer-motion";
 
 const DeliveringStaffAccount = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,6 +17,8 @@ const DeliveringStaffAccount = () => {
   });
   const [formErrors, setFormErrors] = useState({});
   const [creationError, setCreationError] = useState(null);
+
+  const [successMessage, setSuccessMessage] = useState("");
 
   const getToken = () => {
     return localStorage.getItem("token");
@@ -122,7 +124,12 @@ const DeliveringStaffAccount = () => {
       });
       setFormErrors({});
       setCreationError(null);
-      fetchDeliveringStaff();
+      await fetchDeliveringStaff();
+
+      setSuccessMessage("Tạo tài khoản thành công");
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
     } catch (error) {
       setCreationError("Đã xảy ra lỗi trong quá trình tạo tài khoản");
     }
@@ -154,6 +161,32 @@ const DeliveringStaffAccount = () => {
               >
                 Tạo Tài Khoản
               </button>
+
+              {successMessage && (
+                  <motion.div
+                      initial={{ x: "100%", opacity: 0 }}
+                      animate={{ x: "0%", opacity: 1 }}
+                      exit={{ x: "100%", opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                      className="fixed top-6 right-6 w-72 p-4 bg-white rounded-lg shadow-lg border-l-4 border-green-500 flex flex-col items-start space-y-2"
+                  >
+                    <div className="text-sm font-medium text-green-600">
+                      {successMessage}
+                    </div>
+                    {/* Subtle Divider */}
+                    <div className="w-full border-t border-gray-100 my-1"></div>
+                    {/* Countdown Progress Bar */}
+                    <div className="relative w-full h-1 bg-gray-300 rounded overflow-hidden">
+                      <motion.div
+                          initial={{ width: "100%" }}
+                          animate={{ width: 0 }}
+                          transition={{ duration: 3, ease: "linear" }}
+                          className="absolute top-0 left-0 h-full bg-green-500"
+                      />
+                    </div>
+                  </motion.div>
+              )}
+
             </div>
 
             <div className="flex items-center mb-6 space-x-6">
@@ -237,8 +270,8 @@ const DeliveringStaffAccount = () => {
           <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+              transition={{ duration: 0.1 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-50"
               role="dialog"
               aria-modal="true"
               aria-labelledby="modal-title"
