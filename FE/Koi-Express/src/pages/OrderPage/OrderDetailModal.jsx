@@ -124,7 +124,9 @@ const OrderDetailModal = ({ orderId, distance }) => {
               <div className="flex justify-between">
                 <p>
                   Tài xế{" "}
-                  <span className="font-bold text-red-500">
+
+                  <span className="text-red-500 font-bold">
+
     {order.deliveringStaff.fullName || "N/A"}
   </span>{" "}
                   đã hoàn tất đơn hàng. Hãy cho chúng tôi biết đánh giá của bạn nhé!
@@ -264,6 +266,7 @@ const OrderDetailModal = ({ orderId, distance }) => {
             onClose={handleRatingClose}
             onSubmit={handleRatingSubmit}
             orderId={orderId}
+
         />
       </div>
   );

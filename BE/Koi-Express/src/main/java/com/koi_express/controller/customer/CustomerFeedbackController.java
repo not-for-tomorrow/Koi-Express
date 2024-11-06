@@ -37,7 +37,6 @@ public class CustomerFeedbackController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
 
-        // Kiểm tra trạng thái đơn hàng trước khi gửi feedback
         boolean isOrderDelivered = feedbackService.isOrderDelivered(feedbackRequest.getOrderId());
         if (!isOrderDelivered) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Feedback can only be submitted for delivered orders.");

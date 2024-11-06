@@ -43,6 +43,10 @@ public class CustomerFeedbackService {
             throw new IllegalArgumentException("Feedback can only be submitted for delivered orders");
         }
 
+        if (!"DELIVERED".equalsIgnoreCase(order.getStatus().name())) {
+            throw new IllegalArgumentException("Feedback can only be submitted for delivered orders");
+        }
+
         DeliveringStaff deliveringStaff = deliveringStaffRepository.findByOrderId(order.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("No staff assigned for this order"));
 
