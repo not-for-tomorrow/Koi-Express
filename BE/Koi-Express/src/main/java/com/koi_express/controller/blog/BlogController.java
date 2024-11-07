@@ -20,16 +20,15 @@ public class BlogController {
     private final BlogService blogService;
 
     @PostMapping("/create-blog")
-    @PreAuthorize("hasRole('SALES_STAFF')") // Assuming only managers can create blogs
+    @PreAuthorize("hasRole('SALES_STAFF')")
     public ResponseEntity<Blog> createBlog(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
             @RequestParam("status") BlogStatus status,
-            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
-            @RequestParam(value = "documentFile", required = false) MultipartFile documentFile) {
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
 
         try {
-            Blog blog = blogService.createBlog(title, content, status, imageFile, documentFile);
+            Blog blog = blogService.createBlog(title, content, status, imageFile);
             return ResponseEntity.status(HttpStatus.CREATED).body(blog);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);

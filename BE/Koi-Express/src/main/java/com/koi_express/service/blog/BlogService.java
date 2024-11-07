@@ -31,7 +31,7 @@ public class BlogService {
     private final S3Service s3Service;
 
     public Blog createBlog(String title, String content, BlogStatus status,
-                           MultipartFile imageFile, MultipartFile documentFile) {
+                           MultipartFile imageFile) {
 
         Blog blog = new Blog();
         blog.setTitle(title);
@@ -45,16 +45,9 @@ public class BlogService {
 
         String date = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-        // Upload image to S3
         if (imageFile != null) {
-            String imageUrl = s3Service.uploadFile("blog", date, title, imageFile, true);
+            String imageUrl = s3Service.uploadImage("blog", date, title, imageFile);
             blog.setImageUrl(imageUrl);
-        }
-
-        // Upload document to S3
-        if (documentFile != null) {
-            String documentUrl = s3Service.uploadFile("blog", date, title, documentFile, false);
-            blog.setFilePath(documentUrl);
         }
 
         blog.setStatus(BlogStatus.DRAFT);
@@ -81,52 +74,5 @@ public class BlogService {
     public Optional<Blog> getBlogBySlug(String slug) {
         return blogRepository.findBySlug(slug);
     }
-
-    public String getHtmlContent(String filePath) {
-        File file = s3Service.downloadFile(filePath);
-        return convertFileToHtml(file);
-    }
-
-    private String convertFileToHtml(File file) {
-        if (file.getName().endsWith(".doc") || file.getName().endsWith(".docx")) {
-            return convertWordToHtml(file);
-        } else if (file.getName().endsWith(".pdf")) {
-            return convertPdfToHtml(file);
-        }
-        throw new IllegalArgumentException("Unsupported file format");
-    }
-
-    private String convertWordToHtml(File file) {
-        StringBuilder htmlContent = new StringBuilder();
-        try (FileInputStream fis = new FileInputStream(file)) {
-            if (file.getName().endsWith(".docx")) {
-                XWPFDocument document = new XWPFDocument(fis);
-                document.getParagraphs().forEach(paragraph -> htmlContent.append("<p>").append(paragraph.getText()).append("</p>"));
-            } else if (file.getName().endsWith(".doc")) {
-                HWPFDocument document = new HWPFDocument(fis);
-                WordExtractor extractor = new WordExtractor(document);
-                for (String paragraph : extractor.getParagraphText()) {
-                    htmlContent.append("<p>").append(paragraph).append("</p>");
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Error converting Word file to HTML", e);
-        }
-        return htmlContent.toString();
-    }
-    private String convertPdfToHtml(File file) {
-        StringBuilder htmlContent = new StringBuilder();
-        try (PDDocument document = PDDocument.load(file)) {
-            PDFTextStripper pdfStripper = new PDFTextStripper();
-            String text = pdfStripper.getText(document);
-            for (String line : text.split("\n")) {
-                htmlContent.append("<p>").append(line).append("</p>");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Error converting PDF file to HTML", e);
-        }
-        return htmlContent.toString();
-    }
-
 
 }
