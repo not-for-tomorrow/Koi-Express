@@ -1,5 +1,6 @@
 package com.koi_express.jwt;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.function.Function;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
+import com.twilio.rest.chat.v2.service.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -16,6 +18,9 @@ import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -140,6 +145,15 @@ public class JwtUtil {
     public boolean validateToken(String token, UserDetails userDetails) {
         String phoneNumber = extractPhoneNumber(token);
         return (phoneNumber.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            return !isTokenExpired(token);
+        } catch (JwtException e) {
+            logger.error("JWT validation failed: ", e);
+            return false;
+        }
     }
 
     public String extractRole(String token) {

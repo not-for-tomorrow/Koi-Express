@@ -12,8 +12,6 @@ import java.util.List;
 @Repository
 public interface ChatRepository extends JpaRepository<ChatMessage, Long> {
 
-    List<ChatMessage> findByCustomerAndStaff(Customers customer, Staff staff);
-
     List<ChatMessage> findByCustomerAndStaffAndTimestampAfter(
             Customers customer, Staff staff, LocalDateTime timestamp
     );
