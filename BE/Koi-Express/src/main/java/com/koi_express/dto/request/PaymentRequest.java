@@ -11,7 +11,10 @@ import lombok.experimental.FieldDefaults;
 public class PaymentRequest {
 
     String orderId;
+
     double totalAmount;
+
     String customerName;
+
     String bankCode;
 }

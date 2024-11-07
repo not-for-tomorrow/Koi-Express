@@ -2,6 +2,7 @@ package com.koi_express.controller.customer;
 
 import com.koi_express.dto.request.FeedbackRequest;
 import com.koi_express.entity.customer.CustomerFeedback;
+import com.koi_express.enums.FeedbackTag;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.customer.CustomerDetailsService;
 import com.koi_express.service.customer.CustomerFeedbackService;
@@ -14,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/feedback")
@@ -43,6 +46,7 @@ public class CustomerFeedbackController {
         }
 
         try {
+
             CustomerFeedback feedback = feedbackService.submitFeedback(
                     feedbackRequest.getRating(),
                     feedbackRequest.getTags(),
@@ -50,13 +54,16 @@ public class CustomerFeedbackController {
                     feedbackRequest.getCustomerId()
             );
             return ResponseEntity.ok(feedback);
+        }catch (IllegalArgumentException e) {
+            log.error("Invalid tag provided in feedback for customer ID {}: {}", feedbackRequest.getCustomerId(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid tag provided: " + e.getMessage());
         } catch (Exception e) {
             log.error("Error submitting feedback for customer ID {}: {}", feedbackRequest.getCustomerId(), e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while submitting feedback: " + e.getMessage());
         }
     }
-
 
     @GetMapping("/order/{orderId}")
     public ResponseEntity<List<CustomerFeedback>> getFeedbackByOrder(@PathVariable Long orderId) {

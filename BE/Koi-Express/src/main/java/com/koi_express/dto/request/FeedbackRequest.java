@@ -1,5 +1,6 @@
 package com.koi_express.dto.request;
 
+import com.koi_express.enums.FeedbackTag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +21,7 @@ public class FeedbackRequest {
     @Max(5)
     int rating;
 
-    Set<String> tags;
+    Set<FeedbackTag> tags;
 
     @Size(max = 500)
     String comments;
@@ -28,6 +29,6 @@ public class FeedbackRequest {
     @NotNull
     Long customerId;
 
-    @NotNull // Thêm annotation này để đảm bảo orderId không được null
-    Long orderId; // Thêm trường orderId
+    @NotNull
+    Long orderId;
 }

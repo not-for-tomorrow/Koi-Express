@@ -1,6 +1,6 @@
 package com.koi_express.enums;
 
-public enum VerificationStatus { // trạng thái xác thực
+public enum VerificationStatus {
     PENDING,
     VERIFIED,
     EXPIRED

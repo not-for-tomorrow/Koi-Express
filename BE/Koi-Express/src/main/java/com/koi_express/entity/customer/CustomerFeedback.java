@@ -6,6 +6,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.shipment.DeliveringStaff;
+import com.koi_express.enums.FeedbackTag;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -40,10 +41,11 @@ public class CustomerFeedback { // thu thập phản hồi và đánh gi từ kh
     @JsonIgnore
     DeliveringStaff deliveringStaff;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = FeedbackTag.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "customer_feedback_tags", joinColumns = @JoinColumn(name = "feedback_id"))
+    @Enumerated(EnumType.STRING)
     @Column(name = "tag")
-    Set<String> tags;
+    Set<FeedbackTag> tags;
 
     @Column(nullable = true)
     String comments;
