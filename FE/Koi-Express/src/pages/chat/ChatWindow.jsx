@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from "react";
-import stompClient from '/src/websocket/websocketService.js';
+import initializeStompClient from '/src/websocket/websocketService.js';
 import {FiArrowLeft, FiX, FiSend} from "react-icons/fi";
 import jwtDecode from 'jwt-decode';
 
@@ -55,6 +55,7 @@ const ChatWindow = ({onClose}) => {
     const messageEndRef = useRef(null);
     const [customerId, setCustomerId] = useState(null);
     const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
+    const stompClient = useRef(null);
     const isConnecting = useRef(false);
 
     const offlineMessages = [
@@ -92,28 +93,25 @@ const ChatWindow = ({onClose}) => {
     }, []);
 
     useEffect(() => {
-        if (!customerId || isConnecting.current) {
-            console.error("Customer ID is required to connect to WebSocket or already connecting.");
-            return;
-        }
+        if (!customerId) return;
 
         const connectWebSocket = () => {
+            if (isConnecting.current) return; // Prevent duplicate connection attempts
             console.log("Attempting to connect to WebSocket with customerId:", customerId);
-            isConnecting.current = true;
 
-            stompClient.connect({}, () => {
+            stompClient.current = initializeStompClient(localStorage.getItem('token'));
+
+            stompClient.current.connect({}, () => {
                 console.log("Connected to WebSocket successfully!");
                 setIsWebSocketConnected(true);
                 isConnecting.current = false;
 
-                // Đăng ký kênh công khai cho các tin nhắn chung
-                stompClient.subscribe('/topic/public', (message) => {
+                stompClient.current.subscribe('/topic/public', (message) => {
                     const receivedMessage = JSON.parse(message.body);
                     setMessages((prevMessages) => [...prevMessages, receivedMessage]);
                 });
 
-                // Đăng ký kênh cá nhân với customerId
-                stompClient.subscribe(`/user/${customerId}/queue/private`, (message) => {
+                stompClient.current.subscribe(`/user/${customerId}/queue/private`, (message) => {
                     const receivedMessage = JSON.parse(message.body);
                     setMessages((prevMessages) => [...prevMessages, receivedMessage]);
                 });
@@ -126,14 +124,15 @@ const ChatWindow = ({onClose}) => {
         connectWebSocket();
 
         return () => {
-            if (stompClient && isWebSocketConnected) {
-                stompClient.disconnect(() => {
+            if (stompClient.current && isWebSocketConnected) {
+                stompClient.current.disconnect(() => {
                     console.log("Disconnected from WebSocket");
                     setIsWebSocketConnected(false);
                 });
             }
         };
     }, [customerId]);
+
 
     useEffect(() => {
         const currentHour = new Date().getHours();

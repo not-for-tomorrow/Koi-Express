@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useRef, useMemo} from 'react';
 import {FaSearch, FaPlus} from 'react-icons/fa';
 import stompClient from '/src/websocket/websocketService.js';
+import jwtDecode from 'jwt-decode';
 
 const contacts = [
     {id: 1, name: 'Nguyen Huy', phone: '+84 981667547', lastMessageTime: '12:30 PM'},
@@ -15,20 +16,37 @@ const ChatWindowForSales = () => {
     const [isSearching, setIsSearching] = useState(false);
     const messageEndRef = useRef(null);
 
+    const getStaffIdFromToken = () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const decoded = jwtDecode(token);
+                return decoded.accountId;
+            } catch (err) {
+                console.error('Failed to decode token', err);
+                return null;
+            }
+        }
+        return null;
+    };
+
     useEffect(() => {
-        // Kết nối WebSocket và đăng ký các kênh khi component mount
+
+        const accountId = getStaffIdFromToken();
+        if (!accountId) {
+            console.error('Unable to find staffId from token');
+            return;
+        }
+
         stompClient.connect({}, () => {
             console.log("Connected to WebSocket");
 
-            // Subscribe to the public chat topic for general messages
             stompClient.subscribe('/topic/public', (message) => {
                 const receivedMessage = JSON.parse(message.body);
                 setMessages((prevMessages) => [...prevMessages, receivedMessage]);
             });
 
-            // Subscribe to a private queue for messages related to this staff
-            const staffId = 'accountId'; // Replace with actual staff ID
-            stompClient.subscribe(`/user/${staffId}/queue/private`, (message) => {
+            stompClient.subscribe(`/user/${accountId}/queue/private`, (message) => {
                 const receivedMessage = JSON.parse(message.body);
                 setMessages((prevMessages) => [...prevMessages, receivedMessage]);
             });
@@ -44,13 +62,19 @@ const ChatWindowForSales = () => {
     const handleSendMessage = () => {
         if (newMessage.trim() === '' || !selectedContact) return;
 
+        const accountId = getStaffIdFromToken();
+        if (!accountId) {
+            console.error('Unable to send message without staffId');
+            return;
+        }
+
         const messageData = {
             senderName: 'You',
             text: newMessage,
             timestamp: new Date(),
             receiverId: selectedContact.id,
             customer: {customerId: selectedContact.id},
-            staff: {staffId: 'accountId'},
+            staff: {staffId: accountId},
         };
 
         stompClient.send('/app/chat.sendPrivateMessage', {}, JSON.stringify(messageData));
