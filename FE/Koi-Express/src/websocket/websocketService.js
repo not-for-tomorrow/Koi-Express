@@ -1,9 +1,23 @@
-// src/websocket/websocketService.js
 import SockJS from 'sockjs-client';
 import {Stomp} from '@stomp/stompjs';
 
-// Tạo kết nối SockJS
-const socket = new SockJS('http://localhost:8080/ws'); // Điều chỉnh URL endpoint WebSocket
-const stompClient = Stomp.over(socket);
+function initializeStompClient(token) {
 
-export default stompClient;
+    const socket = new SockJS('http://localhost:8080/ws');
+    const stompClient = Stomp.over(socket);
+
+    stompClient.connect(
+        {Authorization: `Bearer ${token}`},
+        (frame) => {
+            console.log('Connected: ' + frame);
+
+        },
+        (error) => {
+            console.error('STOMP error: ', error);
+        }
+    );
+
+    return stompClient;
+}
+
+export default initializeStompClient;
