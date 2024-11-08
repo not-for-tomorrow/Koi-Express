@@ -13,7 +13,10 @@ import com.koi_express.enums.Role;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.CustomersRepository;
+import com.koi_express.service.verification.OtpService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,8 +26,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomerService {
 
+    private static final Logger logger = LoggerFactory.getLogger(CustomerService.class);
+
     private final CustomersRepository customersRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OtpService otpService;
 
     public ApiResponse<Customers> registerCustomer(RegisterRequest registerRequest) {
 
@@ -106,4 +112,27 @@ public class CustomerService {
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
     }
 
+    public ApiResponse<String> updatePassword(String phoneNumber, String newPassword) {
+        String formattedPhoneNumber = otpService.formatPhoneNumber(phoneNumber);
+        logger.info("Updating password for formatted phone number: {}", formattedPhoneNumber);
+
+        Customers customer = customersRepository.findByPhoneNumber(formattedPhoneNumber)
+                .orElse(null);
+
+        if (customer == null) {
+            logger.warn("Customer not found for formatted phone number: {}", formattedPhoneNumber);
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Người dùng không tồn tại", null);
+        }
+
+        customer.setPasswordHash(passwordEncoder.encode(newPassword));
+        try {
+            customersRepository.save(customer);
+            logger.info("Password updated successfully for phone number: {}", formattedPhoneNumber);
+        } catch (Exception e) {
+            logger.error("Error saving customer with phone number {}: {}", formattedPhoneNumber, e.getMessage());
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đặt lại mật khẩu thất bại", null);
+        }
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "Mật khẩu đã được cập nhật thành công", null);
+    }
 }
