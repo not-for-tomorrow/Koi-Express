@@ -152,3 +152,51 @@ export const pickupOrderAPI = async (orderId) => {
 
   return response.data;
 };
+
+export const createBlogAPI = async (title, content, imageFile) => {
+  const token = localStorage.getItem("token");
+
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("content", content);
+  formData.append("status", "DRAFT");
+  if (imageFile) formData.append("imageFile", imageFile);
+
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/blogs/create-blog`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("API Error:", error.response?.data || error.message);
+    throw new Error("Error creating blog");
+  }
+};
+
+// src/apiService.js
+export const fetchBlogDataByStatus = async (status) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await fetch(
+      `http://localhost:8080/api/blogs/all-blogs/${status}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (!response.ok) throw new Error("Failed to fetch blog data");
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching blog data:", error);
+    return [];
+  }
+};

@@ -11,6 +11,9 @@ spring:
         timeout: 30m
         cookie:
           same-site: Lax
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -71,4 +74,4 @@ spring:
     speed: 60
     buffer-time: 1
 
-
+PROVIDER_NAME: Koi-Express

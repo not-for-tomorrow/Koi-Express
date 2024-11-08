@@ -6,9 +6,10 @@ import { UserProvider } from "../componentsDashboard/UserContext";
 import SaleStaffAccount from "./SaleStaffAccount";
 import DeliveringStaffAccount from "./DeliveringStaffAccount";
 import CustomerAccount from "./CustomerAccount/CustomerAccount.jsx";
-import Dashboard from "./Dashboard.jsx";
 import CustomerDetail from "./CustomerAccount/CustomerDetail.jsx";
 import OrderDetail from "./OrderDetail/OrderDetail.jsx";
+import Dashboard from "./Dashboard.jsx";
+import Blog from "./Blog/Blog.jsx";
 
 const ManagerPage = () => {
   return (
@@ -38,6 +39,7 @@ const ManagerPage = () => {
                 path="/recentorder/detail/:orderId"
                 element={<OrderDetail />}
               />
+              <Route path="/blog/*" element={<Blog />} />
             </Routes>
           </div>
         </div>
