@@ -36,6 +36,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authorizationHeader = request.getHeader("Authorization");
 
+        String path = request.getRequestURI();
+
+        if (path.equals("/api/auth/forgot-password") || path.equals("/api/auth/reset-password")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String phoneNumber = null;
         String jwt = null;
 
