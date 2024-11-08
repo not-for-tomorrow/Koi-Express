@@ -1,5 +1,7 @@
 package com.koi_express.dto.request;
 
+import com.koi_express.entity.account.Staff;
+import com.koi_express.entity.customer.Customers;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -8,13 +10,11 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PaymentRequest {
+public class ChatMessageRequest {
 
-    String orderId;
+    Customers customer;
 
-    double totalAmount;
+    Staff staff;
 
-    String customerName;
-
-    String bankCode;
+    String content;
 }

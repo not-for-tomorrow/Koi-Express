@@ -29,14 +29,7 @@ public interface DeliveringStaffRepository extends JpaRepository<DeliveringStaff
 
     List<DeliveringStaff> findAllByRole(Role role);
 
-    // Find delivering staff with a specific role and status
-    List<DeliveringStaff> findAllByRoleAndStatus(Role role, StaffStatus status);
+    @Query("SELECT ds FROM DeliveringStaff ds JOIN ds.ordersReceived os WHERE os.orderId = :orderId")
+    Optional<DeliveringStaff> findByOrderId(@Param("orderId") Long orderId);
 
-    // Find staff by level, status, and minimum order count
-    @Query("SELECT ds FROM DeliveringStaff ds WHERE ds.level = :level AND ds.status = :status " +
-            "AND SIZE(ds.ordersReceived) >= :minOrders")
-    List<DeliveringStaff> findByLevelAndStatusWithMinOrders(
-            @Param("level") DeliveringStaffLevel level,
-            @Param("status") StaffStatus status,
-            @Param("minOrders") int minOrders);
 }

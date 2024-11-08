@@ -1,8 +1,6 @@
 package com.koi_express.service.verification;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -87,14 +85,6 @@ public class S3Service {
         } catch (Exception e) {
             throw new S3UploadException("Error downloading file", e);
         }
-    }
-
-    private File convertMultipartFileToFile(MultipartFile file) throws IOException {
-        File convertedFile = new File(System.getProperty("java.io.tmpdir") + "/" + file.getOriginalFilename());
-        try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
-            fos.write(file.getBytes());
-        }
-        return convertedFile;
     }
 
 }

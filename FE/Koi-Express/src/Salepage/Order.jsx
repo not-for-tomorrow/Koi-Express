@@ -110,6 +110,10 @@ const Order = () => {
     return `${parts.slice(0, 2).join(", ")}...`;
   };
 
+  const totalFeeHeaderTitle = ["Chờ xác nhận", "Đã xác nhận", "Chuẩn bị lấy hàng"].includes(selectedTab)
+      ? "Phí cam kết"
+      : "Tổng tiền";
+
   return (
     <div className="min-h-screen p-8 bg-gradient-to-r from-blue-100 to-blue-50">
       {loading ? (
@@ -262,13 +266,13 @@ const Order = () => {
                 <thead className="sticky top-0 z-10 bg-blue-100">
                   <tr className="text-blue-900 border-b border-blue-200">
                     <th className="p-2 font-semibold w-1/7">Mã đơn hàng</th>
-                    <th className="p-2 font-semibold w-1/8">Tên khách hàng</th>
-                    <th className="w-1/4 p-2 font-semibold">Điểm lấy hàng</th>
-                    <th className="w-1/4 p-2 font-semibold">Điểm giao hàng</th>
+                    <th className="p-4 font-semibold w-1/8">Tên khách hàng</th>
+                    <th className="w-1/4 p-4 font-semibold">Điểm lấy hàng</th>
+                    <th className="w-1/4 p-4 font-semibold">Điểm giao hàng</th>
                     <th className="p-2 font-semibold w-1/10">Thời gian tạo</th>
-                    <th className="w-1/12 p-2 font-semibold">Phí cam kết</th>
+                    <th className="w-1/4 p-4 font-semibold text-center w-1/10"> {totalFeeHeaderTitle}</th>
                     {showDeliveringStaffColumn && (
-                      <th className="p-2 font-semibold w-1/10">
+                      <th className="w-1/4 p-2 font-semibold  w-1/10">
                         Người giao hàng
                       </th>
                     )}
@@ -337,7 +341,7 @@ const Order = () => {
                         </td>
 
                         {showDeliveringStaffColumn && (
-                          <td className="p-2 text-sm text-gray-700">
+                          <td className="p-2 text-sm text-gray-700 text-center">
                             {deliveringStaff ? deliveringStaff.fullName : ""}
                           </td>
                         )}

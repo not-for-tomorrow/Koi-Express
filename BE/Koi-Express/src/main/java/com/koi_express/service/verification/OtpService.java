@@ -39,7 +39,7 @@ public class OtpService {
         logger.debug("Saved OTP for phone number {}: {}", formattedPhoneNumber, otp);
     }
 
-    public boolean sendOtp(String phoneNumber, String otp) {
+    public void sendOtp(String phoneNumber, String otp) {
         String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
         try {
             com.twilio.rest.api.v2010.account.Message.creator(
@@ -48,10 +48,8 @@ public class OtpService {
                             "Your OTP is: " + otp)
                     .create();
             logger.info("Sent OTP to phone number {}", maskPhoneNumber(formattedPhoneNumber));
-            return true;
         } catch (Exception e) {
             logger.error("Failed to send OTP to {}. Error: {}", maskPhoneNumber(formattedPhoneNumber), e.getMessage());
-            return false;
         }
     }
 
