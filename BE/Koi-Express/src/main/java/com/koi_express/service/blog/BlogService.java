@@ -6,6 +6,7 @@ import com.koi_express.exception.ResourceNotFoundException;
 import com.koi_express.repository.BlogRepository;
 import com.koi_express.service.verification.S3Service;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.hwpf.HWPFDocument;
@@ -25,32 +26,41 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BlogService {
 
     private final BlogRepository blogRepository;
     private final S3Service s3Service;
 
-    public Blog createBlog(String title, String content, BlogStatus status,
+    public Blog createBlog(String title, String content,
                            MultipartFile imageFile) {
 
         Blog blog = new Blog();
         blog.setTitle(title);
         blog.setContent(content);
-        blog.setStatus(status);
+        blog.setStatus(BlogStatus.DRAFT);
         blog.setCreatedAt(LocalDateTime.now());
 
-        String baseSlug = title.toLowerCase().replace(" ", "-");
+        String baseSlug = title.toLowerCase().replaceAll("[^a-z0-9\\s]", "").replace(" ", "-");
         String uniqueSlug = baseSlug + "-" + System.currentTimeMillis();
         blog.setSlug(uniqueSlug);
 
         String date = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         if (imageFile != null) {
-            String imageUrl = s3Service.uploadImage("blog", date, title, imageFile);
-            blog.setImageUrl(imageUrl);
+            try {
+                String imageUrl = s3Service.uploadImage("blog", date, title, imageFile);
+                blog.setImageUrl(imageUrl);
+                if (imageUrl == null) {
+                    log.warn("Image uploaded to S3 but returned a null URL");
+                }
+            } catch (Exception e) {
+                log.error("Failed to upload image to S3", e);
+                throw new RuntimeException("Failed to upload image to S3", e);
+            }
         }
 
-        blog.setStatus(BlogStatus.DRAFT);
+
         return blogRepository.save(blog);
     }
 
