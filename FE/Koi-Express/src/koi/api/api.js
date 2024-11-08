@@ -2,20 +2,10 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:8080/api";
 export const LOCATIONIQ_KEY = "pk.9e089bdc743d4f8dd817821e0c53d8ad";
-export const LOCATIONIQ_KEY = "pk.9e089bdc743d4f8dd817821e0c53d8ad";
 
 export const fetchSalesStaffAPI = async () => {
   const token = localStorage.getItem("token");
-  const response = await fetch("${BASE_URL}/manager/sales-staff", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  });
-  if (!response.ok) throw new Error("Failed to fetch sales staff data");
-  return response.json();
-  const token = localStorage.getItem("token");
-  const response = await fetch("${BASE_URL}/manager/sales-staff", {
+  const response = await fetch(`${BASE_URL}/manager/sales-staff`, {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
@@ -27,18 +17,7 @@ export const fetchSalesStaffAPI = async () => {
 
 export const createSalesStaffAPI = async (staff) => {
   const token = localStorage.getItem("token");
-  const response = await fetch("${BASE_URL}/api/manager/create-sales-staff", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ ...staff, role: "SALES_STAFF", active: true }),
-  });
-  if (!response.ok) throw new Error("Failed to create sales staff");
-  return response.json();
-  const token = localStorage.getItem("token");
-  const response = await fetch("${BASE_URL}/api/manager/create-sales-staff", {
+  const response = await fetch(`${BASE_URL}/api/manager/create-sales-staff`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -53,14 +32,7 @@ export const createSalesStaffAPI = async (staff) => {
 export const fetchPendingOrders = async () => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("Token not found. Please log in.");
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("Token not found. Please log in.");
 
-  const response = await axios.get(`${BASE_URL}/sales/orders/pending`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
   const response = await axios.get(`${BASE_URL}/sales/orders/pending`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -70,23 +42,13 @@ export const fetchPendingOrders = async () => {
   if (!response || response.status !== 200) {
     throw new Error("Failed to fetch orders");
   }
-  if (!response || response.status !== 200) {
-    throw new Error("Failed to fetch orders");
-  }
 
-  return response.data.content || [];
   return response.data.content || [];
 };
 
 export const fetchOrderData = async (orderId, token) => {
   if (!token) throw new Error("Token not found. Please log in.");
-  if (!token) throw new Error("Token not found. Please log in.");
 
-  const response = await axios.get(`${BASE_URL}/orders/${orderId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
   const response = await axios.get(`${BASE_URL}/orders/${orderId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -96,11 +58,7 @@ export const fetchOrderData = async (orderId, token) => {
   if (!response || response.status !== 200) {
     throw new Error("Failed to fetch order data");
   }
-  if (!response || response.status !== 200) {
-    throw new Error("Failed to fetch order data");
-  }
 
-  return response.data;
   return response.data;
 };
 
@@ -108,32 +66,18 @@ export const fetchCoordinates = async (location) => {
   const response = await axios.get(
     `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${location}&format=json`
   );
-  const response = await axios.get(
-    `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_KEY}&q=${location}&format=json`
-  );
 
   if (!response || response.status !== 200) {
     throw new Error("Failed to fetch coordinates");
   }
-  if (!response || response.status !== 200) {
-    throw new Error("Failed to fetch coordinates");
-  }
 
-  return response.data[0];
   return response.data[0];
 };
 
 export const fetchAllOrders = async () => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("Token not found. Please log in.");
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("Token not found. Please log in.");
 
-  const response = await axios.get(`${BASE_URL}/orders/all-orders`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
   const response = await axios.get(`${BASE_URL}/orders/all-orders`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -143,19 +87,13 @@ export const fetchAllOrders = async () => {
   if (!response || response.status !== 200) {
     throw new Error("Failed to fetch orders");
   }
-  if (!response || response.status !== 200) {
-    throw new Error("Failed to fetch orders");
-  }
 
-  return response.data.result || [];
   return response.data.result || [];
 };
 
 export const fetchCustomerAccounts = async () => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("Token not found. Please log in.");
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("Token not found. Please log in.");
 
   try {
     const response = await axios.get(`${BASE_URL}/sales/customers`, {
@@ -167,23 +105,6 @@ export const fetchCustomerAccounts = async () => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 401) {
-      // Handle unauthorized access, maybe redirect to login
-      console.error("Unauthorized - Token may have expired.");
-      throw new Error("Please log in again.");
-    }
-    throw new Error("Failed to fetch customer accounts");
-  }
-  try {
-    const response = await axios.get(`${BASE_URL}/sales/customers`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    return response.data;
-  } catch (error) {
-    if (error.response && error.response.status === 401) {
-      // Handle unauthorized access, maybe redirect to login
       console.error("Unauthorized - Token may have expired.");
       throw new Error("Please log in again.");
     }
@@ -194,19 +115,7 @@ export const fetchCustomerAccounts = async () => {
 export const acceptOrderAPI = async (orderId) => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("Token not found. Please log in.");
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("Token not found. Please log in.");
 
-  const response = await axios.put(
-    `${BASE_URL}/sales/accept/${orderId}`,
-    null,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
   const response = await axios.put(
     `${BASE_URL}/sales/accept/${orderId}`,
     null,
@@ -219,28 +128,14 @@ export const acceptOrderAPI = async (orderId) => {
   );
 
   if (response.status !== 200) throw new Error("Failed to accept order");
-  if (response.status !== 200) throw new Error("Failed to accept order");
 
-  return response.data;
   return response.data;
 };
 
 export const pickupOrderAPI = async (orderId) => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("Token not found. Please log in.");
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("Token not found. Please log in.");
 
-  const response = await axios.put(
-    `${BASE_URL}/delivering/orders/pickup/${orderId}`,
-    null,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
   const response = await axios.put(
     `${BASE_URL}/delivering/orders/pickup/${orderId}`,
     null,
@@ -253,9 +148,7 @@ export const pickupOrderAPI = async (orderId) => {
   );
 
   if (response.status !== 200) throw new Error("Failed to pickup order");
-  if (response.status !== 200) throw new Error("Failed to pickup order");
 
-  return response.data;
   return response.data;
 };
 
@@ -291,7 +184,7 @@ export const fetchBlogDataByStatus = async (status) => {
   const token = localStorage.getItem("token");
   try {
     const response = await fetch(
-      `http://localhost:8080/api/blogs/all-blogs/${status}`,
+      `${BASE_URL}/blogs/all-blogs/${status}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
