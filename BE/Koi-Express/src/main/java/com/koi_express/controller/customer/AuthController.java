@@ -10,6 +10,7 @@ import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
+import com.koi_express.repository.CustomersRepository;
 import com.koi_express.service.customer.CustomerService;
 import com.koi_express.service.customer.AuthService;
 import com.koi_express.service.verification.OtpService;
@@ -36,6 +37,7 @@ public class AuthController {
     private final OtpService otpService;
     private final JwtUtil jwtUtil;
     private final AuthService authService;
+    private final CustomersRepository customersRepository;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> registerCustomer(
@@ -92,6 +94,68 @@ public class AuthController {
             logger.warn("Invalid OTP for phone number {}", formattedPhoneNumber);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid OTP. Please try again.", null));
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestParam(required = false) String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Phone number is required", null));
+        }
+
+        String formattedPhoneNumber = otpService.formatPhoneNumber(phoneNumber);
+
+        logger.debug("Checking existence of formatted phone number: {}", formattedPhoneNumber);
+        if (!customersRepository.existsByPhoneNumber(phoneNumber)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Số điện thoại không tồn tại", null));
+        }
+
+        String otp = String.format("%04d", new SecureRandom().nextInt(10000));
+        otpService.saveOtp(formattedPhoneNumber, otp);
+        otpService.sendOtp(formattedPhoneNumber, otp);
+
+        logger.info("Generated OTP for {}: {}", phoneNumber, otp);
+
+        logger.info("Generated OTP for forgot password request for phone number {}", formattedPhoneNumber);
+        return ResponseEntity.ok(
+                new ApiResponse<>(HttpStatus.OK.value(), "OTP đã được gửi đến số điện thoại của bạn", null));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<String>> resetPassword(
+            @RequestParam String phoneNumber,
+            @RequestParam String otp,
+            @RequestParam String newPassword,
+            @RequestParam String confirmPassword) {
+
+        String formattedPhoneNumber = otpService.formatPhoneNumber(phoneNumber);
+
+        if (!newPassword.equals(confirmPassword)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Mật khẩu không khớp", null));
+        }
+
+        boolean isOtpValid = otpService.validateOtp(formattedPhoneNumber, otp);
+        if (!isOtpValid) {
+            logger.warn("Invalid OTP for phone number {}", formattedPhoneNumber);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "OTP không hợp lệ. Vui lòng thử lại.", null));
+        }
+
+        try {
+            ApiResponse<String> response = customerService.updatePassword(formattedPhoneNumber, newPassword);
+            if (response.getCode() == HttpStatus.OK.value()) {
+                return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Đặt lại mật khẩu thành công", null));
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đặt lại mật khẩu thất bại", null));
+            }
+        } catch (Exception e) {
+            logger.error("Error while resetting password for phone number {}: {}", formattedPhoneNumber, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi trong quá trình đặt lại mật khẩu", null));
         }
     }
 

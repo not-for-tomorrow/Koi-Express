@@ -1,8 +1,5 @@
 package com.koi_express.service.verification;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,9 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service
@@ -28,7 +23,7 @@ public class S3Service {
     @Value("${spring.aws.s3.bucket-name}")
     private String bucketName;
 
-    public String uploadFile(String category, String date, String title, MultipartFile file, boolean isImage) {
+    public String uploadImage(String category, String date, String title, MultipartFile image) {
         try {
             LocalDateTime localDateTime;
 
@@ -43,48 +38,25 @@ public class S3Service {
             String month = String.format("%02d", localDate.getMonthValue());
             String day = String.format("%02d", localDate.getDayOfMonth());
 
-            String fileTypeFolder = isImage ? "image" : "file";
-
-            String keyName = String.format("%s/%s/%s/%s/%s/%s/%s",
+            String keyName = String.format("%s/%s/%s/%s/%s/image/%s",
                     category,
                     year,
                     month,
                     day,
                     title,
-                    fileTypeFolder,
-                    UUID.randomUUID(),
-                    file.getOriginalFilename());
+                    UUID.randomUUID());
 
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(keyName)
                     .build();
 
-            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(image.getInputStream(), image.getSize()));
 
             return s3Client.utilities().getUrl(builder -> builder.bucket(bucketName).key(keyName)).toExternalForm();
 
         } catch (Exception e) {
-            throw new S3UploadException("Error uploading file", e);
+            throw new S3UploadException("Error uploading image", e);
         }
     }
-
-    public File downloadFile(String keyName) {
-        try {
-            String tempFilePath = "/tmp/" + UUID.randomUUID() + "_" + Paths.get(keyName).getFileName();
-            File file = new File(tempFilePath);
-            Files.createDirectories(file.getParentFile().toPath());
-
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(keyName)
-                    .build();
-
-            s3Client.getObject(getObjectRequest, ResponseTransformer.toFile(Paths.get(tempFilePath)));
-            return file;
-        } catch (Exception e) {
-            throw new S3UploadException("Error downloading file", e);
-        }
-    }
-
 }

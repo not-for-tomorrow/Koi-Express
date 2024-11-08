@@ -6,6 +6,7 @@ import com.koi_express.exception.ResourceNotFoundException;
 import com.koi_express.repository.BlogRepository;
 import com.koi_express.service.verification.S3Service;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.hwpf.HWPFDocument;
@@ -25,39 +26,41 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BlogService {
 
     private final BlogRepository blogRepository;
     private final S3Service s3Service;
 
-    public Blog createBlog(String title, String content, BlogStatus status,
-                           MultipartFile imageFile, MultipartFile documentFile) {
+    public Blog createBlog(String title, String content,
+                           MultipartFile imageFile) {
 
         Blog blog = new Blog();
         blog.setTitle(title);
         blog.setContent(content);
-        blog.setStatus(status);
+        blog.setStatus(BlogStatus.DRAFT);
         blog.setCreatedAt(LocalDateTime.now());
 
-        String baseSlug = title.toLowerCase().replace(" ", "-");
+        String baseSlug = title.toLowerCase().replaceAll("[^a-z0-9\\s]", "").replace(" ", "-");
         String uniqueSlug = baseSlug + "-" + System.currentTimeMillis();
         blog.setSlug(uniqueSlug);
 
         String date = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-        // Upload image to S3
         if (imageFile != null) {
-            String imageUrl = s3Service.uploadFile("blog", date, title, imageFile, true);
-            blog.setImageUrl(imageUrl);
+            try {
+                String imageUrl = s3Service.uploadImage("blog", date, title, imageFile);
+                blog.setImageUrl(imageUrl);
+                if (imageUrl == null) {
+                    log.warn("Image uploaded to S3 but returned a null URL");
+                }
+            } catch (Exception e) {
+                log.error("Failed to upload image to S3", e);
+                throw new RuntimeException("Failed to upload image to S3", e);
+            }
         }
 
-        // Upload document to S3
-        if (documentFile != null) {
-            String documentUrl = s3Service.uploadFile("blog", date, title, documentFile, false);
-            blog.setFilePath(documentUrl);
-        }
 
-        blog.setStatus(BlogStatus.DRAFT);
         return blogRepository.save(blog);
     }
 
@@ -81,52 +84,5 @@ public class BlogService {
     public Optional<Blog> getBlogBySlug(String slug) {
         return blogRepository.findBySlug(slug);
     }
-
-    public String getHtmlContent(String filePath) {
-        File file = s3Service.downloadFile(filePath);
-        return convertFileToHtml(file);
-    }
-
-    private String convertFileToHtml(File file) {
-        if (file.getName().endsWith(".doc") || file.getName().endsWith(".docx")) {
-            return convertWordToHtml(file);
-        } else if (file.getName().endsWith(".pdf")) {
-            return convertPdfToHtml(file);
-        }
-        throw new IllegalArgumentException("Unsupported file format");
-    }
-
-    private String convertWordToHtml(File file) {
-        StringBuilder htmlContent = new StringBuilder();
-        try (FileInputStream fis = new FileInputStream(file)) {
-            if (file.getName().endsWith(".docx")) {
-                XWPFDocument document = new XWPFDocument(fis);
-                document.getParagraphs().forEach(paragraph -> htmlContent.append("<p>").append(paragraph.getText()).append("</p>"));
-            } else if (file.getName().endsWith(".doc")) {
-                HWPFDocument document = new HWPFDocument(fis);
-                WordExtractor extractor = new WordExtractor(document);
-                for (String paragraph : extractor.getParagraphText()) {
-                    htmlContent.append("<p>").append(paragraph).append("</p>");
-                }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Error converting Word file to HTML", e);
-        }
-        return htmlContent.toString();
-    }
-    private String convertPdfToHtml(File file) {
-        StringBuilder htmlContent = new StringBuilder();
-        try (PDDocument document = PDDocument.load(file)) {
-            PDFTextStripper pdfStripper = new PDFTextStripper();
-            String text = pdfStripper.getText(document);
-            for (String line : text.split("\n")) {
-                htmlContent.append("<p>").append(line).append("</p>");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Error converting PDF file to HTML", e);
-        }
-        return htmlContent.toString();
-    }
-
 
 }

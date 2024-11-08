@@ -90,17 +90,15 @@ public class OtpService {
     }
 
     public String formatPhoneNumber(String phoneNumber) {
-        if (!phoneNumber.startsWith("+84")) {
-            if (phoneNumber.startsWith("0")) {
-                phoneNumber = "+84" + phoneNumber.substring(1);
-            } else {
-                phoneNumber = "+84" + phoneNumber;
-            }
+        phoneNumber = phoneNumber.replaceAll("\\s+", "");
+        if (phoneNumber.startsWith("+84")) {
+            phoneNumber = "0" + phoneNumber.substring(3);
+        } else if (!phoneNumber.startsWith("0")) {
+            phoneNumber = "0" + phoneNumber;
         }
-        logger.debug("Final formatted phone number: {}", phoneNumber);
+        logger.debug("Final formatted phone number for database: {}", phoneNumber);
         return phoneNumber;
     }
-
 
     public void saveTempRegisterRequest(RegisterRequest registerRequest) {
         String formattedPhoneNumber = formatPhoneNumber(registerRequest.getPhoneNumber());
