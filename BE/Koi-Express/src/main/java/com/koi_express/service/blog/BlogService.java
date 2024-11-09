@@ -50,6 +50,7 @@ public class BlogService {
         if (imageFile != null) {
             try {
                 String imageUrl = s3Service.uploadImage("blog", date, title, imageFile);
+                log.info("Image URL: {}", imageUrl);
                 blog.setImageUrl(imageUrl);
                 if (imageUrl == null) {
                     log.warn("Image uploaded to S3 but returned a null URL");
@@ -59,7 +60,6 @@ public class BlogService {
                 throw new RuntimeException("Failed to upload image to S3", e);
             }
         }
-
 
         return blogRepository.save(blog);
     }

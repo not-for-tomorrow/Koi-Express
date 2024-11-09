@@ -28,7 +28,7 @@ public class Blog {
     @Column(columnDefinition = "TEXT")
     String content;
 
-    @Column(length = 255)
+    @Column(name = "image_url",length = 255)
     String imageUrl;
 
     @Column(unique = true, length = 255)
