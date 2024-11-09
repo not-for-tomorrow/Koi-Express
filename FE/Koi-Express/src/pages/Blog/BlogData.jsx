@@ -2,5 +2,5 @@
 export let blogData = []; // Khởi tạo là mảng trống
 
 export const setBlogData = (newData) => {
-    blogData = newData;
+  blogData = newData; // Hàm cập nhật blogData
 };
