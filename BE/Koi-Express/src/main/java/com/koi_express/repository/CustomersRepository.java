@@ -19,7 +19,7 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
 
     Optional<Customers> findByPhoneNumber(String phoneNumber);
 
-    boolean existsByEmail(String email); // For validation purposes
+    boolean existsByEmail(String email);
 
     boolean existsByPhoneNumber(String phoneNumber);
 
@@ -28,12 +28,6 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
 
     List<Customers> findByActiveTrueAndLastLoginBefore(LocalDateTime date);
 
-    @Query("SELECT c.email FROM Customers c")
-    List<String> findAllEmails();
+    long countByActiveTrue();
 
-    @Query("SELECT c.passwordHash FROM Customers c")
-    List<String> findAllPasswords();
-
-    @Query("SELECT c.phoneNumber FROM Customers c")
-    List<String> findAllPhoneNumbers();
 }

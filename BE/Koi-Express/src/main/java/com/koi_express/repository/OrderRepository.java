@@ -2,6 +2,7 @@ package com.koi_express.repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
@@ -54,32 +55,12 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
             "WHERE o.orderId = :orderId")
     Optional<OrderWithCustomerDTO> findOrderWithCustomerAndShipment(@Param("orderId") Long orderId);
 
-    boolean existsByStatusAndDeliveringStaff_StaffId(OrderStatus status, Long deliveringStaffId);
+    List<Orders> findByStatus(OrderStatus status);
 
     @Query("SELECT SUM(o.totalFee) FROM Orders o WHERE o.createdAt = :date")
-    Optional<BigDecimal> findTotalRevenueByDate(@Param("date") LocalDate date);
+    Optional<BigDecimal> findTotalAmountByDate(@Param("date") LocalDateTime date);
 
-    @Query("SELECT SUM(o.totalFee) FROM Orders o WHERE YEAR(o.createdAt) = :year AND WEEK(o.createdAt) = :week")
-    Optional<BigDecimal> findTotalRevenueByWeek(@Param("year") int year, @Param("week") int week);
-
-    @Query("SELECT SUM(o.totalFee) FROM Orders o WHERE YEAR(o.createdAt) = :year AND MONTH(o.createdAt) = :month")
-    Optional<BigDecimal> findTotalRevenueByMonth(@Param("year") int year, @Param("month") int month);
-
-    @Query("SELECT SUM(o.totalFee) FROM Orders o WHERE YEAR(o.createdAt) = :year")
-    Optional<BigDecimal> findTotalRevenueByYear(@Param("year") int year);
-
-    @Query("SELECT o.customer FROM Orders o GROUP BY o.customer ORDER BY COUNT(o) DESC LIMIT 1")
-    Optional<Customers> findCustomerWithMostOrders();
-
-    @Query("SELECT o.createdAt FROM Orders o GROUP BY o.createdAt ORDER BY SUM(o.totalFee) DESC LIMIT 1")
-    Optional<LocalDate> findHighestRevenueDay();
-
-    @Query("SELECT YEAR(o.createdAt), MONTH(o.createdAt) FROM Orders o GROUP BY YEAR(o.createdAt), MONTH(o.createdAt) ORDER BY SUM(o.totalFee) DESC LIMIT 1")
-    Optional<YearMonth> findHighestRevenueMonth();
-
-    @Query("SELECT YEAR(o.createdAt) FROM Orders o GROUP BY YEAR(o.createdAt) ORDER BY SUM(o.totalFee) DESC LIMIT 1")
-    Optional<Integer> findHighestRevenueYear();
-
-    List<Orders> findByStatus(OrderStatus status);
+    @Query("SELECT SUM(o.totalFee) FROM Orders o")
+    Optional<BigDecimal> findTotalAmount();
 
 }
