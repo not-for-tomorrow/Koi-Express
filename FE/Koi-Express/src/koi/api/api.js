@@ -153,14 +153,18 @@ export const pickupOrderAPI = async (orderId) => {
     return response.data;
 };
 
-export const createBlogAPI = async (title, content, imageFile) => {
+export const createBlogAPI = async (title, content, imageUrl, status = "DRAFT") => {
     const token = localStorage.getItem("token");
+
+    if (!token) {
+        throw new Error("User  is not authenticated");
+    }
 
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", content);
-    formData.append("status", "DRAFT");
-    if (imageFile) formData.append("imageFile", imageFile);
+    formData.append("status", status);
+    if (imageUrl) formData.append("imageUrl", imageUrl);
 
     try {
         const response = await axios.post(`${BASE_URL}/blogs/create-blog`, formData, {
@@ -169,10 +173,15 @@ export const createBlogAPI = async (title, content, imageFile) => {
                 Authorization: `Bearer ${token}`,
             },
         });
+
+        if (!response.data) {
+            throw new Error("Invalid response from server");
+        }
         return response.data;
     } catch (error) {
-        console.error("API Error:", error.response?.data || error.message);
-        throw new Error("Error creating blog");
+        const errorMessage = error.response?.data?.message || "Error creating blog";
+        console.error("API Error:", errorMessage);
+        throw new Error(errorMessage);
     }
 };
 

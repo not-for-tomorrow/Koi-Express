@@ -10,7 +10,7 @@ const Blogs = () => {
     const [hasMore, setHasMore] = useState(true);
 
     const fetchBlogs = async (reset = false) => {
-        if (!hasMore && !reset) return; // Prevent additional fetch if no more data is available
+        if (!hasMore && !reset) return;
 
         try {
             setLoading(true);
@@ -48,11 +48,10 @@ const Blogs = () => {
     };
 
     useEffect(() => {
-        // Clear blogs and reset state variables whenever status changes, and fetch initial data
         setBlogs([]);
         setHasMore(true);
         setError(null);
-        fetchBlogs(true); // Pass `true` to reset blogs and fetch initial data
+        fetchBlogs(true);
     }, [status]);
 
     const setStatusPublished = () => setStatus('PUBLISHED');
