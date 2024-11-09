@@ -3,16 +3,16 @@ package com.koi_express.controller.customer;
 import java.security.SecureRandom;
 import java.util.stream.Collectors;
 
-import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.request.LoginRequest;
 import com.koi_express.dto.request.RegisterRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.repository.CustomersRepository;
-import com.koi_express.service.customer.CustomerService;
 import com.koi_express.service.customer.AuthService;
+import com.koi_express.service.customer.CustomerService;
 import com.koi_express.service.verification.OtpService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,18 +50,13 @@ public class AuthController {
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
         }
 
-        String originalPhoneNumber = registerRequest.getPhoneNumber();
+        String formattedPhoneNumber = otpService.formatPhoneNumber(registerRequest.getPhoneNumber());
 
-        String formattedPhoneNumber = otpService.formatPhoneNumber(originalPhoneNumber);
-
-        String otp = String.format("%04d", new SecureRandom().nextInt(10000));
-        otpService.saveOtp(formattedPhoneNumber, otp);
-
-        logger.info("Generated OTP for {}: {}", originalPhoneNumber, otp);
-
+        String otp = otpService.generateOtpForPurpose(formattedPhoneNumber, "REGISTER");
         otpService.sendOtp(formattedPhoneNumber, otp);
 
-        registerRequest.setPhoneNumber(originalPhoneNumber);
+        logger.info("Generated OTP for registration for {}: {}", maskPhoneNumber(formattedPhoneNumber), otp);
+
         otpService.saveTempRegisterRequest(registerRequest);
 
         return ResponseEntity.ok(
@@ -80,7 +75,7 @@ public class AuthController {
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Temporary registration data not found", null));
         }
 
-        boolean isValid = otpService.validateOtp(formattedPhoneNumber, otp);
+        boolean isValid = otpService.validateOtpForPurpose(formattedPhoneNumber, otp, "REGISTER");
         if (isValid) {
             ApiResponse<?> response = customerService.registerCustomer(tempRegisterRequest);
             if (response.getCode() == HttpStatus.OK.value()) {
@@ -98,7 +93,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestParam(required = false) String phoneNumber) {
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestParam String phoneNumber) {
         if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Phone number is required", null));
@@ -106,27 +101,38 @@ public class AuthController {
 
         String formattedPhoneNumber = otpService.formatPhoneNumber(phoneNumber);
 
-        logger.debug("Checking existence of formatted phone number: {}", formattedPhoneNumber);
         if (!customersRepository.existsByPhoneNumber(phoneNumber)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Số điện thoại không tồn tại", null));
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Phone number does not exist", null));
         }
 
-        String otp = String.format("%04d", new SecureRandom().nextInt(10000));
-        otpService.saveOtp(formattedPhoneNumber, otp);
+        String otp = otpService.generateOtpForPurpose(formattedPhoneNumber, "FORGOT_PASSWORD");
         otpService.sendOtp(formattedPhoneNumber, otp);
 
-        logger.info("Generated OTP for {}: {}", phoneNumber, otp);
-
-        logger.info("Generated OTP for forgot password request for phone number {}", formattedPhoneNumber);
+        logger.info("Generated OTP for forgot-password for {}: {}", maskPhoneNumber(phoneNumber), otp);
         return ResponseEntity.ok(
-                new ApiResponse<>(HttpStatus.OK.value(), "OTP đã được gửi đến số điện thoại của bạn", null));
+                new ApiResponse<>(HttpStatus.OK.value(), "OTP has been sent to your phone number", null));
+    }
+
+    @PostMapping("/verify-otp-for-reset-password")
+    public ResponseEntity<ApiResponse<String>> verifyOtpForResetPassword(
+            @RequestParam String phoneNumber, @RequestParam String otp) {
+
+        String formattedPhoneNumber = otpService.formatPhoneNumber(phoneNumber);
+
+        boolean isOtpValid = otpService.validateOtpForPurpose(formattedPhoneNumber, otp, "FORGOT_PASSWORD");
+        if (!isOtpValid) {
+            logger.warn("Invalid OTP for forgot-password for phone number {}", formattedPhoneNumber);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid OTP. Please try again.", null));
+        }
+
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "OTP validated successfully. Proceed to reset password.", null));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse<String>> resetPassword(
+    public ResponseEntity<ApiResponse<String>> resetPasswordAfterOtpVerification(
             @RequestParam String phoneNumber,
-            @RequestParam String otp,
             @RequestParam String newPassword,
             @RequestParam String confirmPassword) {
 
@@ -134,30 +140,24 @@ public class AuthController {
 
         if (!newPassword.equals(confirmPassword)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Mật khẩu không khớp", null));
-        }
-
-        boolean isOtpValid = otpService.validateOtp(formattedPhoneNumber, otp);
-        if (!isOtpValid) {
-            logger.warn("Invalid OTP for phone number {}", formattedPhoneNumber);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "OTP không hợp lệ. Vui lòng thử lại.", null));
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Passwords do not match", null));
         }
 
         try {
             ApiResponse<String> response = customerService.updatePassword(formattedPhoneNumber, newPassword);
             if (response.getCode() == HttpStatus.OK.value()) {
-                return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Đặt lại mật khẩu thành công", null));
+                return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Password reset successful", null));
             } else {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đặt lại mật khẩu thất bại", null));
+                        .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Password reset failed", null));
             }
         } catch (Exception e) {
             logger.error("Error while resetting password for phone number {}: {}", formattedPhoneNumber, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi trong quá trình đặt lại mật khẩu", null));
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An error occurred while resetting password", null));
         }
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> authenticateCustomer(
@@ -182,7 +182,6 @@ public class AuthController {
 
     @GetMapping("/google")
     public ResponseEntity<ApiResponse<String>> googleLogin(@AuthenticationPrincipal OAuth2User oAuth2User) {
-
         String email = oAuth2User.getAttribute("email");
         String fullName = oAuth2User.getAttribute("name");
         String providerId = oAuth2User.getAttribute("sub");
@@ -199,11 +198,9 @@ public class AuthController {
                 });
 
         String token = jwtUtil.generateTokenOAuth2(customer);
-        ApiResponse<String> response = new ApiResponse<>(HttpStatus.OK.value(), "Google login successful", token);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Google login successful", token));
     }
 
-    // Facebook OAuth2 Login Endpoint
     @GetMapping("/facebook")
     public ResponseEntity<ApiResponse<String>> facebookLogin(@AuthenticationPrincipal OAuth2User oAuth2User) {
         Customers customer = new Customers();
@@ -215,7 +212,10 @@ public class AuthController {
 
         String token = jwtUtil.generateTokenOAuth2(customer);
 
-        ApiResponse<String> response = new ApiResponse<>(HttpStatus.OK.value(), "Facebook login successful", token);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Facebook login successful", token));
+    }
+
+    private String maskPhoneNumber(String phoneNumber) {
+        return phoneNumber.replaceAll(".(?=.{4})", "*");
     }
 }

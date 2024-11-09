@@ -16,9 +16,9 @@ public class OtpService {
     private static final Logger logger = LoggerFactory.getLogger(OtpService.class);
 
     private final String fromPhone;
-    private final Map<String, String> otpData = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, String>> otpDataByPurpose = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, Long>> otpTimestampsByPurpose = new ConcurrentHashMap<>();
     private final Map<String, RegisterRequest> tempRegisterData = new ConcurrentHashMap<>();
-    private final Map<String, Long> otpTimestamps = new ConcurrentHashMap<>();
     private static final long OTP_EXPIRATION_TIME = 5 * 60 * 1000L; // 5 minutes
 
     public OtpService(
@@ -31,12 +31,15 @@ public class OtpService {
         logger.info("OtpService initialized with fromPhone: {}", this.fromPhone);
     }
 
-    public void saveOtp(String phoneNumber, String otp) {
+    public String generateOtpForPurpose(String phoneNumber, String purpose) {
+        String otp = String.format("%04d", new java.security.SecureRandom().nextInt(10000));
         String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
-        otpData.put(formattedPhoneNumber, otp);
-        otpTimestamps.put(formattedPhoneNumber, System.currentTimeMillis());
 
-        logger.debug("Saved OTP for phone number {}: {}", formattedPhoneNumber, otp);
+        otpDataByPurpose.computeIfAbsent(purpose, k -> new ConcurrentHashMap<>()).put(formattedPhoneNumber, otp);
+        otpTimestampsByPurpose.computeIfAbsent(purpose, k -> new ConcurrentHashMap<>()).put(formattedPhoneNumber, System.currentTimeMillis());
+
+        logger.debug("Generated OTP for {} purpose: phoneNumber {}, otp {}", purpose, formattedPhoneNumber, otp);
+        return otp;
     }
 
     public void sendOtp(String phoneNumber, String otp) {
@@ -53,30 +56,34 @@ public class OtpService {
         }
     }
 
-    private String maskPhoneNumber(String phoneNumber) {
-        return phoneNumber.replaceAll("(\\+84)(\\d{2})(\\d+)(\\d{2})", "$1$2****$4");
-    }
-
-    public boolean validateOtp(String phoneNumber, String otp) {
+    public boolean validateOtpForPurpose(String phoneNumber, String otp, String purpose) {
         String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
-        Long timestamp = otpTimestamps.get(formattedPhoneNumber);
+        Map<String, String> otpDataForPurpose = otpDataByPurpose.get(purpose);
+        Map<String, Long> otpTimestampsForPurpose = otpTimestampsByPurpose.get(purpose);
 
-        if (timestamp == null || !isOtpValid(timestamp)) {
-            logger.warn("OTP expired or not found for phone number {}", formattedPhoneNumber);
-            otpData.remove(formattedPhoneNumber);
-            otpTimestamps.remove(formattedPhoneNumber);
+        if (otpDataForPurpose == null || otpTimestampsForPurpose == null) {
+            logger.warn("No OTP data found for purpose {}", purpose);
             return false;
         }
 
-        String storedOtp = otpData.get(formattedPhoneNumber);
+        Long timestamp = otpTimestampsForPurpose.get(formattedPhoneNumber);
+
+        if (timestamp == null || !isOtpValid(timestamp)) {
+            logger.warn("OTP expired or not found for phone number {}", formattedPhoneNumber);
+            otpDataForPurpose.remove(formattedPhoneNumber);
+            otpTimestampsForPurpose.remove(formattedPhoneNumber);
+            return false;
+        }
+
+        String storedOtp = otpDataForPurpose.get(formattedPhoneNumber);
         if (otp.equals(storedOtp)) {
-            otpData.remove(formattedPhoneNumber);
-            otpTimestamps.remove(formattedPhoneNumber);
-            logger.info("OTP validated successfully for phone number {}", formattedPhoneNumber);
+            otpDataForPurpose.remove(formattedPhoneNumber);
+            otpTimestampsForPurpose.remove(formattedPhoneNumber);
+            logger.info("OTP validated successfully for phone number {} for purpose {}", formattedPhoneNumber, purpose);
             return true;
         }
 
-        logger.warn("Failed OTP validation for phone number {}. Incorrect OTP", formattedPhoneNumber);
+        logger.warn("Failed OTP validation for phone number {} for purpose {}. Incorrect OTP", formattedPhoneNumber, purpose);
         return false;
     }
 
@@ -114,5 +121,9 @@ public class OtpService {
             logger.warn("No temp register request found for {}", phoneNumber);
         }
         return request;
+    }
+
+    private String maskPhoneNumber(String phoneNumber) {
+        return phoneNumber.replaceAll("(\\+84)(\\d{2})(\\d+)(\\d{2})", "$1$2****$4");
     }
 }
