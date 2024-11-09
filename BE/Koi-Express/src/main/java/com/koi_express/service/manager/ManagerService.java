@@ -8,9 +8,11 @@ import com.koi_express.enums.DeliveringStaffLevel;
 import com.koi_express.enums.Role;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
+import com.koi_express.repository.CustomersRepository;
 import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.repository.SystemAccountRepository;
+import com.koi_express.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -34,6 +37,7 @@ public class ManagerService {
     private final DeliveringStaffRepository deliveringStaffRepository;
     private final DeliveringStaffAccount deliveringStaffAccount;
     private final SystemAccountRepository systemAccountRepository;
+    private final CustomersRepository customerRepository;
 
     public Customers findByPhoneNumber(String phoneNumber) {
         return manageCustomerService.findByPhoneNumber(phoneNumber);
@@ -104,71 +108,6 @@ public class ManagerService {
         return new ApiResponse<>(200, "Delivering staff promoted successfully", null);
     }
 
-    public BigDecimal calculateDailyRevenue(LocalDate date) {
-        return orderRepository.findTotalRevenueByDate(date).orElse(BigDecimal.ZERO);
-    }
-
-    public BigDecimal calculateWeeklyRevenue(int year, int week) {
-        return orderRepository.findTotalRevenueByWeek(year, week).orElse(BigDecimal.ZERO);
-    }
-
-    public BigDecimal calculateMonthlyRevenue(YearMonth month) {
-        return orderRepository.findTotalRevenueByMonth(month.getYear(), month.getMonthValue()).orElse(BigDecimal.ZERO);
-    }
-
-    public BigDecimal calculateYearlyRevenue(int year) {
-        return orderRepository.findTotalRevenueByYear(year).orElse(BigDecimal.ZERO);
-    }
-
-    // Top Customer by Order Frequency
-    public Customers findTopCustomer() {
-        return orderRepository.findCustomerWithMostOrders().orElse(null);
-    }
-
-    // Growth Calculations
-    public BigDecimal calculateWeeklyGrowth(int year, int currentWeek) {
-        BigDecimal currentWeekRevenue = calculateWeeklyRevenue(year, currentWeek);
-        // Calculate the previous week, considering the transition between years
-        int previousYear = (currentWeek == 1) ? year - 1 : year;
-        int previousWeek = (currentWeek == 1) ? 52 : currentWeek - 1; // Assuming 52 weeks per year
-        BigDecimal previousWeekRevenue = calculateWeeklyRevenue(previousYear, previousWeek);
-        return calculateGrowth(currentWeekRevenue, previousWeekRevenue);
-    }
-
-    public BigDecimal calculateMonthlyGrowth(YearMonth currentMonth) {
-        YearMonth previousMonth = currentMonth.minusMonths(1); // Automatically handles year transition
-        BigDecimal currentMonthRevenue = calculateMonthlyRevenue(currentMonth);
-        BigDecimal previousMonthRevenue = calculateMonthlyRevenue(previousMonth);
-        return calculateGrowth(currentMonthRevenue, previousMonthRevenue);
-    }
-
-    public BigDecimal calculateYearlyGrowth(int currentYear) {
-        int previousYear = currentYear - 1;
-        BigDecimal currentYearRevenue = calculateYearlyRevenue(currentYear);
-        BigDecimal previousYearRevenue = calculateYearlyRevenue(previousYear);
-        return calculateGrowth(currentYearRevenue, previousYearRevenue);
-    }
-
-    private BigDecimal calculateGrowth(BigDecimal current, BigDecimal previous) {
-        if (previous.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
-        }
-        return (current.subtract(previous)).divide(previous, 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-    }
-
-    // Highest Revenue Calculations
-    public LocalDate getHighestRevenueDay() {
-        return orderRepository.findHighestRevenueDay().orElse(null);
-    }
-
-    public YearMonth getHighestRevenueMonth() {
-        return orderRepository.findHighestRevenueMonth().orElse(null);
-    }
-
-    public int getHighestRevenueYear() {
-        return orderRepository.findHighestRevenueYear().orElse(0);
-    }
-
     public boolean deactivateDeliveringStaff(Long staffId) {
         DeliveringStaff deliveringStaff = deliveringStaffRepository.findById(staffId)
                 .orElseThrow(() -> new IllegalArgumentException("Staff not found with id: " + staffId));
@@ -199,6 +138,22 @@ public class ManagerService {
         systemAccountRepository.save(account);
 
         return true;
+    }
+
+    public BigDecimal calculateTotalAmountPerDay(LocalDateTime date) {
+        return orderRepository.findTotalAmountByDate(date).orElse(BigDecimal.ZERO);
+    }
+
+    public BigDecimal calculateTotalAmount() {
+        return orderRepository.findTotalAmount().orElse(BigDecimal.ZERO);
+    }
+
+    public int getNumberOfCustomers() {
+        return (int) customerRepository.count();
+    }
+
+    public int getNumberOfOrders() {
+        return (int) orderRepository.count();
     }
 
 }
