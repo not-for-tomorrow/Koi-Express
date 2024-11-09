@@ -159,7 +159,20 @@ export const createBlogAPI = async (title, content, imageFile) => {
   formData.append("title", title);
   formData.append("content", content);
   formData.append("status", "DRAFT");
-  if (imageFile) formData.append("imageFile", imageFile);
+
+  // Use the correct key for the image file as expected by the API
+  if (imageFile instanceof File) {
+    formData.append("imageUrl", imageFile); // Change key to 'imageUrl'
+  } else {
+    console.error("Image file is not a valid File object:", imageFile);
+    throw new Error("Invalid image file.");
+  }
+
+  // Logging to verify content in formData
+  console.log("Form Data Entries:");
+  for (let pair of formData.entries()) {
+    console.log(`${pair[0]}: ${pair[1]}`);
+  }
 
   try {
     const response = await axios.post(
@@ -167,11 +180,11 @@ export const createBlogAPI = async (title, content, imageFile) => {
       formData,
       {
         headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // No 'Content-Type' needed
         },
       }
     );
+    console.log("API Response:", response.data);
     return response.data;
   } catch (error) {
     console.error("API Error:", error.response?.data || error.message);
@@ -183,14 +196,11 @@ export const createBlogAPI = async (title, content, imageFile) => {
 export const fetchBlogDataByStatus = async (status) => {
   const token = localStorage.getItem("token");
   try {
-    const response = await fetch(
-      `${BASE_URL}/blogs/all-blogs/${status}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${BASE_URL}/blogs/all-blogs/${status}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     if (!response.ok) throw new Error("Failed to fetch blog data");
     const data = await response.json();
     return data;
@@ -199,5 +209,3 @@ export const fetchBlogDataByStatus = async (status) => {
     return [];
   }
 };
-
-
