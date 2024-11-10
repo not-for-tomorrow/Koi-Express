@@ -1,10 +1,17 @@
 package com.koi_express.util;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -12,7 +19,6 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.koi_express.dto.payment.PaymentData;
-import jakarta.servlet.http.HttpServletRequest;
 
 public class VNPayUtil {
 
@@ -38,17 +44,6 @@ public class VNPayUtil {
         }
     }
 
-    public static String getIpAddress(HttpServletRequest request) {
-        String ipAdress = request.getHeader("X-Forwarded-For");
-        if (ipAdress != null && !ipAdress.isEmpty()) {
-            ipAdress = ipAdress.split(",")[0];
-        } else {
-            ipAdress = request.getRemoteAddr();
-        }
-        return ipAdress;
-    }
-
-
     public static String getRandomNumber(int len) {
         Random rmd = new Random();
         String chars = "0123456789";
@@ -62,10 +57,64 @@ public class VNPayUtil {
     public static String getPaymentURL(Map<String, String> params) {
         return params.entrySet().stream()
                 .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
-                .sorted(Map.Entry.comparingByKey()) // Sắp xếp theo thứ tự alphabet
-                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) // Encode theo UTF-8
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8)
                         + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
                 .collect(Collectors.joining("&"));
+    }
+
+    public static String getRefundURL(Map<String, String> params) {
+        return params.entrySet().stream()
+                .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8)
+                        + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
+                .collect(Collectors.joining("&"));
+    }
+
+    public static String sendRefundRequest(String refundUrl) throws IOException {
+        URL url = new URL(refundUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setConnectTimeout(5000);
+        connection.setReadTimeout(5000);
+
+        int status = connection.getResponseCode();
+        if (status == HttpURLConnection.HTTP_OK) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                String inputLine;
+                StringBuilder content = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    content.append(inputLine);
+                }
+                return content.toString();
+            }
+        } else {
+            throw new IOException("Failed to send refund request: " + status);
+        }
+    }
+
+    public static boolean verifyRefundResponse(String refundResponse, String secretKey) {
+        Map<String, String> params = parseResponseParams(refundResponse);
+        String vnpSecureHash = params.get("vnp_SecureHash");
+        params.remove("vnp_SecureHash");
+
+        String calculatedHash = hmacSHA512(secretKey, getRefundURL(params));
+        return calculatedHash.equals(vnpSecureHash);
+    }
+
+    private static Map<String, String> parseResponseParams(String response) {
+        return Arrays.stream(response.split("&"))
+                .map(param -> param.split("="))
+                .collect(Collectors.toMap(
+                        pair -> URLDecoder.decode(pair[0], StandardCharsets.UTF_8),
+                        pair -> URLDecoder.decode(pair[1], StandardCharsets.UTF_8)));
+    }
+
+    public static String calculateCurrentDate() {
+        LocalDateTime currentDate = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        return currentDate.format(formatter);
     }
 
     public static PaymentData getPaymentData(Map<String, String> params) {
@@ -85,7 +134,7 @@ public class VNPayUtil {
     }
 
     public static String calculateExpireDate() {
-        LocalDateTime expireDate = LocalDateTime.now().plusMinutes(10); // Set expiration to 15 minutes from now
+        LocalDateTime expireDate = LocalDateTime.now().plusMinutes(10);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         return expireDate.format(formatter);
     }

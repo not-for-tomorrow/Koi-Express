@@ -2,6 +2,7 @@ package com.koi_express.service.order;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,6 @@ import com.koi_express.service.staff_assignment.StaffAssignmentService;
 import com.koi_express.service.verification.EmailService;
 import com.koi_express.store.TemporaryStorage;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +58,6 @@ public class OrderService {
     private final TransportationFeeCalculator transportationFeeCalculator;
     private final InvoiceBuilder invoiceBuilder;
     private final OrderDetailBuilder orderDetailBuilder;
-
 
     @Autowired
     public OrderService(
@@ -175,21 +174,54 @@ public class OrderService {
 
     //    Cancel Order
     public ApiResponse<String> cancelOrder(Long orderId) {
-        Orders orders =
-                orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        Orders orders = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND, ORDER_NOT_FOUND_MESSAGE));
 
         if (orders.getStatus() == OrderStatus.CANCELED || orders.getStatus() == OrderStatus.DELIVERED) {
             throw new AppException(ErrorCode.ORDER_ALREADY_PROCESSED, "Order has already been processed");
         }
 
-        orders.setStatus(OrderStatus.CANCELED);
-        orderRepository.save(orders);
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime createdAt = orders.getOrderDetail().getCreatedAt();
+        long hoursSinceOrder = java.time.Duration.between(createdAt, currentTime).toHours();
 
-        logger.info("Order with ID {} has been canceled", orderId);
-        return new ApiResponse<>(HttpStatus.OK.value(), "Order canceled successfully", null);
+        if (hoursSinceOrder <= 12) {
+            BigDecimal commitmentFee = orders.getOrderDetail().getCommitmentFee();
+            if (commitmentFee.compareTo(BigDecimal.ZERO) > 0) {
+                processRefund(orders, commitmentFee);
+            }
+
+            orders.setStatus(OrderStatus.CANCELED);
+            orders.getOrderDetail().setReturnFee(commitmentFee);
+            orderRepository.save(orders);
+
+            logger.info("Order with ID {} has been canceled, commitment fee refunded", orderId);
+            return new ApiResponse<>(HttpStatus.OK.value(), "Order canceled successfully and commitment fee refunded", null);
+        } else {
+            logger.warn("Cancellation time expired for order with ID {}", orderId);
+            return new ApiResponse<>(HttpStatus.FORBIDDEN.value(), "Order cannot be canceled after 12 hours", null);
+        }
     }
 
-    //    Delivered Order
+    private void processRefund(Orders order, BigDecimal commitmentFee) {
+        try {
+
+            if (commitmentFee.compareTo(BigDecimal.ZERO) > 0) {
+                ApiResponse<String> refundResponse = vnPayService.refund(order, commitmentFee);
+
+                if (refundResponse.getCode() == HttpStatus.OK.value()) {
+                    logger.info("Successfully refunded commitment fee of {} for order ID {}", commitmentFee, order.getOrderId());
+                } else {
+                    logger.warn("Failed to refund commitment fee for order ID {}. Reason: {}", order.getOrderId(), refundResponse.getMessage());
+                }
+            } else {
+                logger.warn("No commitment fee to refund for order ID {}", order.getOrderId());
+            }
+        } catch (Exception e) {
+            logger.error("Error occurred while processing refund for order ID {}: {}", order.getOrderId(), e.getMessage());
+        }
+    }
+
     public ApiResponse<String> deliveredOrder(Long orderId) {
         Orders orders =
                 orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
@@ -286,7 +318,7 @@ public class OrderService {
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND, ORDER_NOT_FOUND_MESSAGE));
     }
 
-    public OrderWithCustomerDTO getOrderWithDetails(Long orderId, HttpServletRequest request) {
+    public OrderWithCustomerDTO getOrderWithDetails(Long orderId) {
         return orderRepository.findOrderWithCustomerAndShipment(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
     }
