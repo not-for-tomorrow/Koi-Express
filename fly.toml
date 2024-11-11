@@ -1,8 +1,5 @@
-app = "Koi Express"       # Tên ứng dụng trên Fly.io
+app = "koi-express"       # Tên ứng dụng trên Fly.io
 primary_region = "sin"      # Vùng triển khai chính (có thể thay đổi theo yêu cầu)
-
-[build]
-dockerfile = "./Dockerfile"  # Đường dẫn đến Dockerfile tại thư mục gốc của dự án
 
 [env]
 SPRING_PROFILES_ACTIVE = "prod"  # Kích hoạt cấu hình production cho Spring Boot
