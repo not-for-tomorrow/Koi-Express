@@ -189,6 +189,8 @@ public class OrderService {
             BigDecimal commitmentFee = orders.getOrderDetail().getCommitmentFee();
             if (commitmentFee.compareTo(BigDecimal.ZERO) > 0) {
                 processRefund(orders, commitmentFee);
+
+                emailService.sendRefundConfirmationEmail(orders.getCustomer().getEmail(), orders, commitmentFee);
             }
 
             orders.setStatus(OrderStatus.CANCELED);

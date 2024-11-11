@@ -28,7 +28,7 @@ public class DeliveringStaffController {
     private final DeliveringStaffService deliveringStaffService;
     private final JwtUtil jwtUtil;
 
-    private Long extractDeliveringStaffId(String token) throws Exception {
+    private Long extractDeliveringStaffId(String token) {
         String cleanedToken = jwtUtil.cleanToken(token);
         return Long.parseLong(jwtUtil.extractUserId(cleanedToken, "DELIVERING_STAFF"));
     }

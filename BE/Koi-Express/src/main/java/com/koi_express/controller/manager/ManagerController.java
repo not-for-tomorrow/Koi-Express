@@ -17,9 +17,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/manager")
@@ -153,6 +153,18 @@ public class ManagerController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.badRequest("Error retrieving number of orders"));
+        }
+    }
+
+    @GetMapping("/total-amount/yearly")
+    public ResponseEntity<ApiResponse<Map<String, BigDecimal>>> getTotalAmountPerMonth(@RequestParam int year) {
+        try {
+            Map<String, BigDecimal> monthlyTotals = managerService.calculateMonthlyAmountsForYear(year);
+            return ResponseEntity.ok(ApiResponse.success("Monthly totals for year " + year + " retrieved successfully", monthlyTotals));
+        } catch (Exception e) {
+            logger.error("Error retrieving monthly totals for year " + year, e);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.badRequest("Error retrieving monthly totals for year " + year));
         }
     }
 

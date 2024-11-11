@@ -11,12 +11,10 @@ import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.enums.KoiType;
 import com.koi_express.service.delivering_staff.DeliveringStaffService;
-import com.koi_express.service.order.OrderService;
 import com.koi_express.service.order.price.KoiInvoiceCalculator;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.store.TemporaryStorage;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,15 +30,13 @@ public class OrderCalculation {
     private static final Logger logger = LoggerFactory.getLogger(OrderCalculation.class);
 
     private final KoiInvoiceCalculator koiInvoiceCalculator;
-    private final OrderService orderService;
     private final JwtUtil jwtUtil;
     private final DeliveringStaffService deliveringStaffService;
 
     @PostMapping("/calculate-total-fee")
     public ResponseEntity<ApiResponse<Map<String, Object>>> calculateTotalFee(
             @RequestBody Map<String, Object> requestBody,
-            HttpServletRequest request,
-            HttpSession session) {
+            HttpServletRequest request) {
 
         String token;
         try {
