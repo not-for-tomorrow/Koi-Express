@@ -20,5 +20,4 @@ public class Staff {
     @OneToOne
     @JoinColumn(name = "account_id", referencedColumnName = "accountId", nullable = false)
     SystemAccount systemAccount;
-
 }

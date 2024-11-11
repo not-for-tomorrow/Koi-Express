@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -96,7 +95,8 @@ public class CustomerService {
     }
 
     public ApiResponse<String> reactivateCustomer(Long customerId) {
-        Customers customer = customersRepository.findById(customerId)
+        Customers customer = customersRepository
+                .findById(customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
 
         if (!customer.isActive()) {
@@ -109,7 +109,8 @@ public class CustomerService {
     }
 
     public Customers getCustomerById(Long customerId) {
-        return customersRepository.findById(customerId)
+        return customersRepository
+                .findById(customerId)
                 .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
     }
 
@@ -117,8 +118,8 @@ public class CustomerService {
         String formattedPhoneNumber = otpService.formatPhoneNumber(phoneNumber);
         logger.info("Updating password for formatted phone number: {}", formattedPhoneNumber);
 
-        Customers customer = customersRepository.findByPhoneNumber(formattedPhoneNumber)
-                .orElse(null);
+        Customers customer =
+                customersRepository.findByPhoneNumber(formattedPhoneNumber).orElse(null);
 
         if (customer == null) {
             logger.warn("Customer not found for formatted phone number: {}", formattedPhoneNumber);

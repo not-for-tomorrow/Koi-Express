@@ -23,5 +23,4 @@ public class AppException extends RuntimeException {
     }
 
     private final ErrorCode errorCode;
-
 }

@@ -1,5 +1,7 @@
 package com.koi_express.service.sale_staff;
 
+import java.time.LocalDateTime;
+
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
@@ -14,8 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -44,10 +44,14 @@ public class SalesStaffService {
 
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime createdAt = order.getCreatedAt();
-        long hoursSinceOrder = java.time.Duration.between(createdAt, currentTime).toHours();
+        long hoursSinceOrder =
+                java.time.Duration.between(createdAt, currentTime).toHours();
 
         if (hoursSinceOrder < 12) {
-            logger.warn("Order with ID {} cannot be accepted yet. Only {} hours have passed since creation.", orderId, hoursSinceOrder);
+            logger.warn(
+                    "Order with ID {} cannot be accepted yet. Only {} hours have passed since creation.",
+                    orderId,
+                    hoursSinceOrder);
             return new ApiResponse<>(400, "Order can only be accepted 12 hours after creation", null);
         }
 

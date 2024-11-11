@@ -43,7 +43,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(
+            MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
@@ -83,7 +84,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiResponse<String>> handleMaxSizeException(MaxUploadSizeExceededException exc) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                .body(new ApiResponse<>(HttpStatus.PAYLOAD_TOO_LARGE.value(), "File size exceeds the maximum limit!", null));
+                .body(new ApiResponse<>(
+                        HttpStatus.PAYLOAD_TOO_LARGE.value(), "File size exceeds the maximum limit!", null));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -93,5 +95,4 @@ public class GlobalExceptionHandler {
         ApiResponse<String> apiResponse = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null);
         return ResponseEntity.badRequest().body(apiResponse);
     }
-
 }

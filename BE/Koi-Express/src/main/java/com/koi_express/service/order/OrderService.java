@@ -11,7 +11,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -21,6 +20,7 @@ import com.koi_express.enums.OrderStatus;
 import com.koi_express.enums.PaymentMethod;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.service.manager.ManagerService;
 import com.koi_express.service.order.builder.InvoiceBuilder;
@@ -174,7 +174,8 @@ public class OrderService {
 
     //    Cancel Order
     public ApiResponse<String> cancelOrder(Long orderId) {
-        Orders orders = orderRepository.findById(orderId)
+        Orders orders = orderRepository
+                .findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND, ORDER_NOT_FOUND_MESSAGE));
 
         if (orders.getStatus() == OrderStatus.CANCELED || orders.getStatus() == OrderStatus.DELIVERED) {
@@ -183,7 +184,8 @@ public class OrderService {
 
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime createdAt = orders.getOrderDetail().getCreatedAt();
-        long hoursSinceOrder = java.time.Duration.between(createdAt, currentTime).toHours();
+        long hoursSinceOrder =
+                java.time.Duration.between(createdAt, currentTime).toHours();
 
         if (hoursSinceOrder <= 12) {
             BigDecimal commitmentFee = orders.getOrderDetail().getCommitmentFee();
@@ -198,7 +200,8 @@ public class OrderService {
             orderRepository.save(orders);
 
             logger.info("Order with ID {} has been canceled, commitment fee refunded", orderId);
-            return new ApiResponse<>(HttpStatus.OK.value(), "Order canceled successfully and commitment fee refunded", null);
+            return new ApiResponse<>(
+                    HttpStatus.OK.value(), "Order canceled successfully and commitment fee refunded", null);
         } else {
             logger.warn("Cancellation time expired for order with ID {}", orderId);
             return new ApiResponse<>(HttpStatus.FORBIDDEN.value(), "Order cannot be canceled after 12 hours", null);
@@ -212,15 +215,22 @@ public class OrderService {
                 ApiResponse<String> refundResponse = vnPayService.refund(order, commitmentFee);
 
                 if (refundResponse.getCode() == HttpStatus.OK.value()) {
-                    logger.info("Successfully refunded commitment fee of {} for order ID {}", commitmentFee, order.getOrderId());
+                    logger.info(
+                            "Successfully refunded commitment fee of {} for order ID {}",
+                            commitmentFee,
+                            order.getOrderId());
                 } else {
-                    logger.warn("Failed to refund commitment fee for order ID {}. Reason: {}", order.getOrderId(), refundResponse.getMessage());
+                    logger.warn(
+                            "Failed to refund commitment fee for order ID {}. Reason: {}",
+                            order.getOrderId(),
+                            refundResponse.getMessage());
                 }
             } else {
                 logger.warn("No commitment fee to refund for order ID {}", order.getOrderId());
             }
         } catch (Exception e) {
-            logger.error("Error occurred while processing refund for order ID {}: {}", order.getOrderId(), e.getMessage());
+            logger.error(
+                    "Error occurred while processing refund for order ID {}: {}", order.getOrderId(), e.getMessage());
         }
     }
 
@@ -321,7 +331,8 @@ public class OrderService {
     }
 
     public OrderWithCustomerDTO getOrderWithDetails(Long orderId) {
-        return orderRepository.findOrderWithCustomerAndShipment(orderId)
+        return orderRepository
+                .findOrderWithCustomerAndShipment(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
     }
 
@@ -348,11 +359,12 @@ public class OrderService {
 
             ApiResponse<String> paymentResponse = handlePaymentMethod(order, paymentMethod, totalFee, calculationData);
 
-            if (paymentResponse.getCode() == HttpStatus.OK.value() ) {
+            if (paymentResponse.getCode() == HttpStatus.OK.value()) {
                 order.setStatus(OrderStatus.IN_TRANSIT);
                 order.setPaymentConfirmed(true);
                 orderRepository.save(order);
-                return new ApiResponse<>(HttpStatus.OK.value(), "Thanh toán xác nhận thành công", paymentResponse.getResult());
+                return new ApiResponse<>(
+                        HttpStatus.OK.value(), "Thanh toán xác nhận thành công", paymentResponse.getResult());
             } else {
                 return paymentResponse;
             }
@@ -362,12 +374,13 @@ public class OrderService {
             return new ApiResponse<>(HttpStatus.NOT_FOUND.value(), "Không tìm thấy đơn hàng.", e.getMessage());
         } catch (Exception e) {
             logger.error("Error confirming payment from storage for userId {}: ", userId, e);
-            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error processing payment", e.getMessage());
+            return new ApiResponse<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error processing payment", e.getMessage());
         }
     }
 
-
-    public ApiResponse<String> handlePaymentMethod(Orders order, PaymentMethod paymentMethod, BigDecimal totalFee, Map<String, BigDecimal> calculationData) {
+    public ApiResponse<String> handlePaymentMethod(
+            Orders order, PaymentMethod paymentMethod, BigDecimal totalFee, Map<String, BigDecimal> calculationData) {
         return switch (paymentMethod) {
             case VNPAY -> processVnPayPayment(order, totalFee, calculationData);
 
@@ -375,7 +388,8 @@ public class OrderService {
         };
     }
 
-    private ApiResponse<String> processVnPayPayment(Orders order, BigDecimal totalFee, Map<String, BigDecimal> calculationData) {
+    private ApiResponse<String> processVnPayPayment(
+            Orders order, BigDecimal totalFee, Map<String, BigDecimal> calculationData) {
         try {
             ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPaymentWithTotalFee(order, totalFee);
             if (paymentLinkResponse.getCode() != HttpStatus.OK.value()) {
@@ -392,11 +406,13 @@ public class OrderService {
 
             orderRepository.save(order);
 
-            return new ApiResponse<>(HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult());
+            return new ApiResponse<>(
+                    HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult());
 
         } catch (Exception e) {
             logger.error("Error creating VNPay payment link: ", e);
-            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage());
+            return new ApiResponse<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage());
         }
     }
 

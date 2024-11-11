@@ -63,7 +63,8 @@ public class VNPayController {
                     .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()[0]));
 
             if (!vnpParams.containsKey("vnp_TxnRef") || !vnpParams.containsKey("vnp_ResponseCode")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing transaction reference or response code");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Missing transaction reference or response code");
             }
 
             String transactionRef = vnpParams.get("vnp_TxnRef");
@@ -93,8 +94,7 @@ public class VNPayController {
             return redirectToUrlBasedOnResponse(responseCode, isFinalPayment);
         } catch (Exception e) {
             logger.error("Error handling payment callback", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error handling payment callback");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error handling payment callback");
         }
     }
 
@@ -113,8 +113,12 @@ public class VNPayController {
     }
 
     private ResponseEntity<Object> redirectToUrlBasedOnResponse(String responseCode, boolean isFinalPayment) {
-        String successUrl = isFinalPayment ? System.getenv("RETURN_URL_FINAL_PAYMENT_SUCCESS") : System.getenv("RETURN_URL_COMMIT_FEE_SUCCESS");
-        String failureUrl = isFinalPayment ? System.getenv("RETURN_URL_FINAL_PAYMENT_FAILURE") : System.getenv("RETURN_URL_COMMIT_FEE_FAILURE");
+        String successUrl = isFinalPayment
+                ? System.getenv("RETURN_URL_FINAL_PAYMENT_SUCCESS")
+                : System.getenv("RETURN_URL_COMMIT_FEE_SUCCESS");
+        String failureUrl = isFinalPayment
+                ? System.getenv("RETURN_URL_FINAL_PAYMENT_FAILURE")
+                : System.getenv("RETURN_URL_COMMIT_FEE_FAILURE");
 
         String redirectUrl = "00".equals(responseCode) ? successUrl : failureUrl;
         if (redirectUrl == null) {

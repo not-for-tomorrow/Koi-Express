@@ -1,5 +1,10 @@
 package com.koi_express.service.payment;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.TreeMap;
+
 import com.koi_express.config.VNPayConfig;
 import com.koi_express.dto.payment.PaymentData;
 import com.koi_express.dto.response.ApiResponse;
@@ -10,11 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.Map;
-import java.util.TreeMap;
-
 @Service
 @RequiredArgsConstructor
 public class VNPayService {
@@ -23,7 +23,9 @@ public class VNPayService {
     private final VNPayConfig vnPayConfig;
 
     public ApiResponse<String> createVnPayPayment(Orders order) {
-        if (order == null || order.getOrderDetail() == null || order.getOrderDetail().getCommitmentFee() == null) {
+        if (order == null
+                || order.getOrderDetail() == null
+                || order.getOrderDetail().getCommitmentFee() == null) {
             throw new IllegalArgumentException("Invalid order details provided.");
         }
 
@@ -121,7 +123,8 @@ public class VNPayService {
         return true;
     }
 
-    private Map<String, String> buildVnPayParams(Orders order, BigDecimal amount, String bankCode, String transactionRef) {
+    private Map<String, String> buildVnPayParams(
+            Orders order, BigDecimal amount, String bankCode, String transactionRef) {
         Map<String, String> vnpParamsMap = new TreeMap<>(vnPayConfig.getVNPayConfig());
 
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount.longValue()));
@@ -138,7 +141,9 @@ public class VNPayService {
     private Map<String, String> buildRefundParams(Orders order, BigDecimal amount, String transactionRef) {
         Map<String, String> refundParams = new TreeMap<>();
 
-        refundParams.put("vnp_Amount", String.valueOf(amount.multiply(BigDecimal.valueOf(100)).longValue()));
+        refundParams.put(
+                "vnp_Amount",
+                String.valueOf(amount.multiply(BigDecimal.valueOf(100)).longValue()));
         refundParams.put("vnp_TxnRef", transactionRef);
         refundParams.put("vnp_OrderInfo", "Refund for order ID: " + order.getOrderId());
         refundParams.put("vnp_IpAddr", "127.0.0.1");

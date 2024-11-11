@@ -1,13 +1,13 @@
 package com.koi_express.entity.promotion;
 
+import java.time.LocalDateTime;
+
 import com.koi_express.entity.account.Staff;
 import com.koi_express.entity.customer.Customers;
-import com.koi_express.service.manager.SystemAccount;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
