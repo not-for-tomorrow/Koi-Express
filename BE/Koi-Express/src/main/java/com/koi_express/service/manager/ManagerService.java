@@ -23,7 +23,10 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -154,6 +157,20 @@ public class ManagerService {
 
     public int getNumberOfOrders() {
         return (int) orderRepository.count();
+    }
+
+    public Map<String, BigDecimal> calculateMonthlyAmountsForYear(int year) {
+        Map<String, BigDecimal> monthlyTotals = new LinkedHashMap<>();
+
+        for (int month = 1; month <= 12; month++) {
+            YearMonth yearMonth = YearMonth.of(year, month);
+
+            BigDecimal totalForMonth = orderRepository.findTotalAmountByMonthAndYear(year, month)
+                    .orElse(BigDecimal.ZERO);
+
+            monthlyTotals.put(yearMonth.toString(), totalForMonth);
+        }
+        return monthlyTotals;
     }
 
 }

@@ -63,4 +63,7 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
     @Query("SELECT SUM(o.totalFee) FROM Orders o")
     Optional<BigDecimal> findTotalAmount();
 
+    @Query("SELECT SUM(o.totalFee) FROM Orders o WHERE YEAR(o.createdAt) = :year AND MONTH(o.createdAt) = :month")
+    Optional<BigDecimal> findTotalAmountByMonthAndYear(int year, int month);
+
 }

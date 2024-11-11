@@ -1,6 +1,5 @@
 package com.koi_express.controller.customer;
 
-import java.security.SecureRandom;
 import java.util.stream.Collectors;
 
 import com.koi_express.dto.request.LoginRequest;
@@ -55,7 +54,9 @@ public class AuthController {
         String otp = otpService.generateOtpForPurpose(formattedPhoneNumber, "REGISTER");
         otpService.sendOtp(formattedPhoneNumber, otp);
 
-        logger.info("Generated OTP for registration for {}: {}", maskPhoneNumber(formattedPhoneNumber), otp);
+        if (!customersRepository.existsByPhoneNumber(formattedPhoneNumber)) {
+            logger.info("Generated OTP for registration for {}: {}", maskPhoneNumber(formattedPhoneNumber), otp);
+        }
 
         otpService.saveTempRegisterRequest(registerRequest);
 

@@ -9,7 +9,6 @@ import com.koi_express.enums.AuthProvider;
 import lombok.NonNull;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -27,7 +26,5 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
     List<Customers> findAll(@NonNull Sort sort);
 
     List<Customers> findByActiveTrueAndLastLoginBefore(LocalDateTime date);
-
-    long countByActiveTrue();
 
 }

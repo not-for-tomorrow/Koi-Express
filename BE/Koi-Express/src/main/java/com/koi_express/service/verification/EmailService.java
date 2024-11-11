@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,9 +35,9 @@ public class EmailService {
     private final JavaMailSender javaMailSender;
 
     private static final String TEMPLATE_ORDER_CONFIRMATION = "Order Confirmation.html";
-    private static final String TEMPLATE_PAYMENT_LINK = "Payment Link.html";
     private static final String TEMPLATE_ACCOUNT_CONFIRMATION = "Account Confirmation.html";
     private static final String TEMPLATE_INVOICE = "Invoice.html";
+    private static final String TEMPLATE_REFUND_CONFIRMATION = "Refund Confirmation.html";
 
     public static final String FULL_NAME_PLACEHOLDER = "{{FullName}}";
     public static final String CUSTOMER_NAME_PLACEHOLDER = "{{CustomerName}}";
@@ -79,24 +80,6 @@ public class EmailService {
             sendEmail(recipientEmail, "Order Confirmation - Koi Express", template, placeholders);
         } catch (Exception e) {
             logger.error("Error sending order confirmation email: ", e);
-            throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
-        }
-    }
-
-    @Async
-    public void sendPaymentLink(String recipientEmail, String paymentLink, Orders order) {
-        try {
-            String template = loadEmailTemplate(TEMPLATE_PAYMENT_LINK);
-
-            Map<String, String> placeholders = new HashMap<>();
-            placeholders.put(CUSTOMER_NAME_PLACEHOLDER, order.getCustomer().getFullName());
-            placeholders.put(ORDER_ID_PLACEHOLDER, String.valueOf(order.getOrderId()));
-            placeholders.put("{{PaymentLink}}", paymentLink);
-            placeholders.put(TOTAL_AMOUNT_PLACEHOLDER, String.format("%.2f", order.getTotalFee()));
-
-            sendEmail(recipientEmail, "Payment for your Order - Koi Express", template, placeholders);
-        } catch (Exception e) {
-            logger.error("Error sending payment link email: ", e);
             throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
         }
     }
@@ -165,6 +148,25 @@ public class EmailService {
             throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
         }
     }
+
+    @Async
+    public void sendRefundConfirmationEmail(String recipientEmail, Orders order, BigDecimal refundAmount) {
+        try {
+            String template = loadEmailTemplate(TEMPLATE_REFUND_CONFIRMATION);
+
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put(CUSTOMER_NAME_PLACEHOLDER, order.getCustomer().getFullName());
+            placeholders.put(ORDER_ID_PLACEHOLDER, String.valueOf(order.getOrderId()));
+            placeholders.put("{{RefundDate}}", LocalDateTime.now().toString()); // Current date for refund date
+            placeholders.put("{{RefundAmount}}", String.format("%.2f", refundAmount));
+
+            sendEmail(recipientEmail, "Refund Confirmation - Koi Express", template, placeholders);
+        } catch (Exception e) {
+            logger.error("Error sending refund confirmation email: ", e);
+            throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
+        }
+    }
+
 
     private String loadEmailTemplate(String fileName) throws IOException {
         ClassPathResource resource = new ClassPathResource(fileName);
