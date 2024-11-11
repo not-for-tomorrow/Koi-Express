@@ -1,17 +1,17 @@
 # Bước 1: Xây dựng ứng dụng frontend (React/Vite)
 FROM node:18 AS build-frontend
 WORKDIR /app/FE
-COPY FE/package.json FE/package-lock.json .    # Sao chép file package.json và package-lock.json của frontend
-RUN npm install                                # Cài đặt các dependencies cho frontend
-COPY FE/ .                                     # Sao chép tất cả các file frontend
-RUN npm run build                              # Xây dựng ứng dụng frontend
+COPY FE/Koi-Express/package.json FE/Koi-Express/package-lock.json .  # Sao chép package.json và package-lock.json của frontend
+RUN npm install                                                     # Cài đặt dependencies cho frontend
+COPY FE/Koi-Express .                                               # Sao chép tất cả file frontend
+RUN npm run build                                                   # Xây dựng ứng dụng frontend
 
 # Bước 2: Xây dựng ứng dụng backend (Spring Boot)
 FROM maven:3.9.9-amazoncorretto-21 AS build-backend
 WORKDIR /app
-COPY BE/pom.xml .                              # Sao chép file pom.xml của backend
-COPY BE/src ./src                              # Sao chép mã nguồn backend
-RUN mvn clean package -DskipTests              # Xây dựng ứng dụng backend và bỏ qua kiểm tra
+COPY BE/Koi-Express/pom.xml .                                       # Sao chép file pom.xml của backend
+COPY BE/Koi-Express/src ./src                                       # Sao chép mã nguồn backend
+RUN mvn clean package -DskipTests                                   # Xây dựng ứng dụng backend
 
 # Bước 3: Tạo container cuối cùng để chạy ứng dụng
 FROM amazoncorretto:21.0.4-alpine
@@ -20,7 +20,7 @@ WORKDIR /app
 # Sao chép file JAR đã build từ backend
 COPY --from=build-backend /app/target/*.jar app.jar
 
-# Sao chép frontend đã build vào thư mục `public` của backend để phục vụ tệp tĩnh
+# Sao chép frontend đã build vào thư mục public để phục vụ tệp tĩnh
 COPY --from=build-frontend /app/FE/dist /app/public
 
 # Expose cổng 8080 cho backend
