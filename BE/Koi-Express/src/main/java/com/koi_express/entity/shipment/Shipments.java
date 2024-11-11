@@ -55,5 +55,4 @@ public class Shipments { // quản lý vận chuyển
 
     @UpdateTimestamp
     LocalDateTime updatedAt;
-    
 }

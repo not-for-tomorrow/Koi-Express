@@ -2,10 +2,10 @@ package com.koi_express.service.customer;
 
 import java.util.Optional;
 
-import com.koi_express.jwt.JwtUtil;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.enums.AuthProvider;
 import com.koi_express.enums.Role;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.repository.CustomersRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

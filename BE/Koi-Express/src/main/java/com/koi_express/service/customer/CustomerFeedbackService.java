@@ -1,22 +1,21 @@
 package com.koi_express.service.customer;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+
 import com.koi_express.entity.customer.CustomerFeedback;
-import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.FeedbackTag;
 import com.koi_express.enums.OrderStatus;
 import com.koi_express.repository.CustomerFeedbackRepository;
 import com.koi_express.repository.CustomersRepository;
-import com.koi_express.repository.OrderRepository;
 import com.koi_express.repository.DeliveringStaffRepository;
+import com.koi_express.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,19 +32,21 @@ public class CustomerFeedbackService {
     }
 
     public CustomerFeedback submitFeedback(int rating, Set<FeedbackTag> tags, String comments, Long customerId) {
-        Customers customer = customersRepository.findById(customerId)
+        Customers customer = customersRepository
+                .findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
-        Orders order = orderRepository.findDeliveredOrderForCustomer(customerId)
+        Orders order = orderRepository
+                .findDeliveredOrderForCustomer(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("No delivered order found for this customer"));
 
         if (!isOrderDelivered(order.getOrderId())) {
             throw new IllegalArgumentException("Feedback can only be submitted for delivered orders");
         }
 
-        DeliveringStaff deliveringStaff = deliveringStaffRepository.findByOrderId(order.getOrderId())
+        DeliveringStaff deliveringStaff = deliveringStaffRepository
+                .findByOrderId(order.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("No staff assigned for this order"));
-
 
         CustomerFeedback feedback = CustomerFeedback.builder()
                 .order(order)

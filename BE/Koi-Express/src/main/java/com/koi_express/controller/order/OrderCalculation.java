@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.entity.order.Orders;
+import com.koi_express.enums.KoiType;
 import com.koi_express.enums.ShipmentCondition;
 import com.koi_express.jwt.JwtUtil;
-import com.koi_express.dto.response.ApiResponse;
-import com.koi_express.enums.KoiType;
 import com.koi_express.service.delivering_staff.DeliveringStaffService;
 import com.koi_express.service.order.price.KoiInvoiceCalculator;
-import com.koi_express.entity.order.Orders;
 import com.koi_express.store.TemporaryStorage;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +35,7 @@ public class OrderCalculation {
 
     @PostMapping("/calculate-total-fee")
     public ResponseEntity<ApiResponse<Map<String, Object>>> calculateTotalFee(
-            @RequestBody Map<String, Object> requestBody,
-            HttpServletRequest request) {
+            @RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
 
         String token;
         try {
@@ -44,7 +43,8 @@ public class OrderCalculation {
         } catch (Exception e) {
             logger.error("Authorization header is missing or malformed");
             return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Authorization token is missing or malformed", null),
+                    new ApiResponse<>(
+                            HttpStatus.UNAUTHORIZED.value(), "Authorization token is missing or malformed", null),
                     HttpStatus.UNAUTHORIZED);
         }
 
@@ -56,11 +56,11 @@ public class OrderCalculation {
         } catch (Exception e) {
             logger.error("Error extracting role or userId from token: ", e);
             return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid token", null),
-                    HttpStatus.UNAUTHORIZED);
+                    new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid token", null), HttpStatus.UNAUTHORIZED);
         }
 
-        Optional<Orders> assignedOrder = deliveringStaffService.getPickupOrdersByDeliveringStaff(staffId).stream().findFirst();
+        Optional<Orders> assignedOrder = deliveringStaffService.getPickupOrdersByDeliveringStaff(staffId).stream()
+                .findFirst();
         if (assignedOrder.isEmpty()) {
             return new ResponseEntity<>(
                     new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "No assigned order data for this staff", null),
@@ -103,14 +103,17 @@ public class OrderCalculation {
                 totalKoiFee = totalKoiFee.add(individualFee.get("koiFee"));
                 totalCareFee = totalCareFee.add(individualFee.get("careFee"));
                 totalPackagingFee = totalPackagingFee.add(individualFee.get("packagingFee"));
-                totalRemainingTransportationFee = totalRemainingTransportationFee.add(individualFee.get("remainingTransportationFee"));
+                totalRemainingTransportationFee =
+                        totalRemainingTransportationFee.add(individualFee.get("remainingTransportationFee"));
                 totalInsuranceFee = totalInsuranceFee.add(individualFee.get("insuranceFee"));
                 totalVat = totalVat.add(individualFee.get("vat"));
                 grandTotalFee = grandTotalFee.add(individualFee.get("totalFee"));
 
             } catch (IllegalArgumentException e) {
                 logger.error("Error calculating fees for koi: ", e);
-                return new ResponseEntity<>(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(
+                        new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null),
+                        HttpStatus.BAD_REQUEST);
             }
         }
 
@@ -126,6 +129,7 @@ public class OrderCalculation {
 
         TemporaryStorage.getInstance().storeData(staffId, responseData);
 
-        return new ResponseEntity<>(new ApiResponse<>(HttpStatus.OK.value(), "Total fee calculated", responseData), HttpStatus.OK);
+        return new ResponseEntity<>(
+                new ApiResponse<>(HttpStatus.OK.value(), "Total fee calculated", responseData), HttpStatus.OK);
     }
 }

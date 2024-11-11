@@ -26,8 +26,7 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
 
-    public SecurityConfig(
-            CustomOAuth2UserService customOAuth2UserService, JwtFilter jwtFilter) {
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, JwtFilter jwtFilter) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.jwtFilter = jwtFilter;
     }

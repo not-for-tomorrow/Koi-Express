@@ -1,15 +1,14 @@
 package com.koi_express.jwt;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
+import javax.crypto.SecretKey;
 
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
-import com.twilio.rest.chat.v2.service.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -18,13 +17,8 @@ import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
 
 @Component
 public class JwtUtil {
@@ -64,7 +58,7 @@ public class JwtUtil {
                 .setSubject(phoneNumber)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY))
-                .signWith(getSigningKey(),SignatureAlgorithm.HS256)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -82,7 +76,7 @@ public class JwtUtil {
                 .setSubject(customer.getProviderId() != null ? customer.getProviderId() : customer.getEmail())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY))
-                .signWith(getSigningKey(),SignatureAlgorithm.HS256)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -114,7 +108,6 @@ public class JwtUtil {
 
     public String sanitizeToken(String token) {
         return token.trim().replaceAll("\\s", "");
-
     }
 
     public Date extractExpiration(String token) {
@@ -166,7 +159,10 @@ public class JwtUtil {
     }
 
     private boolean isValidRole(String role) {
-        return role.equals("CUSTOMER") || role.equals("SALES_STAFF") || role.equals("MANAGER") || role.equals("DELIVERING_STAFF");
+        return role.equals("CUSTOMER")
+                || role.equals("SALES_STAFF")
+                || role.equals("MANAGER")
+                || role.equals("DELIVERING_STAFF");
     }
 
     private String getRoleIdKey(String role) {
@@ -177,5 +173,4 @@ public class JwtUtil {
             default -> throw new AppException(ErrorCode.INVALID_ROLE, "Invalid role specified");
         };
     }
-
 }

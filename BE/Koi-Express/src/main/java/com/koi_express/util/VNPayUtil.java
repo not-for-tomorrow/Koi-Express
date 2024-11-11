@@ -58,8 +58,8 @@ public class VNPayUtil {
         return params.entrySet().stream()
                 .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
                 .sorted(Map.Entry.comparingByKey())
-                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8)
-                        + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
+                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) + "="
+                        + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
                 .collect(Collectors.joining("&"));
     }
 
@@ -67,8 +67,8 @@ public class VNPayUtil {
         return params.entrySet().stream()
                 .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
                 .sorted(Map.Entry.comparingByKey())
-                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8)
-                        + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
+                .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) + "="
+                        + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
                 .collect(Collectors.joining("&"));
     }
 

@@ -1,10 +1,10 @@
 package com.koi_express.store;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TemporaryStorage {
     private static final TemporaryStorage instance = new TemporaryStorage();
@@ -33,5 +33,4 @@ public class TemporaryStorage {
         }
         return data;
     }
-
 }

@@ -1,5 +1,7 @@
 package com.koi_express.controller.blog;
 
+import java.util.List;
+
 import com.koi_express.entity.promotion.Blog;
 import com.koi_express.enums.BlogStatus;
 import com.koi_express.service.blog.BlogService;
@@ -9,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/blogs")
@@ -36,7 +36,8 @@ public class BlogController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Blog> getBlogById(@PathVariable Long id) {
-        return blogService.getBlogById(id)
+        return blogService
+                .getBlogById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -55,7 +56,8 @@ public class BlogController {
 
     @GetMapping("/{slug}")
     public ResponseEntity<Blog> getBlogBySlug(@PathVariable String slug) {
-        return blogService.getBlogBySlug(slug)
+        return blogService
+                .getBlogBySlug(slug)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
