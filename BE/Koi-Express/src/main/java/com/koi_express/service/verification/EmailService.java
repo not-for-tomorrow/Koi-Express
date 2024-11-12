@@ -159,7 +159,7 @@ public class EmailService {
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put(CUSTOMER_NAME_PLACEHOLDER, order.getCustomer().getFullName());
             placeholders.put(ORDER_ID_PLACEHOLDER, String.valueOf(order.getOrderId()));
-            placeholders.put("{{RefundDate}}", LocalDateTime.now().toString()); // Current date for refund date
+            placeholders.put("{{RefundDate}}", LocalDateTime.now().toString());
             placeholders.put("{{RefundAmount}}", String.format("%.2f", refundAmount));
 
             sendEmail(recipientEmail, "Refund Confirmation - Koi Express", template, placeholders);
