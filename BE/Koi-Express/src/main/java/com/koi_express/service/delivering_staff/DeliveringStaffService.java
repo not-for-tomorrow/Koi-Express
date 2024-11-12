@@ -2,6 +2,7 @@ package com.koi_express.service.delivering_staff;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
@@ -127,5 +128,13 @@ public class DeliveringStaffService {
         }
 
         return order;
+    }
+
+    public List<Orders> findDeliveredOrdersByStaff(DeliveringStaff deliveringStaff) {
+        return orderRepository.findByDeliveringStaffAndStatus(deliveringStaff, OrderStatus.DELIVERED);
+    }
+
+    public Optional<DeliveringStaff> findById(Long id) {
+        return deliveringStaffRepository.findById(id);
     }
 }

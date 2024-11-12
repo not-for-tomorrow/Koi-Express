@@ -1,9 +1,11 @@
 package com.koi_express.controller.delivering_staff;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.exception.AppException;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.delivering_staff.DeliveringStaffService;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/delivering/orders")
@@ -132,5 +135,22 @@ public class DeliveringStaffController {
                     .body(new ApiResponse<>(
                             HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to complete order", null));
         }
+    }
+
+    @GetMapping("/delivered-orders")
+    public ResponseEntity<List<Orders>> getDeliveredOrders(@RequestHeader("Authorization") String token) {
+
+        Long staffId = extractDeliveringStaffId(token);
+
+        if (staffId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        // Find the DeliveringStaff entity and fetch orders
+        DeliveringStaff deliveringStaff = deliveringStaffService.findById(staffId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Staff not found"));
+
+        List<Orders> deliveredOrders = deliveringStaffService.findDeliveredOrdersByStaff(deliveringStaff);
+        return ResponseEntity.ok(deliveredOrders);
     }
 }

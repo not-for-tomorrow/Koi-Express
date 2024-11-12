@@ -45,7 +45,8 @@ public class SecurityConfig {
                                 "/api/customers/update/**",
                                 "/api/customers/delete/**",
                                 "api/v1/payment/**",
-                                "api/orders/{orderId}")
+                                "api/orders/{orderId}",
+                                "api/blogs/all")
                         .permitAll()
                         .requestMatchers("/api/manager/**", "/api/manager/id/**")
                         .hasAnyAuthority("ROLE_MANAGER")
