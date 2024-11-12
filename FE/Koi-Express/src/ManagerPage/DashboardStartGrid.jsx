@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from 'axios';
-import { IoBagHandle } from 'react-icons/io5';
+import {IoBagHandle} from 'react-icons/io5';
 
 function DashboardStartGrid() {
     const [totalAmountDaily, setTotalAmountDaily] = useState(null);
@@ -12,21 +12,27 @@ function DashboardStartGrid() {
         // Fetch data from each API endpoint
         const fetchData = async () => {
             try {
-                const dailyAmountResponse = await axios.get('http://localhost:8080/api/manager/total-amount/daily');
-                setTotalAmountDaily(dailyAmountResponse.data.data);
+                const token = localStorage.getItem('token');
+                const headers = {
+                    Authorization: `Bearer ${token}`,
+                };
 
-                const totalAmountResponse = await axios.get('http://localhost:8080/api/manager/total-amount');
-                setTotalAmount(totalAmountResponse.data.data);
+                const dailyAmountResponse = await axios.get('http://localhost:8080/api/manager/total-amount/daily', {headers});
+                setTotalAmountDaily(dailyAmountResponse.data.result);
 
-                const customersResponse = await axios.get('http://localhost:8080/api/manager/number-of-customers');
-                setNumberOfCustomers(customersResponse.data.data);
+                const totalAmountResponse = await axios.get('http://localhost:8080/api/manager/total-amount', {headers});
+                setTotalAmount(totalAmountResponse.data.result);
 
-                const ordersResponse = await axios.get('http://localhost:8080/api/manager/number-of-orders');
-                setNumberOfOrders(ordersResponse.data.data);
+                const customersResponse = await axios.get('http://localhost:8080/api/manager/number-of-customers', {headers});
+                setNumberOfCustomers(customersResponse.data.result);
+
+                const ordersResponse = await axios.get('http://localhost:8080/api/manager/number-of-orders', {headers});
+                setNumberOfOrders(ordersResponse.data.result);
             } catch (error) {
                 console.error("Error fetching data", error);
             }
         };
+
 
         fetchData();
     }, []);
@@ -59,7 +65,7 @@ function DashboardStartGrid() {
             {stats.map((stat, index) => (
                 <BoxWrapper key={index}>
                     <div className={`rounded-full h-12 w-12 flex items-center justify-center ${stat.color}`}>
-                        <IoBagHandle className="text-2xl text-white" />
+                        <IoBagHandle className="text-2xl text-white"/>
                     </div>
                     <div className="pl-4">
                         <span className="text-sm text-gray-500 font-light">{stat.label}</span>
@@ -75,10 +81,12 @@ function DashboardStartGrid() {
 
 export default DashboardStartGrid;
 
-function BoxWrapper({ children }) {
+function BoxWrapper({children}) {
     return (
-        <div className="bg-white rounded-sm p-4 flex-1 border border-gray-200 flex items-center">
+        <div className="bg-white rounded-lg p-4 flex-1 border-2 border-gray-400 shadow-sm flex items-center">
             {children}
         </div>
     );
 }
+
+

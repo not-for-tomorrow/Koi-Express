@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import {Link} from "react-router-dom";
 
 function TopCustomers() {
     const [topCustomers, setTopCustomers] = useState([]);
@@ -20,24 +20,26 @@ function TopCustomers() {
                 const data = await response.json();
 
                 if (data.code === 200) {
-                    const customerOrderCounts = {};
+                    const customerOrderDetails = {};
 
                     data.result.forEach(orderItem => {
-                        const { customerId, fullName } = orderItem.customer;
+                        const {customerId, fullName} = orderItem.customer;
                         const orderStatus = orderItem.status;
+                        const orderTotal = orderItem.totalAmount;
 
-                        if (!customerOrderCounts[customerId]) {
-                            customerOrderCounts[customerId] = { name: fullName, count: 0 };
+                        if (!customerOrderDetails[customerId]) {
+                            customerOrderDetails[customerId] = {name: fullName, count: 0, totalAmount: 0};
                         }
 
                         if (orderStatus === "DELIVERED") {
-                            customerOrderCounts[customerId].count += 1;
+                            customerOrderDetails[customerId].count += 1;
+                            customerOrderDetails[customerId].totalAmount += orderTotal;
                         }
                     });
 
-                    const sortedCustomers = Object.entries(customerOrderCounts)
-                        .map(([id, { name, count }]) => ({ id, name, count }))
-                        .sort((a, b) => b.count - a.count);
+                    const sortedCustomers = Object.entries(customerOrderDetails)
+                        .map(([id, {name, count, totalAmount}]) => ({id, name, count, totalAmount}))
+                        .sort((a, b) => b.totalAmount - a.totalAmount);
 
                     setTopCustomers(sortedCustomers);
                 } else {
@@ -58,17 +60,20 @@ function TopCustomers() {
     }
 
     return (
-        <div className="bg-white px-4 pt-3 pb-4 rounded-sm border border-gray-200 w-[20rem]">
+        <div className="bg-white px-4 pt-3 pb-4 rounded-lg border-2 border-gray-400 w-[18.5rem]">
             <strong className="font-medium text-gray-700">Top Customers</strong>
             <div className="flex flex-col gap-3 mt-4">
                 {topCustomers.map((customer, index) => (
-                    <Link key={index} to={`/managerpage/customeraccount/${customer.id}`}>
-                        <div className="flex-1 ml-4">
-                            <p className="text-sm text-gray-800">
+                    <Link key={customer.id} to={`/managerpage/customeraccount/${customer.id}`}>
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-800 font-semibold">
                                 {index + 1}. {customer.name}
-                            </p>
+                            </div>
+                            <div className="text-xs">
+                                Total: ${customer.totalAmount ? customer.totalAmount.toFixed(2) : '0.00'}
+                            </div>
                         </div>
-                        <div className="text-xs">
+                        <div className="text-xs text-gray-600">
                             Orders: {customer.count}
                         </div>
                     </Link>
