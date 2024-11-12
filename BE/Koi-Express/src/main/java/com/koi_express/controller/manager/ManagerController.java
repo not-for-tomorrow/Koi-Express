@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 import com.koi_express.dto.request.CreateStaffRequest;
+import com.koi_express.dto.request.CustomerTopSpenderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.DeliveringStaffLevel;
+import com.koi_express.service.customer.CustomerService;
 import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.manager.ManagerService;
 import jakarta.validation.Valid;
@@ -31,6 +33,7 @@ public class ManagerController {
 
     private final ManagerService managerService;
     private final ManageCustomerService manageCustomerService;
+    private final CustomerService customerService;
 
     @PostMapping("/create-sales-staff")
     public ResponseEntity<ApiResponse<String>> createSalesStaff(
@@ -161,6 +164,10 @@ public class ManagerController {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.badRequest("Error retrieving monthly totals for year " + year));
         }
+    }
+    @GetMapping("/top-spenders")
+    public List<CustomerTopSpenderRequest> getTop10CustomersBySpending() {
+        return customerService.getTop10CustomersBySpending();
     }
 
     @PutMapping("/delivering-staff/{staffId}/deactivate")
