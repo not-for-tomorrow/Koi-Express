@@ -26,14 +26,14 @@ const SaleStaffAccount = () => {
   const fetchSalesStaff = async () => {
     setLoading(true);
     setError(null);
-
+  
     const token = getToken();
     if (!token) {
       setError("No token found");
       setLoading(false);
       return;
     }
-
+  
     try {
       const response = await fetch("http://localhost:8080/api/manager/sales-staff", {
         headers: {
@@ -41,20 +41,20 @@ const SaleStaffAccount = () => {
           "Content-Type": "application/json",
         },
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to fetch sales staff data");
       }
-
+  
       const data = await response.json();
-      setSalesStaff(data);
+      setSalesStaff(data.result);
     } catch (error) {
       setError(error.message);
     } finally {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     fetchSalesStaff();
   }, []);
@@ -158,12 +158,12 @@ const SaleStaffAccount = () => {
                           animate={{ x: "0%", opacity: 1 }}
                           exit={{ x: "100%", opacity: 0 }}
                           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                          className="fixed top-6 right-6 w-80 p-4 bg-white rounded-lg shadow-xl border-l-4 border-green-500 flex flex-col items-start space-y-2"
+                          className="fixed flex flex-col items-start p-4 space-y-2 bg-white border-l-4 border-green-500 rounded-lg shadow-xl top-6 right-6 w-80"
                       >
                         <div className="flex items-center space-x-2">
                           <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              className="h-6 w-6 text-green-500"
+                              className="w-6 h-6 text-green-500"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -175,9 +175,9 @@ const SaleStaffAccount = () => {
                           </div>
                         </div>
                         {/* Subtle Divider */}
-                        <div className="w-full border-t border-gray-200 my-1"></div>
+                        <div className="w-full my-1 border-t border-gray-200"></div>
                         {/* Countdown Progress Bar */}
-                        <div className="relative w-full h-1 bg-gray-300 rounded overflow-hidden">
+                        <div className="relative w-full h-1 overflow-hidden bg-gray-300 rounded">
                           <motion.div
                               initial={{ width: "100%" }}
                               animate={{ width: 0 }}
@@ -216,7 +216,7 @@ const SaleStaffAccount = () => {
                         <th className="w-1/4 p-2 font-semibold">Email</th>
                         <th className="p-2 font-semibold w-1/8">Số điện thoại</th>
                         <th className="p-2 font-semibold w-1/8">Ngày tạo</th>
-                        <th className="p-2 font-semibold w-1/10 pl-8">Hành động</th>
+                        <th className="p-2 pl-8 font-semibold w-1/10">Hành động</th>
                       </tr>
                       </thead>
                       <tbody>
@@ -242,7 +242,7 @@ const SaleStaffAccount = () => {
                             </td>
                             <td className="p-2 text-sm text-gray-700 w-1/10">
                               <button
-                                  className="text-white bg-red-500 px-4 py-2 rounded transition duration-300 ease-in-out transform hover:bg-red-700 hover:scale-105">
+                                  className="px-4 py-2 text-white transition duration-300 ease-in-out transform bg-red-500 rounded hover:bg-red-700 hover:scale-105">
                                 Dừng hoạt động
                               </button>
                             </td>
