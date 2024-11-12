@@ -229,6 +229,7 @@ const OrderPage = () => {
                     recipientPhone={recipientPhone}
                     isPickupConfirmed={isPickupConfirmed}
                     isDeliveryConfirmed={isDeliveryConfirmed}
+                    distance={distance}
                 />
             )}
 

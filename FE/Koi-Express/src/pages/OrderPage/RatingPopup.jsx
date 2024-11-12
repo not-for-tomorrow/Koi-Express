@@ -80,7 +80,11 @@ const RatingPopup = ({ isOpen, onClose, onSubmit, orderId }) => { // Nhận thê
       } else {
         const errorText = await response.text();
         console.error("Failed to submit feedback:", errorText);
-        alert(`Không thể gửi phản hồi. Lỗi: ${errorText}`);
+        if (errorText.includes("Feedback already exists for this order and customer")) {
+          alert("Bạn đã gửi phản hồi cho đơn hàng này rồi. Cảm ơn bạn!");
+        } else {
+          alert("Không thể gửi phản hồi. Đã xảy ra lỗi.");
+        }        
       }
     } catch (error) {
       console.error("Error:", error);

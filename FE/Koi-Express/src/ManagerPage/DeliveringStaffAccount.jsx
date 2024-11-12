@@ -56,6 +56,33 @@ const DeliveringStaffAccount = () => {
         }
     };
 
+    const deactivateDeliveringStaff = async (staffId) => {
+        const token = getToken();
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/manager/delivering-staff/${staffId}/deactivate`,
+                {
+                    method: "PUT",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to deactivate delivering staff account");
+            }
+
+            setSuccessMessage("Delivering staff account deactivated successfully.");
+            setTimeout(() => setSuccessMessage(""), 3000);
+            await fetchDeliveringStaff();
+        } catch (error) {
+            setError(error.message);
+        }
+    };
+
+
     useEffect(() => {
         fetchDeliveringStaff();
     }, []);
@@ -221,39 +248,45 @@ const DeliveringStaffAccount = () => {
                                 {filterDeliveringStaff().map((staff, index) => (
                                     <tr
                                         key={index}
-                                        className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
+                                        className={`transition duration-300 border-b border-gray-200 hover:bg-blue-50 ${
+                                            !staff.active ? "bg-gray-100 text-gray-400" : ""
+                                        }`}
                                     >
                                         <td className="p-2 font-semibold text-blue-600 w-1/10">
                                             {staff.staffId}
                                         </td>
-                                        <td className="p-2 text-sm text-gray-700 w-1/10">
+                                        <td className="p-2 text-sm w-1/10">
                                             {staff.fullName}
                                         </td>
-                                        <td className="p-2 text-sm text-gray-700 w-1/10">
+                                        <td className="p-2 text-sm w-1/10">
                                             {staff.email}
                                         </td>
-                                        <td className="p-2 text-sm text-gray-700 w-1/10">
+                                        <td className="p-2 text-sm w-1/10">
                                             {staff.phoneNumber || "N/A"}
                                         </td>
-                                        <td className="p-2 text-sm text-gray-700 w-1/10">
+                                        <td className="p-2 text-sm w-1/10">
                                             {staff.averageRating}
                                         </td>
-                                        <td className="p-2 text-sm text-gray-700 w-1/10">
+                                        <td className="p-2 text-sm w-1/10">
                                             {staff.status}
                                         </td>
-                                        <td className="p-2 text-sm text-gray-700 w-1/10">
+                                        <td className="p-2 text-sm w-1/10">
                                             {staff.level}
                                         </td>
-                                        <td className="p-2 text-sm text-gray-700 w-1/10">
+                                        <td className="p-2 text-sm w-1/10">
                                             {new Date(staff.createdAt).toLocaleDateString("vi-VN")}
                                         </td>
-                                        <td className="p-2 text-sm text-gray-700 w-1/10">
-                                            <button
-                                                className="px-4 py-2 text-white transition duration-300 ease-in-out transform bg-red-500 rounded hover:bg-red-700 hover:scale-105">
-                                                Dừng hoạt động
-                                            </button>
+                                        <td className="p-2 text-sm w-1/10">
+                                            {/* Hide button if staff is inactive */}
+                                            {staff.active && (
+                                                <button
+                                                    onClick={() => deactivateDeliveringStaff(staff.staffId)}
+                                                    className="px-4 py-2 text-white transition duration-300 ease-in-out transform bg-red-500 rounded hover:bg-red-700 hover:scale-105"
+                                                >
+                                                    Dừng hoạt động
+                                                </button>
+                                            )}
                                         </td>
-
                                     </tr>
                                 ))}
                                 </tbody>

@@ -53,10 +53,10 @@ function TransactionChart() {
     return (
         <div className="w-[58rem] max-w-5xl mx-auto bg-white p-8 rounded-lg border-2 border-gray-400 shadow-md">
             <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">
-                Transaction Summary for {year}
+                Tóm tắt giao dịch cho {year}
             </h2>
             <div className="flex items-center justify-center mb-6">
-                <label htmlFor="year-select" className="text-sm text-gray-700 mr-2">Select Year:</label>
+                <label htmlFor="year-select" className="text-sm text-gray-700 mr-2">Chọn Năm:</label>
                 <select
                     id="year-select"
                     value={year}

@@ -23,7 +23,7 @@ const Sidebar = () => {
         case "Cập nhật đơn":
           navigate("/deliveringstaffpage/deliverorder");
           break;
-        case "Logout":
+        case "Đăng xuất":
           navigate("/");
           break;
       default:

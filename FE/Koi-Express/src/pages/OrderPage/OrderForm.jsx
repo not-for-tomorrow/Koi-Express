@@ -29,7 +29,40 @@ const OrderForm = ({
                        isDeliveryConfirmed,
                        setIsDeliveryConfirmed,
                    }) => {
-    const roundedCost = Math.ceil((distance * 20000) / 1000) * 1000;
+    const calculateRoundedCost = (distance) => {
+        const baseFeePerKm = 5200;
+        const fuelPrice = 19000;
+        const smallTruckFuelConsumption = 9.0;
+        const mediumTruckFuelConsumption = 14.0;
+        const largeTruckFuelConsumption = 21.0;
+
+        // Determine fuel consumption based on distance
+        let fuelConsumption;
+        if (distance < 300) {
+            fuelConsumption = smallTruckFuelConsumption;
+        } else if (distance < 800) {
+            fuelConsumption = mediumTruckFuelConsumption;
+        } else {
+            fuelConsumption = largeTruckFuelConsumption;
+        }
+
+        // Calculate distance fee
+        const distanceFee = distance * baseFeePerKm;
+
+        // Calculate fuel cost
+        const fuelCost = Math.ceil((distance / 100) * fuelConsumption * fuelPrice);
+
+        // Calculate total fee
+        const totalFee = distanceFee + fuelCost;
+
+        // Calculate commitment fee for distances over 10 km
+        const commitmentFee = distance > 10 ? Math.ceil(totalFee * 0.3) : 0;
+
+        // Round up total fee including commitment fee
+        return Math.ceil(totalFee + commitmentFee);
+    };
+
+    const roundedCost = calculateRoundedCost(distance);
     const [isFormValid, setIsFormValid] = useState(false);
     const [showPickupDetail, setShowPickupDetail] = useState(false);
     const [showDeliveryDetail, setShowDeliveryDetail] = useState(false);

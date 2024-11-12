@@ -41,7 +41,7 @@ const Sidebar = () => {
                 navigate("/managerpage/blog");
                 break;
 
-            case "Logout":
+            case "Đăng xuất":
                 navigate("/");
                 break;
 

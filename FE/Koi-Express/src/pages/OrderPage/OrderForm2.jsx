@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState, useEffect } from "react";
 import HeaderOrderForm from "../../components/Header/HeaderOrderForm";
 import PaymentModal from "./PaymentModal";
 import PlaceOrderModal from "./PlaceOrderModal";
@@ -25,9 +25,28 @@ const OrderForm2 = ({
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [showPlaceOrderModal, setShowPlaceOrderModal] = useState(false);
     const [paymentUrl, setPaymentUrl] = useState("");
+    const [totalFee, setTotalFee] = useState(0);
+    const [commitmentFee, setCommitmentFee] = useState(0);
 
-    const commitmentFee = basePrice * 0.3;
-    const totalPrice = basePrice * 1.3;
+    const distance = basePrice / 20000;
+
+    useEffect(() => {
+
+        const fetchFees = async () => {
+            try {
+                const response = await axios.get("http://localhost:8080/api/orders/calculate-fees", {
+                    params: { kilometers: distance },
+                });
+
+                setTotalFee(response.data.totalFee);
+                setCommitmentFee(response.data.commitmentFee);
+            } catch (error) {
+                console.error("Error fetching fees:", error);
+            }
+        };
+
+        fetchFees();
+    }, [distance]);
 
     const handleConfirmOrder = async () => {
         if (
@@ -61,7 +80,7 @@ const OrderForm2 = ({
                 destinationDetail: deliveryDetail?.trim() || "",
                 paymentMethod: paymentMethod || "VNPAY",
                 insuranceSelected: !!useInsurance,
-                kilometers: basePrice / 20000,
+                kilometers: distance,
             };
 
             const response = await axios.post(
@@ -185,7 +204,7 @@ const OrderForm2 = ({
                     <div className="w-1/2 text-center">
                         <h2 className="text-lg font-semibold text-gray-800">Tiền vận chuyển</h2>
                         <p className="text-2xl font-bold text-orange-500">
-                            {Number(totalPrice).toLocaleString("vi-VN", {
+                            {Number(totalFee).toLocaleString("vi-VN", {
                                 style: "currency",
                                 currency: "VND",
                             })}

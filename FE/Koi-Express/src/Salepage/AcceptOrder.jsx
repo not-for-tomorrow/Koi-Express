@@ -124,15 +124,6 @@ const AcceptOrder = () => {
                 Đơn hàng đang chờ xác nhận
               </h1>
             </div>
-            <div className="flex items-center mb-6 space-x-6">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm kiếm đơn hàng..."
-                className="w-full max-w-md p-2 text-sm transition duration-300 border border-blue-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
           </div>
 
           <div className="overflow-auto max-h-[63.5vh] text-sm">

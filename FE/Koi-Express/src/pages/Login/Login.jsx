@@ -104,16 +104,10 @@ const Login = () => {
             if (err.response) {
                 switch (err.response.status) {
                     case 400:
-                        setError("Invalid phone number or password.");
-                        break;
-                    case 401:
-                        setError("Invalid password. Please try again.");
-                        break;
-                    case 404:
-                        setError("Invalid phone number. Please check your entry.");
+                        setError("Số điện thoại hoặc mật khẩu không hợp lệ.");
                         break;
                     case 500:
-                        setError("Server error. Please try again later.");
+                        setError("Số điện thoại hoặc mật khẩu không hợp lệ.");
                         break;
                     default:
                         setError("Login failed: " + (err.response.data.message || "Unknown error"));
@@ -136,7 +130,7 @@ const Login = () => {
                 const response = await axios.post(`http://localhost:8080/api/auth/forgot-password?phoneNumber=${phoneNumber}`, {phoneNumber});
                 if (response.status === 200) {
                     setStep(2);
-                    setSuccess("OTP sent to your phone.");
+                    setSuccess("Mã OTP đã được gửi tới điện thoại của bạn");
                 }
             } else if (step === 2) {
                 const response = await axios.post(`http://localhost:8080/api/auth/verify-otp-for-reset-password?phoneNumber=${phoneNumber}&otp=${otp}`, {
@@ -145,11 +139,12 @@ const Login = () => {
                 });
                 if (response.status === 200) {
                     setStep(3);
-                    setSuccess("OTP verified. Please set your new password.");
+                    setSuccess("OTP đã được xác nhận");
+                    setSuccess("Vui lòng nhập mật khẩu mới của bạn");
                 }
             } else if (step === 3) {
                 if (newPassword !== confirmPassword) {
-                    setError("Passwords do not match.");
+                    setError("Mật khẩu không khớp với mật khẩu bạn cung cấp");
                     setLoading(false);
                     return;
                 }
@@ -160,13 +155,13 @@ const Login = () => {
                     confirmPassword
                 });
                 if (response.status === 200) {
-                    setSuccess("Password reset successful. Please log in with your new password.");
+                    setSuccess("Mật khẩu đã thay đổi thành công.");
                     setIsForgotPassword(false);
                     setStep(1);
                 }
             }
         } catch (err) {
-            setError("An error occurred. Please try again.");
+            setError("Bạn chưa nhập số điện thoại.");
         } finally {
             setLoading(false);
         }
@@ -188,13 +183,13 @@ const Login = () => {
         <section className="flex items-center justify-center min-h-screen loginpage bg-gray-50">
             <div className="back-to-home" onClick={() => navigate("/")}>
                 <FaArrowLeft size={16}/>
-                <span>Back to Home</span>
+                <span>Quay lại trang chính</span>
             </div>
 
             <div className="flex items-center max-w-3xl p-5 bg-gray-100 shadow-lg logincard rounded-2xl">
                 <div className="px-8 md:w-1/2 md:px-16">
                     <h2 className="font-bold text-2xl text-[#002D74]">
-                        {isForgotPassword ? "Forgot Password" : "Login"}
+                        {isForgotPassword ? "Quên mật khẩu" : "Đăng nhập"}
                     </h2>
 
                     {isForgotPassword ? (
@@ -203,7 +198,7 @@ const Login = () => {
                                 <input
                                     className="p-2 mt-8 border rounded-xl"
                                     type="text"
-                                    placeholder="Phone Number"
+                                    placeholder="Số điện thoại"
                                     value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}
                                 />
@@ -212,7 +207,7 @@ const Login = () => {
                                 <input
                                     className="p-2 mt-8 border rounded-xl"
                                     type="text"
-                                    placeholder="Enter OTP"
+                                    placeholder="Nhập OTP"
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value)}
                                 />
@@ -222,14 +217,14 @@ const Login = () => {
                                     <input
                                         className="p-2 mt-8 border rounded-xl"
                                         type="password"
-                                        placeholder="New Password"
+                                        placeholder="Mật khẩu mới"
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
                                     />
                                     <input
                                         className="p-2 border rounded-xl"
                                         type="password"
-                                        placeholder="Confirm New Password"
+                                        placeholder="Xác nhận mật khẩu"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                     />
@@ -237,12 +232,12 @@ const Login = () => {
                             )}
                             <button type="submit"
                                     className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300">
-                                {loading ? "Processing..." : step === 3 ? "Reset Password" : "Next"}
+                                {loading ? "Đang cập nhật..." : step === 3 ? "Thay đổi mật khẩu" : "Tiếp theo"}
                             </button>
 
                             <button type="button" onClick={() => setIsForgotPassword(false)}
                                     className="text-sm text-[#002D74]">
-                                Back to Login
+                                Quay lại đăng nhập
                             </button>
                         </form>
                     ) : (
@@ -250,7 +245,7 @@ const Login = () => {
                             <input
                                 className="p-2 mt-8 border rounded-xl"
                                 type="text"
-                                placeholder="Phone Number"
+                                placeholder="Số điện thoại"
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
                                 autoComplete="new-phone"
@@ -259,7 +254,7 @@ const Login = () => {
                                 <input
                                     className="w-full p-2 border rounded-xl"
                                     type={showPassword ? "text" : "password"}
-                                    placeholder="Password"
+                                    placeholder="Mật khẩu"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     autoComplete="new-password"
@@ -281,20 +276,9 @@ const Login = () => {
                                     />
                                 </svg>
                             </div>
-                            <div className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    checked={rememberMe}
-                                    onChange={() => setRememberMe(!rememberMe)}
-                                    id="rememberMe"
-                                />
-                                <label htmlFor="rememberMe" className="ml-2 text-sm text-[#002D74]">
-                                    Remember Me
-                                </label>
-                            </div>
                             <button type="submit"
                                     className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300">
-                                {loading ? "Loading..." : "Login"}
+                                {loading ? "Đang tải..." : "Đăng nhập"}
                             </button>
                         </form>
                     )}
@@ -306,7 +290,7 @@ const Login = () => {
                         <>
                             <div className="grid items-center grid-cols-3 mt-6 text-gray-400">
                                 <hr className="border-gray-400"/>
-                                <p className="text-sm text-center">OR</p>
+                                <p className="text-sm text-center">Hoặc</p>
                                 <hr className="border-gray-400"/>
                             </div>
 
@@ -317,7 +301,7 @@ const Login = () => {
                                     className="bg-white border py-2 w-full rounded-xl flex items-center justify-center text-sm hover:scale-105 duration-300 text-[#002D74]"
                                 >
                                     <FcGoogle size={24} className="mr-3"/>
-                                    <span className="mr-4">Login with Google</span>
+                                    <span className="mr-4">Đăng nhập với Google</span>
                                 </button>
 
                                 <button
@@ -326,7 +310,7 @@ const Login = () => {
                                     className="bg-white border py-2 w-full rounded-xl flex items-center justify-center text-sm hover:scale-105 duration-300 text-[#002D74]"
                                 >
                                     <FaFacebook size={24} className="mr-3 text-blue-600"/>
-                                    <span>Login with Facebook</span>
+                                    <span>Đăng nhập với Facebook</span>
                                 </button>
                             </div>
                         </>
@@ -334,19 +318,19 @@ const Login = () => {
 
                     <div className="mt-5 text-xs border-b border-[#002D74] py-4 text-[#002D74]">
                         {!isForgotPassword && (
-                            <a href="#" onClick={() => setIsForgotPassword(true)}>
-                                Forgot your password?
+                            <a onClick={() => setIsForgotPassword(true)}>
+                                Quên mật khẩu
                             </a>
                         )}
                     </div>
 
                     <div className="mt-3 text-xs flex justify-between items-center text-[#002D74]">
-                        <p>Don't have an account?</p>
+                        <p>Bạn không có tài khoản?</p>
                         <button
                             onClick={handleRegister}
                             className="px-5 py-2 duration-300 bg-white border rounded-xl hover:scale-110"
                         >
-                            Register
+                            Đăng ký
                         </button>
                     </div>
                 </div>

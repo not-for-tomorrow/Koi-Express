@@ -28,7 +28,7 @@ const Sidebar = () => {
             case "Tạo blog":
                 navigate("/salepage/createblog");
                 break;
-            case "Logout":
+            case "Đăng xuất":
                 navigate("/");
                 break;
             default:
