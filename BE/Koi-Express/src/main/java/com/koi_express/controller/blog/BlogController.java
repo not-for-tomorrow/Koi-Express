@@ -54,6 +54,11 @@ public class BlogController {
         return ResponseEntity.ok(blogService.getBlogsByStatus(status));
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<Blog>> getAllBlogs() {
+        return ResponseEntity.ok(blogService.getAllBlogs());
+    }
+
     @GetMapping("/{slug}")
     public ResponseEntity<Blog> getBlogBySlug(@PathVariable String slug) {
         return blogService

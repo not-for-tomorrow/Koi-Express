@@ -70,6 +70,10 @@ public class BlogService {
         return blogRepository.getAllByStatus(status);
     }
 
+    public List<Blog> getAllBlogs() {
+        return blogRepository.findAll();
+    }
+
     public Optional<Blog> getBlogBySlug(String slug) {
         return blogRepository.findBySlug(slug);
     }

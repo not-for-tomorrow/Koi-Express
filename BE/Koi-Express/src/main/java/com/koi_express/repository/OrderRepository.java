@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -58,4 +59,6 @@ public interface OrderRepository extends JpaRepository<Orders, Long> {
 
     @Query("SELECT SUM(o.totalFee) FROM Orders o WHERE YEAR(o.createdAt) = :year AND MONTH(o.createdAt) = :month")
     Optional<BigDecimal> findTotalAmountByMonthAndYear(int year, int month);
+
+    List<Orders> findByDeliveringStaffAndStatus(DeliveringStaff deliveringStaff, OrderStatus status);
 }

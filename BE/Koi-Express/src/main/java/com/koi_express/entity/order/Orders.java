@@ -56,7 +56,6 @@ public class Orders implements Serializable { // Quản lý đơn hàng
     LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    //        @JsonIgnore
     OrderDetail orderDetail;
 
     @ManyToOne
