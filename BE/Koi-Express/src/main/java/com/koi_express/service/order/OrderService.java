@@ -388,35 +388,25 @@ public class OrderService {
         };
     }
 
-    private ApiResponse<String> processVnPayPayment(
-            Orders order, BigDecimal totalFee, Map<String, BigDecimal> calculationData) {
+    private ApiResponse<String> processVnPayPayment(Orders order, BigDecimal totalFee, Map<String, BigDecimal> calculationData) {
         try {
             ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPaymentWithTotalFee(order, totalFee);
             if (paymentLinkResponse.getCode() != HttpStatus.OK.value()) {
                 return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null);
             }
-
-            if (OrderStatus.PICKING_UP.equals(order.getStatus())) {
-                order.setStatus(OrderStatus.IN_TRANSIT);
-            }
-            order.setPaymentConfirmed(true);
-
-            orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
-            invoiceBuilder.updateInvoice(order, calculationData);
-
-            orderRepository.save(order);
-
-            return new ApiResponse<>(
-                    HttpStatus.OK.value(), "Payment link sent to email", paymentLinkResponse.getResult());
+            return finalizeOrderAndSave(order, calculationData, "Payment link sent to email");
 
         } catch (Exception e) {
             logger.error("Error creating VNPay payment link: ", e);
-            return new ApiResponse<>(
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage());
+            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage());
         }
     }
 
     private ApiResponse<String> processCashPayment(Orders order, Map<String, BigDecimal> calculationData) {
+        return finalizeOrderAndSave(order, calculationData, "Order is in-transit but not yet paid");
+    }
+
+    private ApiResponse<String> finalizeOrderAndSave(Orders order, Map<String, BigDecimal> calculationData, String resultMessage) {
         if (OrderStatus.PICKING_UP.equals(order.getStatus())) {
             order.setStatus(OrderStatus.IN_TRANSIT);
         }
@@ -424,8 +414,9 @@ public class OrderService {
 
         orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
         invoiceBuilder.updateInvoice(order, calculationData);
-
         orderRepository.save(order);
-        return new ApiResponse<>(HttpStatus.OK.value(), "Order is in-transit but not yet paid", null);
+
+        return new ApiResponse<>(HttpStatus.OK.value(), resultMessage, null);
     }
+
 }
