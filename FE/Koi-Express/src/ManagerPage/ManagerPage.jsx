@@ -1,7 +1,6 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Sidebar from "../componentsDashboard/Managercomponents/Sidebar/Sidebar";
-import Order from "./Order";
 import { UserProvider } from "../componentsDashboard/UserContext";
 import SaleStaffAccount from "./SaleStaffAccount";
 import DeliveringStaffAccount from "./DeliveringStaffAccount";
@@ -24,7 +23,6 @@ const ManagerPage = () => {
           <div className="flex-grow h-full bg-gray-100">
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/order" element={<Order />} />
               <Route path="/customeraccount" element={<CustomerAccount />} />
               <Route path="/salestaffaccount" element={<SaleStaffAccount />} />
               <Route

@@ -29,23 +29,10 @@ const Register = () => {
     if (/^\d*$/.test(value)) {
       setPhoneNumber(value);
     }
-    checkExistence(email, value);
   };
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
-    checkExistence(e.target.value, phoneNumber);
-  };
-
-  const checkExistence = async (email, phoneNumber) => {
-    try {
-      const response = await axios.post("http://localhost:8080/api/auth/check-existence", { email, phoneNumber });
-      setError("");
-    } catch (err) {
-      if (err.response && err.response.status === 409) {
-        setError(err.response.data); // Hiển thị lỗi từ server
-      }
-    }
   };
 
   const handleRegisterSubmit = async (e) => {
@@ -54,13 +41,13 @@ const Register = () => {
     setError("");
 
     if (!fullName || !email || !phoneNumber || !password) {
-      setError("All fields are required.");
+      setError("Không được để trống thông tin");
       setLoading(false);
       return;
     }
 
     if (phoneNumber.length !== 10) {
-      setError("Please enter exactly 10 digits for the phone number.");
+      setError("Số điện thoại bắt buộc phải có 10 số");
       setLoading(false);
       return;
     }
@@ -74,9 +61,10 @@ const Register = () => {
 
       if (response.status === 200) {
         setIsOtpStage(true);
-        setSuccess("Registration successful. Enter OTP sent to your phone.");
+        setSuccess("Đăng ký thành công");
+        setSuccess("OTP đã được gửi tới điện thoại của bạn");
       } else {
-        setError("Registration failed. Please try again.");
+        setError("Đăng ký thất bại, vui lòng kiểm tra lại thông tin");
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
@@ -92,7 +80,7 @@ const Register = () => {
     setSuccess("");
 
     if (otp.length !== 4) {
-      setError("OTP must be 4 digits.");
+      setError("Mã OTP có 4 số");
       setLoading(false);
       return;
     }
@@ -105,10 +93,10 @@ const Register = () => {
       );
 
       if (response.status === 200) {
-        setSuccess("OTP verification successful!");
+        setSuccess("OTP xác thực thành côngĂ");
         handleOtpSuccess();
       } else {
-        setError("OTP verification failed. Please try again.");
+        setError("OTP xác thực thất bại, vui lonòng thử lạiĂ");
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
@@ -161,24 +149,24 @@ const Register = () => {
       <section className="flex items-center justify-center min-h-screen registerpage bg-gray-50">
         <div className="back-to-home" onClick={() => navigate("/")}>
           <FaArrowLeft size={16} />
-          <span>Back to Home</span>
+          <span>Quay lại trang chính</span>
         </div>
         <div className="flex items-center justify-start max-w-3xl p-5 bg-gray-100 shadow-lg registercard rounded-2xl">
           <div className="hidden w-1/2 mr-auto md:block">
             <img className="rounded-2xl" src={logresKoiPic} alt="Register Illustration" />
           </div>
           <div className="px-8 md:w-1/2 md:px-16">
-            <h2 className="font-bold text-2xl text-[#002D74]">{isOtpStage ? "Verify OTP" : "Register"}</h2>
+            <h2 className="font-bold text-2xl text-[#002D74]">{isOtpStage ? "Xác nhận OTP" : "Đăng ký"}</h2>
 
             {!isOtpStage ? (
                 <form onSubmit={handleRegisterSubmit} className="flex flex-col gap-4" autoComplete="off">
-                  <input className="p-2 border rounded-xl" type="text" placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-                  <input className="p-2 border rounded-xl" type="email" placeholder="Email Address" value={email} onChange={handleEmailChange} required />
-                  <input className="p-2 border rounded-xl" type="text" placeholder="Phone Number" value={phoneNumber} onChange={handlePhoneNumberChange} required />
-                  <input className="w-full p-2 border rounded-xl" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <input className="p-2 border rounded-xl" type="text" placeholder="Họ tên" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                  <input className="p-2 border rounded-xl" type="email" placeholder="Địa chỉ Email" value={email} onChange={handleEmailChange} required />
+                  <input className="p-2 border rounded-xl" type="text" placeholder="Số điện thoại" value={phoneNumber} onChange={handlePhoneNumberChange} required />
+                  <input className="w-full p-2 border rounded-xl" type="password" placeholder="Mật khẩu" value={password} onChange={(e) => setPassword(e.target.value)} required />
 
                   <button type="submit" className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300">
-                    {loading ? "Registering..." : "Register"}
+                    {loading ? "Đang đăng ký..." : "Đăng ký"}
                   </button>
                 </form>
             ) : (
@@ -186,7 +174,7 @@ const Register = () => {
                   <p className="mt-2 text-sm text-gray-600">Please enter the 4-digit OTP sent to {phoneNumber}.</p>
                   <input id="otpInput" className="p-2 text-center border rounded-lg" type="text" maxLength="4" placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} required />
                   <button type="submit" className="bg-[#002D74] rounded-xl text-white py-2 hover:scale-105 duration-300" disabled={loading}>
-                    {loading ? "Verifying..." : "Verify OTP"}
+                    {loading ? "Đang xác nhận..." : "Xác nhận OTP"}
                   </button>
                 </form>
             )}
@@ -196,9 +184,9 @@ const Register = () => {
 
             {!isOtpStage && (
                 <div className="mt-5 text-xs flex justify-between items-center text-[#002D74]">
-                  <p>Already have an account?</p>
+                  <p>Bạn đã có tài khoản?</p>
                   <Link to="/login">
-                    <button className="px-5 py-2 duration-300 bg-white border rounded-xl hover:scale-110">Login</button>
+                    <button className="px-5 py-2 duration-300 bg-white border rounded-xl hover:scale-110">Đăng nhập</button>
                   </Link>
                 </div>
             )}

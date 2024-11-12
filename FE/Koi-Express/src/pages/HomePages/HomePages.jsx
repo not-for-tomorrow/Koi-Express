@@ -46,10 +46,6 @@ export default function HomePages() {
                             đảm bảo bạn nhận được dịch vụ tốt nhất từ Koi Express, mang lại sự
                             an tâm và tin cậy trên mỗi chuyến hàng.
                         </h1>
-                        <button
-                            className="px-8 py-5 mt-5 text-left text-white bg-blue-400 border rounded hover:bg-blue-500">
-                            <span className="font-semibold">Khám phá thêm</span>
-                        </button>
                     </div>
                     <img
                         className="ml-6 w-[590px] h-[677px]"
@@ -95,10 +91,6 @@ export default function HomePages() {
                             cao mới. Quá trình tích hợp không thể dễ dàng hơn khi đã có chúng
                             tôi hỗ trợ bạn tối đa.
                         </h1>
-                        <button
-                            className="px-8 py-5 mt-5 text-left text-white bg-blue-400 border rounded hover:bg-blue-500">
-                            <span className="font-semibold">Tìm hiểu thêm</span>
-                        </button>
                     </div>
                 </div>
                 {/*  */}

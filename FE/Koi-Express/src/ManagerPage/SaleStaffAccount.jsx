@@ -54,7 +54,31 @@ const SaleStaffAccount = () => {
       setLoading(false);
     }
   };
-  
+
+  const deactivateSalesStaff = async (accountId) => {
+    const token = getToken();
+    try {
+      const response = await fetch(`http://localhost:8080/api/manager/sales-staff/${accountId}/deactivate`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to deactivate sales staff account");
+      }
+
+      setSuccessMessage("Sales staff account deactivated successfully.");
+      setTimeout(() => setSuccessMessage(""), 3000);
+      await fetchSalesStaff(); // Refresh the sales staff list
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+
   useEffect(() => {
     fetchSalesStaff();
   }, []);
@@ -223,28 +247,24 @@ const SaleStaffAccount = () => {
                       {filterSalesStaff().map((staff) => (
                           <tr
                               key={staff.accountId}
-                              className="transition duration-300 border-b border-gray-200 hover:bg-blue-50"
+                              className={`transition duration-300 border-b border-gray-200 hover:bg-blue-50 ${
+                                  !staff.active ? "bg-gray-100 text-gray-400" : ""
+                              }`}
                           >
-                            <td className="p-2 font-semibold text-blue-600">
-                              {staff.accountId}
-                            </td>
-                            <td className="p-2 text-sm text-gray-700">
-                              {staff.fullName}
-                            </td>
-                            <td className="p-2 text-sm text-gray-700">
-                              {staff.email}
-                            </td>
-                            <td className="p-2 text-sm text-gray-700">
-                              {staff.phoneNumber || "N/A"}
-                            </td>
-                            <td className="p-2 text-sm text-gray-700">
-                              {new Date(staff.createdAt).toLocaleDateString("vi-VN")}
-                            </td>
-                            <td className="p-2 text-sm text-gray-700 w-1/10">
-                              <button
-                                  className="px-4 py-2 text-white transition duration-300 ease-in-out transform bg-red-500 rounded hover:bg-red-700 hover:scale-105">
-                                Dừng hoạt động
-                              </button>
+                            <td className="p-2 font-semibold text-blue-600">{staff.accountId}</td>
+                            <td className="p-2 text-sm">{staff.fullName}</td>
+                            <td className="p-2 text-sm">{staff.email}</td>
+                            <td className="p-2 text-sm">{staff.phoneNumber || "N/A"}</td>
+                            <td className="p-2 text-sm">{new Date(staff.createdAt).toLocaleDateString("vi-VN")}</td>
+                            <td className="p-2 text-sm">
+                              {staff.active && (
+                                  <button
+                                      onClick={() => deactivateSalesStaff(staff.accountId)}
+                                      className="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-700"
+                                  >
+                                    Dừng hoạt động
+                                  </button>
+                              )}
                             </td>
                           </tr>
                       ))}
@@ -258,9 +278,9 @@ const SaleStaffAccount = () => {
         {/* Modal */}
         {showModal && (
             <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.1 }}
+                initial={{opacity: 0, scale: 0.9}}
+                animate={{opacity: 1, scale: 1}}
+                transition={{duration: 0.1}}
                 className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-50"
                 role="dialog"
                 aria-modal="true"
@@ -291,7 +311,6 @@ const SaleStaffAccount = () => {
                             formErrors.fullName ? "border-red-500" : "border-gray-300"
                         }`}
                         required
-                        whileFocus={{ scale: 1.05, borderColor: "#3b82f6" }}
                     />
                     {formErrors.fullName && (
                         <p className="mt-1 text-sm text-red-500">{formErrors.fullName}</p>

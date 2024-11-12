@@ -68,7 +68,7 @@ export const navItems = [
 ];
 
 export const logoutItem = {
-    id: 6,
+    id: 7,
     icons: (
         <img
             width="35"
@@ -78,5 +78,5 @@ export const logoutItem = {
             className="min-w-[35px] min-h-[35px] object-cover"
         />
     ),
-    title: "Logout",
+    title: "Đăng xuất",
 };

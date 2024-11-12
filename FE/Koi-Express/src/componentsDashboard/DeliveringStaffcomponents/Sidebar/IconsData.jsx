@@ -38,5 +38,5 @@ export const navItems = [
         className="min-w-[35px] min-h-[35px] object-cover"
       />
     ),
-    title: "Logout",
+    title: "Đăng xuất",
   };
