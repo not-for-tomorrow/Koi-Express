@@ -1,26 +1,25 @@
 package com.koi_express.controller.manager;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
 import com.koi_express.dto.request.CreateStaffRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.account.SystemAccount;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.DeliveringStaffLevel;
-import com.koi_express.service.delivering_staff.DeliveringStaffService;
-import com.koi_express.service.manager.DeliveringStaffAccount;
 import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.manager.ManagerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/manager")
@@ -28,9 +27,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ManagerController {
 
+    private static final Logger logger = LoggerFactory.getLogger(ManagerController.class);
+
     private final ManagerService managerService;
     private final ManageCustomerService manageCustomerService;
-    private final DeliveringStaffService deliveringStaffService;
 
     @PostMapping("/create-sales-staff")
     public ResponseEntity<ApiResponse<String>> createSalesStaff(
@@ -48,172 +48,148 @@ public class ManagerController {
         return ResponseEntity.status(response.getCode()).body(response);
     }
 
-    @GetMapping( "/customers")
+    @GetMapping("/customers")
     public ResponseEntity<ApiResponse<List<Customers>>> getAllCustomers() {
-
-        ApiResponse<List<Customers>> customersPage = manageCustomerService.getAllCustomers();
-
-        return new ResponseEntity<>(customersPage, HttpStatus.OK);
+        ApiResponse<List<Customers>> customersResponse = manageCustomerService.getAllCustomers();
+        return ResponseEntity.ok(customersResponse);
     }
 
     @GetMapping("/id/{customerId}")
-    public ResponseEntity<ApiResponse<Customers>> getCustomerById(
-            @PathVariable Long customerId) {
+    public ResponseEntity<ApiResponse<Customers>> getCustomerById(@PathVariable Long customerId) {
 
-        Customers customers = managerService.getCustomerById(customerId);
-        return new ResponseEntity<>(
-                new ApiResponse<>(HttpStatus.OK.value(), "Customer find", customers), HttpStatus.OK);
+        Customers customer = managerService.getCustomerById(customerId);
+        return ResponseEntity.ok(ApiResponse.success("Customer found", customer));
     }
 
     @GetMapping("/phone/{phoneNumber}")
-    public ResponseEntity<Customers> getCustomerByPhoneNumber(
-            @PathVariable String phoneNumber) {
+    public ResponseEntity<ApiResponse<Customers>> getCustomerByPhoneNumber(@PathVariable String phoneNumber) {
 
-        Customers customers = managerService.findByPhoneNumber(phoneNumber);
-        return ResponseEntity.ok(customers);
+        Customers customer = managerService.findByPhoneNumber(phoneNumber);
+        return ResponseEntity.ok(ApiResponse.success("Customer found by phone number", customer));
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteCustomer(
-            @PathVariable Long id) {
+    public ResponseEntity<ApiResponse<String>> deleteCustomer(@PathVariable Long id) {
 
         managerService.deleteCustomer(id);
-        return new ResponseEntity<>(
-                new ApiResponse<>(HttpStatus.OK.value(), "Customer deleted successfully.", null), HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success("Customer deleted successfully.", null));
     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse<String>> updateCustomer(
-            @PathVariable Long id,
-            @RequestParam String fullName,
-            @RequestParam String address) {
+            @PathVariable Long id, @RequestParam String fullName, @RequestParam String address) {
 
         managerService.updateCustomer(id, fullName, address);
-        return new ResponseEntity<>(
-                new ApiResponse<>(HttpStatus.OK.value(), "Customer updated successfully.", null), HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success("Customer updated successfully.", null));
     }
 
     @GetMapping("/sales-staff")
-    public ResponseEntity<List<SystemAccount>> getAllSalesStaff() {
-
+    public ResponseEntity<ApiResponse<List<SystemAccount>>> getAllSalesStaff() {
         List<SystemAccount> salesStaffAccounts = managerService.getAllSalesStaffAccounts();
-        return new ResponseEntity<>(salesStaffAccounts, HttpStatus.OK);
+        return ResponseEntity.ok(ApiResponse.success("Sales staff retrieved successfully.", salesStaffAccounts));
     }
 
     @GetMapping("/delivering-staff")
-    public ResponseEntity<List<DeliveringStaff>> getAllDeliveringStaff() {
-
+    public ResponseEntity<ApiResponse<List<DeliveringStaff>>> getAllDeliveringStaff() {
         List<DeliveringStaff> deliveringStaffAccounts = managerService.getAllDeliveringStaffAccounts();
-        return new ResponseEntity<>(deliveringStaffAccounts, HttpStatus.OK);
+        return ResponseEntity.ok(
+                ApiResponse.success("Delivering staff retrieved successfully.", deliveringStaffAccounts));
     }
 
     @PutMapping("/delivering-staff/{staffId}/update-level")
     public ResponseEntity<ApiResponse<String>> updateDeliveringStaffLevel(
-            @PathVariable Long staffId,
-            @RequestParam DeliveringStaffLevel targetLevel) {
+            @PathVariable Long staffId, @RequestParam DeliveringStaffLevel targetLevel) {
 
         ApiResponse<String> response = managerService.promoteDeliveringStaff(staffId, targetLevel);
         return ResponseEntity.status(response.getCode()).body(response);
     }
 
-    @GetMapping("/revenue/daily")
-    public BigDecimal getDailyRevenue(@RequestParam LocalDate date) {
-        return managerService.calculateDailyRevenue(date);
+    @GetMapping("/total-amount/daily")
+    public ResponseEntity<ApiResponse<BigDecimal>> getTotalAmountPerDay() {
+        try {
+            LocalDateTime latestDate = LocalDateTime.now();
+
+            BigDecimal totalAmount = managerService.calculateTotalAmountPerDay(latestDate);
+            return ResponseEntity.ok(
+                    ApiResponse.success("Total amount for " + latestDate + " retrieved successfully", totalAmount));
+        } catch (Exception e) {
+            logger.error("Error retrieving total amount for the latest date: ", e); // Log the exception
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.badRequest("Error retrieving total amount for the latest date"));
+        }
     }
 
-    @GetMapping("/revenue/weekly")
-    public BigDecimal getWeeklyRevenue(@RequestParam int year, @RequestParam int week) {
-        return managerService.calculateWeeklyRevenue(year, week);
+    @GetMapping("/total-amount")
+    public ResponseEntity<ApiResponse<BigDecimal>> getTotalAmount() {
+        try {
+            BigDecimal totalAmount = managerService.calculateTotalAmount();
+            return ResponseEntity.ok(ApiResponse.success("Total amount retrieved successfully", totalAmount));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.badRequest("Error retrieving total amount"));
+        }
     }
 
-    @GetMapping("/revenue/monthly")
-    public BigDecimal getMonthlyRevenue(@RequestParam YearMonth month) {
-        return managerService.calculateMonthlyRevenue(month);
+    @GetMapping("/number-of-customers")
+    public ResponseEntity<ApiResponse<Integer>> getNumberOfCustomers() {
+        try {
+            int numberOfCustomers = managerService.getNumberOfCustomers();
+            return ResponseEntity.ok(
+                    ApiResponse.success("Number of customers retrieved successfully", numberOfCustomers));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.badRequest("Error retrieving number of customers"));
+        }
     }
 
-    @GetMapping("/revenue/yearly")
-    public BigDecimal getYearlyRevenue(@RequestParam int year) {
-        return managerService.calculateYearlyRevenue(year);
+    @GetMapping("/number-of-orders")
+    public ResponseEntity<ApiResponse<Integer>> getNumberOfOrders() {
+        try {
+            int numberOfOrders = managerService.getNumberOfOrders();
+            return ResponseEntity.ok(ApiResponse.success("Number of orders retrieved successfully", numberOfOrders));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.badRequest("Error retrieving number of orders"));
+        }
     }
 
-    // Top Customer by Order Frequency
-    @GetMapping("/top-customer")
-    public Customers getTopCustomer() {
-        return managerService.findTopCustomer();
-    }
-
-    // Growth Comparison
-    @GetMapping("/growth/weekly")
-    public BigDecimal getWeeklyGrowth(@RequestParam int year, @RequestParam int currentWeek) {
-        return managerService.calculateWeeklyGrowth(year, currentWeek);
-    }
-
-    @GetMapping("/growth/monthly")
-    public BigDecimal getMonthlyGrowth(@RequestParam YearMonth currentMonth) {
-        return managerService.calculateMonthlyGrowth(currentMonth);
-    }
-
-    @GetMapping("/growth/yearly")
-    public BigDecimal getYearlyGrowth(@RequestParam int currentYear) {
-        return managerService.calculateYearlyGrowth(currentYear);
-    }
-
-    // Highest Revenue by Day, Week, Month, Year
-    @GetMapping("/highest-revenue/day")
-    public LocalDate getHighestRevenueDay() {
-        return managerService.getHighestRevenueDay();
-    }
-
-    @GetMapping("/highest-revenue/month")
-    public YearMonth getHighestRevenueMonth() {
-        return managerService.getHighestRevenueMonth();
-    }
-
-    @GetMapping("/highest-revenue/year")
-    public int getHighestRevenueYear() {
-        return managerService.getHighestRevenueYear();
+    @GetMapping("/total-amount/yearly")
+    public ResponseEntity<ApiResponse<Map<String, BigDecimal>>> getTotalAmountPerMonth(@RequestParam int year) {
+        try {
+            Map<String, BigDecimal> monthlyTotals = managerService.calculateMonthlyAmountsForYear(year);
+            return ResponseEntity.ok(
+                    ApiResponse.success("Monthly totals for year " + year + " retrieved successfully", monthlyTotals));
+        } catch (Exception e) {
+            logger.error("Error retrieving monthly totals for year " + year, e);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.badRequest("Error retrieving monthly totals for year " + year));
+        }
     }
 
     @PutMapping("/delivering-staff/{staffId}/deactivate")
-    public ResponseEntity<ApiResponse<String>> deactivateDeliveringStaff(
-            @PathVariable Long staffId) {
+    public ResponseEntity<ApiResponse<String>> deactivateDeliveringStaff(@PathVariable Long staffId) {
 
         boolean deactivated = managerService.deactivateDeliveringStaff(staffId);
 
         if (deactivated) {
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.OK.value(), "Delivering staff account deactivated successfully.", null),
-                    HttpStatus.OK);
+            return ResponseEntity.ok(ApiResponse.success("Delivering staff account deactivated successfully.", null));
         } else {
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Delivering staff account is already inactive.", null),
-                    HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.badRequest("Delivering staff account is already inactive."));
         }
     }
 
     @PutMapping("/sales-staff/{accountId}/deactivate")
-    public ResponseEntity<ApiResponse<String>> deactivateSalesStaff(
-            @PathVariable Long accountId) {
+    public ResponseEntity<ApiResponse<String>> deactivateSalesStaff(@PathVariable Long accountId) {
 
         try {
             boolean deactivated = managerService.deactivateSalesStaff(accountId);
 
             if (deactivated) {
-                return new ResponseEntity<>(
-                        new ApiResponse<>(HttpStatus.OK.value(), "Sales staff account deactivated successfully.", null),
-                        HttpStatus.OK);
+                return ResponseEntity.ok(ApiResponse.success("Sales staff account deactivated successfully.", null));
             } else {
-                return new ResponseEntity<>(
-                        new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Sales staff account is already inactive.", null),
-                        HttpStatus.BAD_REQUEST);
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.badRequest("Sales staff account is already inactive."));
             }
-
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null),
-                    HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body(ApiResponse.badRequest(e.getMessage()));
         }
     }
-
-
 }

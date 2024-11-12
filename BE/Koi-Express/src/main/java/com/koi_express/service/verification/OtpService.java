@@ -35,8 +35,12 @@ public class OtpService {
         String otp = String.format("%04d", new java.security.SecureRandom().nextInt(10000));
         String formattedPhoneNumber = formatPhoneNumber(phoneNumber);
 
-        otpDataByPurpose.computeIfAbsent(purpose, k -> new ConcurrentHashMap<>()).put(formattedPhoneNumber, otp);
-        otpTimestampsByPurpose.computeIfAbsent(purpose, k -> new ConcurrentHashMap<>()).put(formattedPhoneNumber, System.currentTimeMillis());
+        otpDataByPurpose
+                .computeIfAbsent(purpose, k -> new ConcurrentHashMap<>())
+                .put(formattedPhoneNumber, otp);
+        otpTimestampsByPurpose
+                .computeIfAbsent(purpose, k -> new ConcurrentHashMap<>())
+                .put(formattedPhoneNumber, System.currentTimeMillis());
 
         logger.debug("Generated OTP for {} purpose: phoneNumber {}, otp {}", purpose, formattedPhoneNumber, otp);
         return otp;
@@ -83,7 +87,10 @@ public class OtpService {
             return true;
         }
 
-        logger.warn("Failed OTP validation for phone number {} for purpose {}. Incorrect OTP", formattedPhoneNumber, purpose);
+        logger.warn(
+                "Failed OTP validation for phone number {} for purpose {}. Incorrect OTP",
+                formattedPhoneNumber,
+                purpose);
         return false;
     }
 

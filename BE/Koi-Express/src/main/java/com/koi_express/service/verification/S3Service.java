@@ -23,12 +23,13 @@ public class S3Service {
     @Value("${spring.aws.s3.bucket-name}")
     private String bucketName;
 
-    public String uploadImage(String category, String date, String title, MultipartFile image) {
+    public String uploadImage(String category, String date, String title, MultipartFile imageFile) {
         try {
             LocalDateTime localDateTime;
 
             if (date.length() == 10) {
-                localDateTime = LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
+                localDateTime =
+                        LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay();
             } else {
                 localDateTime = LocalDateTime.parse(date, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             }
@@ -38,25 +39,21 @@ public class S3Service {
             String month = String.format("%02d", localDate.getMonthValue());
             String day = String.format("%02d", localDate.getDayOfMonth());
 
-            String keyName = String.format("%s/%s/%s/%s/%s/image/%s",
-                    category,
-                    year,
-                    month,
-                    day,
-                    title,
-                    UUID.randomUUID());
+            String keyName =
+                    String.format("%s/%s/%s/%s/%s/imageFile/%s", category, year, month, day, title, UUID.randomUUID());
 
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(keyName)
-                    .build();
+            PutObjectRequest putObjectRequest =
+                    PutObjectRequest.builder().bucket(bucketName).key(keyName).build();
 
-            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(image.getInputStream(), image.getSize()));
+            s3Client.putObject(
+                    putObjectRequest, RequestBody.fromInputStream(imageFile.getInputStream(), imageFile.getSize()));
 
-            return s3Client.utilities().getUrl(builder -> builder.bucket(bucketName).key(keyName)).toExternalForm();
+            return s3Client.utilities()
+                    .getUrl(builder -> builder.bucket(bucketName).key(keyName))
+                    .toExternalForm();
 
         } catch (Exception e) {
-            throw new S3UploadException("Error uploading image", e);
+            throw new S3UploadException("Error uploading imageFile", e);
         }
     }
 }

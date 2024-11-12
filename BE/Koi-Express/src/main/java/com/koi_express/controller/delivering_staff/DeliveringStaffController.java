@@ -2,10 +2,10 @@ package com.koi_express.controller.delivering_staff;
 
 import java.util.List;
 
-import com.koi_express.exception.AppException;
-import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.exception.AppException;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.delivering_staff.DeliveringStaffService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -28,13 +28,14 @@ public class DeliveringStaffController {
     private final DeliveringStaffService deliveringStaffService;
     private final JwtUtil jwtUtil;
 
-    private Long extractDeliveringStaffId(String token) throws Exception {
+    private Long extractDeliveringStaffId(String token) {
         String cleanedToken = jwtUtil.cleanToken(token);
         return Long.parseLong(jwtUtil.extractUserId(cleanedToken, "DELIVERING_STAFF"));
     }
 
     @GetMapping("/assigned-orders")
-    public ResponseEntity<ApiResponse<List<Orders>>> getAssignedOrdersByDeliveringStaff(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse<List<Orders>>> getAssignedOrdersByDeliveringStaff(
+            @RequestHeader("Authorization") String token) {
         try {
             Long deliveringStaffId = extractDeliveringStaffId(token);
             List<Orders> orders = deliveringStaffService.getAssignedOrdersByDeliveringStaff(deliveringStaffId);
@@ -47,7 +48,8 @@ public class DeliveringStaffController {
         } catch (Exception e) {
             logger.error("{} for delivering staff ID: {}", ERROR_RETRIEVING_ASSIGNED_ORDERS, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
         }
     }
 
@@ -66,7 +68,8 @@ public class DeliveringStaffController {
         } catch (Exception e) {
             logger.error("{} for delivering staff ID: {}", ERROR_RETRIEVING_ASSIGNED_ORDERS, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
         }
     }
 
@@ -85,7 +88,8 @@ public class DeliveringStaffController {
         } catch (Exception e) {
             logger.error("{} for delivering staff ID: {}", ERROR_RETRIEVING_ASSIGNED_ORDERS, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_RETRIEVING_ASSIGNED_ORDERS, null));
         }
     }
 
@@ -105,7 +109,8 @@ public class DeliveringStaffController {
         } catch (Exception e) {
             logger.error("{} for order ID: {}, staff ID: {}", ERROR_PICKUP_ORDER, orderId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_PICKUP_ORDER, e.getMessage()));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_PICKUP_ORDER, e.getMessage()));
         }
     }
 
@@ -124,8 +129,8 @@ public class DeliveringStaffController {
         } catch (Exception e) {
             logger.error("Error completing order ID: {} for delivering staff ID: {}", orderId, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to complete order", null));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to complete order", null));
         }
     }
-
 }

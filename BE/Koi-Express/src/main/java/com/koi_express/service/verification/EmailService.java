@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,9 +35,9 @@ public class EmailService {
     private final JavaMailSender javaMailSender;
 
     private static final String TEMPLATE_ORDER_CONFIRMATION = "Order Confirmation.html";
-    private static final String TEMPLATE_PAYMENT_LINK = "Payment Link.html";
     private static final String TEMPLATE_ACCOUNT_CONFIRMATION = "Account Confirmation.html";
     private static final String TEMPLATE_INVOICE = "Invoice.html";
+    private static final String TEMPLATE_REFUND_CONFIRMATION = "Refund Confirmation.html";
 
     public static final String FULL_NAME_PLACEHOLDER = "{{FullName}}";
     public static final String CUSTOMER_NAME_PLACEHOLDER = "{{CustomerName}}";
@@ -62,7 +63,6 @@ public class EmailService {
     public static final String PACKAGING_FEE_PLACEHOLDER = "{{PackagingFee}}";
     public static final String VAT_PLACEHOLDER = "{{VAT}}";
 
-
     @Async
     public void sendOrderConfirmationEmail(String recipientEmail, Orders order) {
         try {
@@ -84,24 +84,6 @@ public class EmailService {
     }
 
     @Async
-    public void sendPaymentLink(String recipientEmail, String paymentLink, Orders order) {
-        try {
-            String template = loadEmailTemplate(TEMPLATE_PAYMENT_LINK);
-
-            Map<String, String> placeholders = new HashMap<>();
-            placeholders.put(CUSTOMER_NAME_PLACEHOLDER, order.getCustomer().getFullName());
-            placeholders.put(ORDER_ID_PLACEHOLDER, String.valueOf(order.getOrderId()));
-            placeholders.put("{{PaymentLink}}", paymentLink);
-            placeholders.put(TOTAL_AMOUNT_PLACEHOLDER, String.format("%.2f", order.getTotalFee()));
-
-            sendEmail(recipientEmail, "Payment for your Order - Koi Express", template, placeholders);
-        } catch (Exception e) {
-            logger.error("Error sending payment link email: ", e);
-            throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
-        }
-    }
-
-    @Async
     public void sendAccountCreatedEmail(Object account, String rawPassword, boolean isDeliveringStaff) {
         try {
             String template = loadEmailTemplate(TEMPLATE_ACCOUNT_CONFIRMATION);
@@ -116,7 +98,8 @@ public class EmailService {
                 placeholders.put(PASSWORD_PLACEHOLDER, rawPassword);
                 placeholders.put(ROLE_PLACEHOLDER, deliveringStaff.getRole().toString());
                 placeholders.put(LEVEL_PLACEHOLDER, deliveringStaff.getLevel().name());
-                placeholders.put(CREATED_AT_PLACEHOLDER, deliveringStaff.getCreatedAt().toString());
+                placeholders.put(
+                        CREATED_AT_PLACEHOLDER, deliveringStaff.getCreatedAt().toString());
             } else {
                 SystemAccount systemAccount = (SystemAccount) account;
                 placeholders.put(FULL_NAME_PLACEHOLDER, systemAccount.getFullName());
@@ -125,7 +108,8 @@ public class EmailService {
                 placeholders.put(PHONE_NUMBER_PLACEHOLDER, systemAccount.getPhoneNumber());
                 placeholders.put(PASSWORD_PLACEHOLDER, rawPassword);
                 placeholders.put(ROLE_PLACEHOLDER, systemAccount.getRole().toString());
-                placeholders.put(CREATED_AT_PLACEHOLDER, systemAccount.getCreatedAt().toString());
+                placeholders.put(
+                        CREATED_AT_PLACEHOLDER, systemAccount.getCreatedAt().toString());
             }
 
             sendEmail(
@@ -151,7 +135,8 @@ public class EmailService {
             placeholders.put("{{InvoiceDate}}", order.getCreatedAt().toString());
             placeholders.put(ADDRESS_PLACEHOLDER, order.getDestinationLocation());
             placeholders.put(
-                    KOI_QUANTITY_PLACEHOLDER, String.valueOf(order.getOrderDetail().getKoiQuantity()));
+                    KOI_QUANTITY_PLACEHOLDER,
+                    String.valueOf(order.getOrderDetail().getKoiQuantity()));
             placeholders.put(SUBTOTAL_PLACEHOLDER, String.format("%.2f", calculationData.get("subtotal")));
             placeholders.put(CARE_FEE_PLACEHOLDER, String.format("%.2f", calculationData.get("careFee")));
             placeholders.put(INSURANCE_FEE_PLACEHOLDER, String.format("%.2f", calculationData.get("insuranceFee")));
@@ -162,6 +147,24 @@ public class EmailService {
             sendEmail(recipientEmail, "Invoice - Koi Express", template, placeholders);
         } catch (Exception e) {
             logger.error("Error sending invoice email: ", e);
+            throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
+        }
+    }
+
+    @Async
+    public void sendRefundConfirmationEmail(String recipientEmail, Orders order, BigDecimal refundAmount) {
+        try {
+            String template = loadEmailTemplate(TEMPLATE_REFUND_CONFIRMATION);
+
+            Map<String, String> placeholders = new HashMap<>();
+            placeholders.put(CUSTOMER_NAME_PLACEHOLDER, order.getCustomer().getFullName());
+            placeholders.put(ORDER_ID_PLACEHOLDER, String.valueOf(order.getOrderId()));
+            placeholders.put("{{RefundDate}}", LocalDateTime.now().toString()); // Current date for refund date
+            placeholders.put("{{RefundAmount}}", String.format("%.2f", refundAmount));
+
+            sendEmail(recipientEmail, "Refund Confirmation - Koi Express", template, placeholders);
+        } catch (Exception e) {
+            logger.error("Error sending refund confirmation email: ", e);
             throw new AppException(ErrorCode.EMAIL_SENDING_FAILED);
         }
     }

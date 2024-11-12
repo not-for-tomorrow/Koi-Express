@@ -57,7 +57,8 @@ public class DeliveringStaffService {
         order.setStatus(OrderStatus.PICKING_UP);
         orderRepository.save(order);
 
-        LocalDateTime pickupTime = pickupTimeCalculator.calculatePickupTime(order.getOrderDetail().getKilometers());
+        LocalDateTime pickupTime =
+                pickupTimeCalculator.calculatePickupTime(order.getOrderDetail().getKilometers());
 
         Shipments shipment = Shipments.builder()
                 .customer(order.getCustomer())
@@ -79,7 +80,6 @@ public class DeliveringStaffService {
 
         Orders order = validateOrderAssignment(orderId, deliveringStaffId);
 
-
         order.setStatus(OrderStatus.DELIVERED);
         orderRepository.save(order);
 
@@ -90,7 +90,6 @@ public class DeliveringStaffService {
         log.info("Order ID: {} marked as DELIVERED by staff ID: {}", orderId, deliveringStaffId);
         return new ApiResponse<>(HttpStatus.OK.value(), "Order marked as delivered", null);
     }
-
 
     private Orders validateOrderAssignment(Long orderId, Long deliveringStaffId) {
         Orders order = orderRepository.findById(orderId).orElseThrow(() -> {
@@ -129,6 +128,4 @@ public class DeliveringStaffService {
 
         return order;
     }
-
-
 }

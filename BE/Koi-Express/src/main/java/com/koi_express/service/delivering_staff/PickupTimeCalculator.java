@@ -1,11 +1,11 @@
 package com.koi_express.service.delivering_staff;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 public class PickupTimeCalculator {
@@ -22,8 +22,6 @@ public class PickupTimeCalculator {
 
         BigDecimal timeInMinutes = timeInHours.multiply(new BigDecimal("60.0"));
 
-        return LocalDateTime.now()
-                .plusMinutes(timeInMinutes.longValue())
-                .plusHours(additionalTimeForDelaysInHours);
+        return LocalDateTime.now().plusMinutes(timeInMinutes.longValue()).plusHours(additionalTimeForDelaysInHours);
     }
 }

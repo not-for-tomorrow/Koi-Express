@@ -1,5 +1,11 @@
 package com.koi_express.service.blog;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+
 import com.koi_express.entity.promotion.Blog;
 import com.koi_express.enums.BlogStatus;
 import com.koi_express.exception.ResourceNotFoundException;
@@ -7,22 +13,8 @@ import com.koi_express.repository.BlogRepository;
 import com.koi_express.service.verification.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.apache.poi.hwpf.HWPFDocument;
-import org.apache.poi.hwpf.extractor.WordExtractor;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +24,7 @@ public class BlogService {
     private final BlogRepository blogRepository;
     private final S3Service s3Service;
 
-    public Blog createBlog(String title, String content,
-                           MultipartFile imageFile) {
+    public Blog createBlog(String title, String content, MultipartFile imageFile) {
 
         Blog blog = new Blog();
         blog.setTitle(title);
@@ -50,6 +41,7 @@ public class BlogService {
         if (imageFile != null) {
             try {
                 String imageUrl = s3Service.uploadImage("blog", date, title, imageFile);
+                log.info("Image URL: {}", imageUrl);
                 blog.setImageUrl(imageUrl);
                 if (imageUrl == null) {
                     log.warn("Image uploaded to S3 but returned a null URL");
@@ -60,18 +52,15 @@ public class BlogService {
             }
         }
 
-
         return blogRepository.save(blog);
     }
-
 
     public Optional<Blog> getBlogById(Long id) {
         return blogRepository.findById(id);
     }
 
     public Blog approveBlog(Long blogId) {
-        Blog blog = blogRepository.findById(blogId)
-                .orElseThrow(() -> new ResourceNotFoundException("Blog not found"));
+        Blog blog = blogRepository.findById(blogId).orElseThrow(() -> new ResourceNotFoundException("Blog not found"));
 
         blog.setStatus(BlogStatus.PUBLISHED);
         return blogRepository.save(blog);
@@ -84,5 +73,4 @@ public class BlogService {
     public Optional<Blog> getBlogBySlug(String slug) {
         return blogRepository.findBySlug(slug);
     }
-
 }

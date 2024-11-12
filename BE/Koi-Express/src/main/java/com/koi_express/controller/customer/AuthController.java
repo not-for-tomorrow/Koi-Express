@@ -1,6 +1,5 @@
 package com.koi_express.controller.customer;
 
-import java.security.SecureRandom;
 import java.util.stream.Collectors;
 
 import com.koi_express.dto.request.LoginRequest;
@@ -55,7 +54,9 @@ public class AuthController {
         String otp = otpService.generateOtpForPurpose(formattedPhoneNumber, "REGISTER");
         otpService.sendOtp(formattedPhoneNumber, otp);
 
-        logger.info("Generated OTP for registration for {}: {}", maskPhoneNumber(formattedPhoneNumber), otp);
+        if (!customersRepository.existsByPhoneNumber(formattedPhoneNumber)) {
+            logger.info("Generated OTP for registration for {}: {}", maskPhoneNumber(formattedPhoneNumber), otp);
+        }
 
         otpService.saveTempRegisterRequest(registerRequest);
 
@@ -72,7 +73,8 @@ public class AuthController {
         if (tempRegisterRequest == null) {
             logger.warn("No temporary registration data found for {}", formattedPhoneNumber);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Temporary registration data not found", null));
+                    .body(new ApiResponse<>(
+                            HttpStatus.BAD_REQUEST.value(), "Temporary registration data not found", null));
         }
 
         boolean isValid = otpService.validateOtpForPurpose(formattedPhoneNumber, otp, "REGISTER");
@@ -127,14 +129,13 @@ public class AuthController {
                     .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid OTP. Please try again.", null));
         }
 
-        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "OTP validated successfully. Proceed to reset password.", null));
+        return ResponseEntity.ok(new ApiResponse<>(
+                HttpStatus.OK.value(), "OTP validated successfully. Proceed to reset password.", null));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponse<String>> resetPasswordAfterOtpVerification(
-            @RequestParam String phoneNumber,
-            @RequestParam String newPassword,
-            @RequestParam String confirmPassword) {
+            @RequestParam String phoneNumber, @RequestParam String newPassword, @RequestParam String confirmPassword) {
 
         String formattedPhoneNumber = otpService.formatPhoneNumber(phoneNumber);
 
@@ -149,15 +150,19 @@ public class AuthController {
                 return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Password reset successful", null));
             } else {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Password reset failed", null));
+                        .body(new ApiResponse<>(
+                                HttpStatus.INTERNAL_SERVER_ERROR.value(), "Password reset failed", null));
             }
         } catch (Exception e) {
-            logger.error("Error while resetting password for phone number {}: {}", formattedPhoneNumber, e.getMessage());
+            logger.error(
+                    "Error while resetting password for phone number {}: {}", formattedPhoneNumber, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An error occurred while resetting password", null));
+                    .body(new ApiResponse<>(
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            "An error occurred while resetting password",
+                            null));
         }
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<String>> authenticateCustomer(
@@ -186,7 +191,8 @@ public class AuthController {
         String fullName = oAuth2User.getAttribute("name");
         String providerId = oAuth2User.getAttribute("sub");
 
-        Customers customer = customerService.findByEmailAndAuthProvider(email, AuthProvider.GOOGLE)
+        Customers customer = customerService
+                .findByEmailAndAuthProvider(email, AuthProvider.GOOGLE)
                 .orElseGet(() -> {
                     Customers newCustomer = new Customers();
                     newCustomer.setEmail(email);

@@ -1,12 +1,12 @@
 package com.koi_express.controller.translate;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.koi_express.exception.TranslationException;
 import com.koi_express.service.verification.TranslationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/translation")
@@ -16,8 +16,8 @@ public class TranslationController {
     private final TranslationService translationService;
 
     @PostMapping
-    public Map<String, String> translateContent(@RequestBody Map<String, String> content,
-                                                @RequestParam String targetLanguage) {
+    public Map<String, String> translateContent(
+            @RequestBody Map<String, String> content, @RequestParam String targetLanguage) {
         Map<String, String> translatedContent = new HashMap<>();
 
         content.forEach((key, text) -> {

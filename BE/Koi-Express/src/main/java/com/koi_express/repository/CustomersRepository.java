@@ -9,7 +9,6 @@ import com.koi_express.enums.AuthProvider;
 import lombok.NonNull;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -19,7 +18,7 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
 
     Optional<Customers> findByPhoneNumber(String phoneNumber);
 
-    boolean existsByEmail(String email); // For validation purposes
+    boolean existsByEmail(String email);
 
     boolean existsByPhoneNumber(String phoneNumber);
 
@@ -27,13 +26,4 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
     List<Customers> findAll(@NonNull Sort sort);
 
     List<Customers> findByActiveTrueAndLastLoginBefore(LocalDateTime date);
-
-    @Query("SELECT c.email FROM Customers c")
-    List<String> findAllEmails();
-
-    @Query("SELECT c.passwordHash FROM Customers c")
-    List<String> findAllPasswords();
-
-    @Query("SELECT c.phoneNumber FROM Customers c")
-    List<String> findAllPhoneNumbers();
 }

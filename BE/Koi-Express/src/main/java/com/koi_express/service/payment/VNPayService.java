@@ -1,5 +1,10 @@
 package com.koi_express.service.payment;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.TreeMap;
+
 import com.koi_express.config.VNPayConfig;
 import com.koi_express.dto.payment.PaymentData;
 import com.koi_express.dto.response.ApiResponse;
@@ -10,11 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.Map;
-import java.util.TreeMap;
-
 @Service
 @RequiredArgsConstructor
 public class VNPayService {
@@ -23,7 +23,9 @@ public class VNPayService {
     private final VNPayConfig vnPayConfig;
 
     public ApiResponse<String> createVnPayPayment(Orders order) {
-        if (order == null || order.getOrderDetail() == null || order.getOrderDetail().getCommitmentFee() == null) {
+        if (order == null
+                || order.getOrderDetail() == null
+                || order.getOrderDetail().getCommitmentFee() == null) {
             throw new IllegalArgumentException("Invalid order details provided.");
         }
 
@@ -76,6 +78,32 @@ public class VNPayService {
         }
     }
 
+    public ApiResponse<String> refund(Orders order, BigDecimal amount) {
+        try {
+            if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+                logger.error("Invalid refund amount for order ID: {}", order.getOrderId());
+                return new ApiResponse<>(400, "Refund amount must be greater than zero", null);
+            }
+
+            String transactionRef = generateTransactionRef(order.getOrderId(), false);
+            Map<String, String> refundParams = buildRefundParams(order, amount, transactionRef);
+
+            String refundUrl = VNPayUtil.getRefundURL(refundParams);
+            String refundResponse = VNPayUtil.sendRefundRequest(refundUrl);
+
+            if (VNPayUtil.verifyRefundResponse(refundResponse, vnPayConfig.getSecretKey())) {
+                logger.info("Successfully refunded amount {} for order ID {}", amount, order.getOrderId());
+                return new ApiResponse<>(200, "Refund processed successfully", refundResponse);
+            } else {
+                logger.warn("Refund verification failed for order ID {}", order.getOrderId());
+                return new ApiResponse<>(500, "Refund verification failed", null);
+            }
+        } catch (Exception e) {
+            logger.error("Error processing refund for order ID {}: {}", order.getOrderId(), e.getMessage());
+            return new ApiResponse<>(500, "Error processing refund", e.getMessage());
+        }
+    }
+
     public boolean verifyPayment(Map<String, String> vnpParams) throws IOException {
         String vnpSecureHash = vnpParams.get("vnp_SecureHash");
         vnpParams.remove("vnp_SecureHash");
@@ -95,7 +123,8 @@ public class VNPayService {
         return true;
     }
 
-    private Map<String, String> buildVnPayParams(Orders order, BigDecimal amount, String bankCode, String transactionRef) {
+    private Map<String, String> buildVnPayParams(
+            Orders order, BigDecimal amount, String bankCode, String transactionRef) {
         Map<String, String> vnpParamsMap = new TreeMap<>(vnPayConfig.getVNPayConfig());
 
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount.longValue()));
@@ -107,5 +136,20 @@ public class VNPayService {
         vnpParamsMap.put("vnp_ExpireDate", VNPayUtil.calculateExpireDate());
 
         return vnpParamsMap;
+    }
+
+    private Map<String, String> buildRefundParams(Orders order, BigDecimal amount, String transactionRef) {
+        Map<String, String> refundParams = new TreeMap<>();
+
+        refundParams.put(
+                "vnp_Amount",
+                String.valueOf(amount.multiply(BigDecimal.valueOf(100)).longValue()));
+        refundParams.put("vnp_TxnRef", transactionRef);
+        refundParams.put("vnp_OrderInfo", "Refund for order ID: " + order.getOrderId());
+        refundParams.put("vnp_IpAddr", "127.0.0.1");
+        refundParams.put("vnp_TransactionType", "02");
+        refundParams.put("vnp_RefundDate", VNPayUtil.calculateCurrentDate());
+
+        return refundParams;
     }
 }

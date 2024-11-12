@@ -1,5 +1,7 @@
 package com.koi_express.service.sale_staff;
 
+import java.time.LocalDateTime;
+
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
@@ -38,6 +40,19 @@ public class SalesStaffService {
 
         if (order.getStatus() == OrderStatus.ACCEPTED || order.getStatus() == OrderStatus.ASSIGNED) {
             return new ApiResponse<>(400, "Order has already been accepted or assigned", null);
+        }
+
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime createdAt = order.getCreatedAt();
+        long hoursSinceOrder =
+                java.time.Duration.between(createdAt, currentTime).toHours();
+
+        if (hoursSinceOrder < 12) {
+            logger.warn(
+                    "Order with ID {} cannot be accepted yet. Only {} hours have passed since creation.",
+                    orderId,
+                    hoursSinceOrder);
+            return new ApiResponse<>(400, "Order can only be accepted 12 hours after creation", null);
         }
 
         try {

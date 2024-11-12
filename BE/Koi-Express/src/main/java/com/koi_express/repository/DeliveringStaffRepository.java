@@ -3,14 +3,10 @@ package com.koi_express.repository;
 import java.util.List;
 import java.util.Optional;
 
-import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.shipment.DeliveringStaff;
 import com.koi_express.enums.DeliveringStaffLevel;
-import com.koi_express.enums.OrderStatus;
 import com.koi_express.enums.Role;
 import com.koi_express.enums.StaffStatus;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,5 +27,4 @@ public interface DeliveringStaffRepository extends JpaRepository<DeliveringStaff
 
     @Query("SELECT ds FROM DeliveringStaff ds JOIN ds.ordersReceived os WHERE os.orderId = :orderId")
     Optional<DeliveringStaff> findByOrderId(@Param("orderId") Long orderId);
-
 }

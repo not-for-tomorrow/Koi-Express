@@ -1,16 +1,15 @@
 package com.koi_express.controller.customer;
 
-import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.request.UpdateRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.dto.response.BasicInfoResponse;
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.customer.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;

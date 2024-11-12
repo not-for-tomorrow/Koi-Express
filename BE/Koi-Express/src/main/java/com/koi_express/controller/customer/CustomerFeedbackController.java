@@ -1,8 +1,9 @@
 package com.koi_express.controller.customer;
 
+import java.util.List;
+
 import com.koi_express.dto.request.FeedbackRequest;
 import com.koi_express.entity.customer.CustomerFeedback;
-import com.koi_express.enums.FeedbackTag;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.customer.CustomerDetailsService;
 import com.koi_express.service.customer.CustomerFeedbackService;
@@ -13,10 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/feedback")
@@ -29,8 +26,8 @@ public class CustomerFeedbackController {
     private final CustomerDetailsService userDetailsService;
 
     @PostMapping("/submitFeedback")
-    public ResponseEntity<?> submitFeedback(@RequestHeader("Authorization") String token,
-                                            @Valid @RequestBody FeedbackRequest feedbackRequest) {
+    public ResponseEntity<?> submitFeedback(
+            @RequestHeader("Authorization") String token, @Valid @RequestBody FeedbackRequest feedbackRequest) {
 
         String jwtToken = token.startsWith("Bearer ") ? token.substring(7) : token;
         String phoneNumber = jwtUtil.extractPhoneNumber(jwtToken);
@@ -42,7 +39,8 @@ public class CustomerFeedbackController {
 
         boolean isOrderDelivered = feedbackService.isOrderDelivered(feedbackRequest.getOrderId());
         if (!isOrderDelivered) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Feedback can only be submitted for delivered orders.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Feedback can only be submitted for delivered orders.");
         }
 
         try {
@@ -51,15 +49,19 @@ public class CustomerFeedbackController {
                     feedbackRequest.getRating(),
                     feedbackRequest.getTags(),
                     feedbackRequest.getComments(),
-                    feedbackRequest.getCustomerId()
-            );
+                    feedbackRequest.getCustomerId());
             return ResponseEntity.ok(feedback);
-        }catch (IllegalArgumentException e) {
-            log.error("Invalid tag provided in feedback for customer ID {}: {}", feedbackRequest.getCustomerId(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Invalid tag provided: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.error(
+                    "Invalid tag provided in feedback for customer ID {}: {}",
+                    feedbackRequest.getCustomerId(),
+                    e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid tag provided: " + e.getMessage());
         } catch (Exception e) {
-            log.error("Error submitting feedback for customer ID {}: {}", feedbackRequest.getCustomerId(), e.getMessage());
+            log.error(
+                    "Error submitting feedback for customer ID {}: {}",
+                    feedbackRequest.getCustomerId(),
+                    e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while submitting feedback: " + e.getMessage());
         }

@@ -1,10 +1,10 @@
 package com.koi_express.store;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TemporaryStorage {
     private static final TemporaryStorage instance = new TemporaryStorage();
@@ -33,23 +33,4 @@ public class TemporaryStorage {
         }
         return data;
     }
-
-    public Map<String, Object> retrieveAnyData() {
-        if (!temporaryData.isEmpty()) {
-            Long firstKey = temporaryData.keySet().iterator().next();
-            return retrieveData(firstKey);
-        }
-        logger.info("No data found in TemporaryStorage");
-        return null;
-    }
-
-    public void removeData(Long key) {
-        if (temporaryData.containsKey(key)) {
-            logger.info("Data removed from TemporaryStorage for key {}: {}", key, temporaryData.get(key));
-            temporaryData.remove(key);
-        } else {
-            logger.info("No data to remove in TemporaryStorage for key {}", key);
-        }
-    }
-
 }

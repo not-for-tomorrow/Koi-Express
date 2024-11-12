@@ -3,16 +3,15 @@ package com.koi_express.controller.order;
 import java.util.List;
 import java.util.Map;
 
-import com.koi_express.entity.shipment.Shipments;
-import com.koi_express.jwt.JwtUtil;
 import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.OrderRequest;
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
+import com.koi_express.entity.shipment.Shipments;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.order.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -42,7 +41,7 @@ public class OrderController {
         return response;
     }
 
-    @PreAuthorize("hasRole('MANAGER') or hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/cancel/{orderId}")
     public ResponseEntity<ApiResponse<String>> cancelOrder(@PathVariable Long orderId) {
         logger.info("Canceling order with ID: {}", orderId);
@@ -63,7 +62,8 @@ public class OrderController {
 
         ApiResponse<List<OrderWithCustomerDTO>> response = orderService.getAllOrders();
         if (response.getResult() == null || response.getResult().isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "No orders found", null), HttpStatus.OK);
+            return new ResponseEntity<>(
+                    new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "No orders found", null), HttpStatus.OK);
         }
 
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -77,7 +77,8 @@ public class OrderController {
             @RequestParam(value = "toDate", required = false) String toDate) {
         logger.info("Fetching order history with status: {}, fromDate: {}, toDate: {}", status, fromDate, toDate);
         String token = authorizationHeader.substring(7);
-        ApiResponse<List<OrderWithCustomerDTO>> response = orderService.getOrderHistoryByFilters(token, status, fromDate, toDate);
+        ApiResponse<List<OrderWithCustomerDTO>> response =
+                orderService.getOrderHistoryByFilters(token, status, fromDate, toDate);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -91,7 +92,7 @@ public class OrderController {
         String userId = jwtUtil.extractUserId(token, role);
         logger.info("Extracted role: {}, Extracted userId: {}", role, userId);
 
-        Orders order = orderService.getOrderWithDetails(orderId, request).getOrder();
+        Orders order = orderService.getOrderWithDetails(orderId).getOrder();
         Customers customer = order.getCustomer();
         Shipments shipments = order.getShipment();
 
