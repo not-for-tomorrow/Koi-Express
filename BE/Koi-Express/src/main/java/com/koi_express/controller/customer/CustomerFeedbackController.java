@@ -42,30 +42,24 @@ public class CustomerFeedbackController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Feedback can only be submitted for delivered orders.");
         }
-
         try {
-
             CustomerFeedback feedback = feedbackService.submitFeedback(
                     feedbackRequest.getRating(),
                     feedbackRequest.getTags(),
                     feedbackRequest.getComments(),
-                    feedbackRequest.getCustomerId());
+                    feedbackRequest.getCustomerId(),
+                    feedbackRequest.getOrderId());
             return ResponseEntity.ok(feedback);
         } catch (IllegalArgumentException e) {
-            log.error(
-                    "Invalid tag provided in feedback for customer ID {}: {}",
-                    feedbackRequest.getCustomerId(),
-                    e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid tag provided: " + e.getMessage());
+            log.error("Error submitting feedback: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            log.error(
-                    "Error submitting feedback for customer ID {}: {}",
-                    feedbackRequest.getCustomerId(),
-                    e.getMessage());
+            log.error("Unexpected error submitting feedback: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An error occurred while submitting feedback: " + e.getMessage());
         }
     }
+
 
     @GetMapping("/order/{orderId}")
     public ResponseEntity<List<CustomerFeedback>> getFeedbackByOrder(@PathVariable Long orderId) {

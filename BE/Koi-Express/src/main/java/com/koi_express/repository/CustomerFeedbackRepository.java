@@ -13,4 +13,6 @@ public interface CustomerFeedbackRepository extends JpaRepository<CustomerFeedba
     List<CustomerFeedback> findByCustomer_Id(Long customerId);
 
     List<CustomerFeedback> findByDeliveringStaff_Id(Long deliveringStaffId);
+
+    boolean existsByOrder_OrderIdAndCustomer_Id(Long orderId, Long customerId);
 }

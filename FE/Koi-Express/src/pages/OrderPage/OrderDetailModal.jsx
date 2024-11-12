@@ -1,14 +1,16 @@
+// eslint-disable-next-line no-unused-vars
 import React, {useState, useEffect} from "react";
 import axios from "axios";
 import {Link} from "react-router-dom";
-import RatingPopup from "./RatingPopup"; // Import the RatingPopup component
+import RatingPopup from "./RatingPopup";
 
+// eslint-disable-next-line react/prop-types
 const OrderDetailModal = ({orderId, distance}) => {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [isRatingPopupOpen, setIsRatingPopupOpen] = useState(false); // State to toggle RatingPopup
+    const [isRatingPopupOpen, setIsRatingPopupOpen] = useState(false);
+    const [isCanceling, setIsCanceling] = useState(false);
 
     const statusMapping = {
         PENDING: "Chờ xác nhận",
@@ -61,6 +63,27 @@ const OrderDetailModal = ({orderId, distance}) => {
 
         fetchOrderDetails();
     }, [orderId]);
+
+    const handleCancelOrder = async () => {
+        setIsCanceling(true);
+        const token = localStorage.getItem("token");
+
+        try {
+            await axios.post(
+                `http://localhost:8080/api/orders/cancel/${orderId}`,
+                {},
+                {
+                    headers: {Authorization: `Bearer ${token}`},
+                }
+            );
+            setOrder((prev) => ({...prev, status: "CANCELED"}));
+        } catch (err) {
+            console.error("Failed to cancel order:", err.message);
+            alert("Failed to cancel order. Please try again.");
+        } finally {
+            setIsCanceling(false);
+        }
+    };
 
     const handleStarClick = () => {
         setIsRatingPopupOpen(true); // Open the rating popup
@@ -115,35 +138,37 @@ const OrderDetailModal = ({orderId, distance}) => {
                         Đơn hàng #{orderId}
                     </div>
 
-                    <div className="p-4 mb-4 border rounded-lg bg-gray-50">
-                        <div className="flex justify-between">
-                            <p>
-                                Tài xế{" "}
+                    {/* Show feedback section only if the status is DELIVERED */}
+                    {status === "DELIVERED" && (
+                        <div className="p-4 mb-4 border rounded-lg bg-gray-50">
+                            <div className="flex justify-between">
+                                <p>
+                                    Tài xế{" "}
+                                    <span className="text-red-500 font-bold">
+                    {order.deliveringStaff.fullName || "N/A"}
+                  </span>{" "}
+                                    đã hoàn tất đơn hàng. Hãy cho chúng tôi biết đánh giá của bạn
+                                    nhé!
+                                </p>
+                            </div>
 
-                                <span className="text-red-500 font-bold">
-
-    {order.deliveringStaff.fullName || "N/A"}
-  </span>{" "}
-                                đã hoàn tất đơn hàng. Hãy cho chúng tôi biết đánh giá của bạn nhé!
-                            </p>
-
+                            <div className="flex justify-center mt-2 space-x-1 text-3xl">
+                                {[...Array(5)].map((_, index) => (
+                                    <span
+                                        key={index}
+                                        className="text-yellow-500 cursor-pointer"
+                                        onClick={handleStarClick} // Open the rating popup on star click
+                                    >
+                    ⭐
+                  </span>
+                                ))}
+                            </div>
                         </div>
-
-                        <div className="flex justify-center mt-2 space-x-1 text-3xl">
-                            {[...Array(5)].map((_, index) => (
-                                <span
-                                    key={index}
-                                    className="text-yellow-500 cursor-pointer"
-                                    onClick={handleStarClick} // Open the rating popup on star click
-                                >
-                  ⭐
-                </span>
-                            ))}
-                        </div>
-                    </div>
+                    )}
 
                     <div className="text-sm ">
                         <strong className="text-gray-600">Lộ trình:</strong>{" "}
+                        {/* eslint-disable-next-line react/prop-types */}
                         {distance?.toFixed(2)} km
                     </div>
 
@@ -210,7 +235,9 @@ const OrderDetailModal = ({orderId, distance}) => {
                     // Display only totalFee when the status is DELIVERED
                     <div className="flex justify-between">
                         <p>Tổng phí</p>
-                        <p>{new Intl.NumberFormat("vi-VN").format(order.totalFee || 0)} VND</p>
+                        <p>
+                            {new Intl.NumberFormat("vi-VN").format(order.totalFee || 0)} VND
+                        </p>
                     </div>
                 ) : (
                     // Otherwise, display both distance fee and commitment fee
@@ -226,7 +253,6 @@ const OrderDetailModal = ({orderId, distance}) => {
                     </>
                 )}
             </div>
-
 
             {/* Status & Payment Section */}
             <div className="mt-4 text-sm text-gray-600">
@@ -248,20 +274,25 @@ const OrderDetailModal = ({orderId, distance}) => {
                 </p>
             </div>
 
-            {/* Button at the bottom */}
-            <div className="flex-shrink-0 mt-6">
+            <div className="flex-shrink-0 mt-6 flex justify-between space-x-2">
+                <button
+                    className="w-full p-3 text-base font-semibold text-white transition-all transform bg-red-500 rounded-lg hover:bg-red-600"
+                    onClick={handleCancelOrder}
+                    disabled={isCanceling || status === "CANCELED"}
+                >
+                    {isCanceling ? "Đang hủy..." : "Huỷ đơn"}
+                </button>
                 <button
                     className="w-full p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600">
                     <Link to="/appkoiexpress/history">Đóng</Link>
                 </button>
             </div>
-            {/* Include the RatingPopup component and pass required props */}
+
             <RatingPopup
                 isOpen={isRatingPopupOpen}
                 onClose={handleRatingClose}
                 onSubmit={handleRatingSubmit}
                 orderId={orderId}
-
             />
         </div>
     );

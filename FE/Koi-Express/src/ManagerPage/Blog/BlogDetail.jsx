@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchBlogDataByStatus } from "../../koi/api/api";
 
-const BlogDetail = ({ status, setNeedsRefresh, generateSlug, blogs }) => {
+const BlogDetail = ({ status, setNeedsRefresh, blogs }) => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [blog, setBlog] = useState(null);
@@ -12,18 +12,18 @@ const BlogDetail = ({ status, setNeedsRefresh, generateSlug, blogs }) => {
   useEffect(() => {
     const loadBlog = async () => {
       setLoading(true);
-      let foundBlog = blogs.find((blog) => generateSlug(blog.title) === slug);
+      let foundBlog = blogs.find((blog) => blog.slug === slug);
 
       if (!foundBlog) {
         const data = await fetchBlogDataByStatus(status);
-        foundBlog = data.find((blog) => generateSlug(blog.title) === slug);
+        foundBlog = data.find((blog) => blog.slug === slug);
       }
 
       setBlog(foundBlog);
       setLoading(false);
     };
     loadBlog();
-  }, [slug, status, blogs, generateSlug]);
+  }, [slug, status, blogs]);
 
   const handleApprove = async () => {
     const token = localStorage.getItem("token");
@@ -63,6 +63,20 @@ const BlogDetail = ({ status, setNeedsRefresh, generateSlug, blogs }) => {
     }
   };
 
+  const renderContent = () => {
+    try {
+      const contentJSON = JSON.parse(blog.content);
+      return contentJSON.blocks.map((block, index) => (
+        <p key={index} className="text-sm leading-relaxed mb-2">
+          {block.text}
+        </p>
+      ));
+    } catch (error) {
+      console.error("Error parsing content:", error);
+      return <p className="text-sm leading-relaxed">{blog.content}</p>;
+    }
+  };
+
   if (loading) {
     return <div className="text-center text-gray-500">Loading...</div>;
   }
@@ -84,16 +98,18 @@ const BlogDetail = ({ status, setNeedsRefresh, generateSlug, blogs }) => {
           className="w-auto h-auto max-w-full max-h-[500px] object-contain"
         />
       </div>
-      <p className="text-sm leading-relaxed">{blog?.content}</p>
+      <div>{renderContent()}</div>
 
-      <div className="mt-6 flex justify-center">
-        <button
-          onClick={handleApprove}
-          className="px-6 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-        >
-          Chấp nhận
-        </button>
-      </div>
+      {status === "DRAFT" && (
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={handleApprove}
+            className="px-6 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            Chấp nhận
+          </button>
+        </div>
+      )}
 
       {approvalMessage && (
         <p

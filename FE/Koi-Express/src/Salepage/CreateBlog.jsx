@@ -29,7 +29,9 @@ const CreateBlog = () => {
   const [message, setMessage] = useState(null);
 
   const handleFileChange = (e) => {
-    setImageFile(e.target.files[0]);
+    const file = e.target.files[0];
+    console.log("Selected File:", file); // Debugging log for the selected file
+    setImageFile(file);
   };
 
   const handleSubmit = async (e) => {
@@ -47,10 +49,14 @@ const CreateBlog = () => {
     setMessage(null);
 
     try {
+      console.log("Title:", title);
+      console.log("Content:", content);
+      console.log("Image File (before sending):", imageFile);
+
       await createBlogAPI(title, content, imageFile);
       setMessage({ type: "success", text: "Blog created successfully!" });
       setTitle("");
-      setEditorState(EditorState.createEmpty()); // Reset editor content
+      setEditorState(EditorState.createEmpty());
       setImageFile(null);
       setTimeout(() => setMessage(null), 5000);
     } catch (error) {
