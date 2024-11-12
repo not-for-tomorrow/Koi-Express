@@ -146,7 +146,6 @@ public class DeliveringStaffController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
-        // Find the DeliveringStaff entity and fetch orders
         DeliveringStaff deliveringStaff = deliveringStaffService.findById(staffId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Staff not found"));
 

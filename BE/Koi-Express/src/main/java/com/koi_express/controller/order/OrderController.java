@@ -1,5 +1,7 @@
 package com.koi_express.controller.order;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +13,7 @@ import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.shipment.Shipments;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.order.OrderService;
+import com.koi_express.service.order.price.TransportationFeeCalculator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +33,7 @@ public class OrderController {
 
     private final OrderService orderService;
     private final JwtUtil jwtUtil;
+    private final TransportationFeeCalculator feeCalculator;
 
     @PostMapping("/create")
     public ApiResponse<Map<String, Object>> createOrder(
@@ -111,5 +115,17 @@ public class OrderController {
         } else {
             throw new IllegalArgumentException("Authorization header must be provided");
         }
+    }
+
+    @GetMapping("/calculate-fees")
+    public ResponseEntity<Map<String, BigDecimal>> calculateFees(@RequestParam BigDecimal kilometers) {
+        BigDecimal totalFee = feeCalculator.calculateTotalFee(kilometers);
+        BigDecimal commitmentFee = feeCalculator.calculateCommitmentFee(kilometers);
+
+        Map<String, BigDecimal> fees = new HashMap<>();
+        fees.put("totalFee", totalFee);
+        fees.put("commitmentFee", commitmentFee);
+
+        return ResponseEntity.ok(fees);
     }
 }

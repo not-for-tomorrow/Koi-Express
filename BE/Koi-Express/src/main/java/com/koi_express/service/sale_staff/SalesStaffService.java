@@ -47,7 +47,7 @@ public class SalesStaffService {
         long hoursSinceOrder =
                 java.time.Duration.between(createdAt, currentTime).toHours();
 
-        if (hoursSinceOrder < 12) {
+        if (hoursSinceOrder < 1) {
             logger.warn(
                     "Order with ID {} cannot be accepted yet. Only {} hours have passed since creation.",
                     orderId,
