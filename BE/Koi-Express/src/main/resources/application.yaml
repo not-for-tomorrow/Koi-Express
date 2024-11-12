@@ -74,4 +74,3 @@ spring:
     speed: 60
     buffer-time: 1
 
-PROVIDER_NAME: Koi-Express

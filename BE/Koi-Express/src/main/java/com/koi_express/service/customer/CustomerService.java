@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.koi_express.dto.request.CustomerTopSpenderRequest;
 import com.koi_express.dto.request.RegisterRequest;
 import com.koi_express.dto.request.UpdateRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -136,5 +137,9 @@ public class CustomerService {
         }
 
         return new ApiResponse<>(HttpStatus.OK.value(), "Mật khẩu đã được cập nhật thành công", null);
+    }
+
+    public List<CustomerTopSpenderRequest> getTop10CustomersBySpending() {
+        return customersRepository.findTop10CustomersByTotalSpent();
     }
 }

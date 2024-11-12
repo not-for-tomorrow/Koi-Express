@@ -80,7 +80,6 @@ public class SalesStaffController {
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<ApiResponse<Customers>> getCustomerById(@PathVariable Long customerId) {
         try {
-            // Call the service to get customer details by ID
             Customers customer = manageCustomerService.getCustomerById(customerId);
 
             logger.info("Fetched details for customer ID: {}", customerId);
