@@ -9,13 +9,14 @@ const RatingPopup = ({ isOpen, onClose, onSubmit, orderId }) => { // Nhận thê
   const [customerId, setCustomerId] = useState(null);
 
   const feedbackOptions = [
-    { id: 1, label: "Nhiệt tình", icon: "🔥" },
-    { id: 2, label: "Nhanh chóng", icon: "⏱️" },
-    { id: 3, label: "Cẩn thận", icon: "📦" },
-    { id: 4, label: "Dễ thương", icon: "😊" },
-    { id: 5, label: "Tuyệt vời", icon: "👍" },
-    { id: 6, label: "Lịch sự", icon: "⭐" },
-  ];
+    { id: 1, label: "Nhiệt tình", icon: "🔥", value: "NHIET_TINH" },
+    { id: 2, label: "Nhanh chóng", icon: "⏱️", value: "NHANH_CHONG" },
+    { id: 3, label: "Cẩn thận", icon: "📦", value: "CAN_THAN" },
+    { id: 4, label: "Dễ thương", icon: "😊", value: "DE_THUONG" },
+    { id: 5, label: "Tuyệt vời", icon: "👍", value: "TUYET_VOI" },
+    { id: 6, label: "Lịch sự", icon: "⭐", value: "LICH_SU" },
+];
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -48,13 +49,13 @@ const RatingPopup = ({ isOpen, onClose, onSubmit, orderId }) => { // Nhận thê
     const feedbackData = {
       rating: selectedRating,
       tags: selectedFeedback.map(
-          (id) => feedbackOptions.find((option) => option.id === id).label
+          (id) => feedbackOptions.find((option) => option.id === id).value
       ),
       comments: comment,
       customerId: customerId,
-      orderId: orderId, 
-
-    };
+      orderId: orderId,
+  };
+  
 
     try {
       setLoading(true);

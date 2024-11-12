@@ -27,38 +27,35 @@ const DeliveringStaffAccount = () => {
   const fetchDeliveringStaff = async () => {
     setLoading(true);
     setError(null);
-
+  
     const token = getToken();
     if (!token) {
       setError("No token found");
       setLoading(false);
       return;
     }
-
+  
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/manager/delivering-staff",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
+      const response = await fetch("http://localhost:8080/api/manager/delivering-staff", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
       if (!response.ok) {
         throw new Error("Failed to fetch delivering staff data");
       }
-
+  
       const data = await response.json();
-      setDeliveringStaff(data);
+      setDeliveringStaff(data.result); // Set only the delivering staff array
     } catch (error) {
       setError(error.message);
     } finally {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     fetchDeliveringStaff();
   }, []);
@@ -168,15 +165,15 @@ const DeliveringStaffAccount = () => {
                       animate={{ x: "0%", opacity: 1 }}
                       exit={{ x: "100%", opacity: 0 }}
                       transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                      className="fixed top-6 right-6 w-72 p-4 bg-white rounded-lg shadow-lg border-l-4 border-green-500 flex flex-col items-start space-y-2"
+                      className="fixed flex flex-col items-start p-4 space-y-2 bg-white border-l-4 border-green-500 rounded-lg shadow-lg top-6 right-6 w-72"
                   >
                     <div className="text-sm font-medium text-green-600">
                       {successMessage}
                     </div>
                     {/* Subtle Divider */}
-                    <div className="w-full border-t border-gray-100 my-1"></div>
+                    <div className="w-full my-1 border-t border-gray-100"></div>
                     {/* Countdown Progress Bar */}
-                    <div className="relative w-full h-1 bg-gray-300 rounded overflow-hidden">
+                    <div className="relative w-full h-1 overflow-hidden bg-gray-300 rounded">
                       <motion.div
                           initial={{ width: "100%" }}
                           animate={{ width: 0 }}
@@ -217,7 +214,7 @@ const DeliveringStaffAccount = () => {
                   <th className="p-2 font-semibold w-1/10">Trạng thái</th>
                   <th className="p-2 font-semibold w-1/10">Cấp bậc</th>
                   <th className="p-2 font-semibold w-1/10">Ngày tạo</th>
-                  <th className="p-2 font-semibold w-1/10 pl-8">Hành động</th>
+                  <th className="p-2 pl-8 font-semibold w-1/10">Hành động</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -252,7 +249,7 @@ const DeliveringStaffAccount = () => {
                       </td>
                       <td className="p-2 text-sm text-gray-700 w-1/10">
                         <button
-                            className="text-white bg-red-500 px-4 py-2 rounded transition duration-300 ease-in-out transform hover:bg-red-700 hover:scale-105">
+                            className="px-4 py-2 text-white transition duration-300 ease-in-out transform bg-red-500 rounded hover:bg-red-700 hover:scale-105">
                           Dừng hoạt động
                         </button>
                       </td>
@@ -414,7 +411,7 @@ const DeliveringStaffAccount = () => {
                   onChange={(e) =>
                     setNewStaff({ ...newStaff, level: e.target.value })
                   }
-                  className="w-full p-3 border rounded-lg border-gray-300 bg-gray-50 text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition ease-in-out duration-200 hover:border-blue-400 hover:bg-blue-100"
+                  className="w-full p-3 text-gray-700 transition duration-200 ease-in-out border border-gray-300 rounded-lg shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400 hover:bg-blue-100"
                 >
                   <option value="BASIC">BASIC</option>
                   <option value="INTERMEDIATE">INTERMEDIATE</option>
