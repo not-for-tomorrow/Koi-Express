@@ -394,7 +394,7 @@ public class OrderService {
             if (paymentLinkResponse.getCode() != HttpStatus.OK.value()) {
                 return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null);
             }
-            return finalizeOrderAndSave(order, calculationData, "Payment link sent to email");
+            return new ApiResponse<>(HttpStatus.OK.value(), "Payment link generated successfully", paymentLinkResponse.getResult());
 
         } catch (Exception e) {
             logger.error("Error creating VNPay payment link: ", e);
