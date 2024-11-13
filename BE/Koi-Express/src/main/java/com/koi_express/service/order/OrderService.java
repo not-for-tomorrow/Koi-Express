@@ -362,6 +362,7 @@ public class OrderService {
             if (paymentResponse.getCode() == HttpStatus.OK.value()) {
                 order.setStatus(OrderStatus.IN_TRANSIT);
                 order.setPaymentConfirmed(true);
+                order.setTotalFee(totalFee);
                 orderRepository.save(order);
                 return new ApiResponse<>(
                         HttpStatus.OK.value(), "Thanh toán xác nhận thành công", paymentResponse.getResult());

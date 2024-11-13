@@ -42,19 +42,6 @@ public class SalesStaffService {
             return new ApiResponse<>(400, "Order has already been accepted or assigned", null);
         }
 
-        LocalDateTime currentTime = LocalDateTime.now();
-        LocalDateTime createdAt = order.getCreatedAt();
-        long hoursSinceOrder =
-                java.time.Duration.between(createdAt, currentTime).toHours();
-
-        if (hoursSinceOrder < 1) {
-            logger.warn(
-                    "Order with ID {} cannot be accepted yet. Only {} hours have passed since creation.",
-                    orderId,
-                    hoursSinceOrder);
-            return new ApiResponse<>(400, "Order can only be accepted 12 hours after creation", null);
-        }
-
         try {
             logger.info("Sales staff attempting to accept order with ID: {}", orderId);
             ApiResponse<String> response = orderService.acceptOrder(orderId);
