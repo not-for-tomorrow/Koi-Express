@@ -28,6 +28,7 @@ public enum ErrorCode {
     ORDER_ALREADY_DELIVERED(1022, "Order already delivered"),
     INVALID_ORDER_STATUS(1023, "Invalid order status"),
     ORDER_PRICE_CALCULATION_FAILED(1024, "Order price calculation failed"),
+    ORDER_DELIVERY_FAILED(1025, "Order delivery failed"),
     ;
 
     ErrorCode(int code, String message) {
