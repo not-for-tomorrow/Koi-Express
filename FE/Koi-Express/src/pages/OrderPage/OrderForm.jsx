@@ -29,46 +29,16 @@ const OrderForm = ({
                        isDeliveryConfirmed,
                        setIsDeliveryConfirmed,
                    }) => {
-    const calculateRoundedCost = (distance) => {
-        const baseFeePerKm = 5200;
-        const fuelPrice = 19000;
-        const smallTruckFuelConsumption = 9.0;
-        const mediumTruckFuelConsumption = 14.0;
-        const largeTruckFuelConsumption = 21.0;
-
-        // Determine fuel consumption based on distance
-        let fuelConsumption;
-        if (distance < 300) {
-            fuelConsumption = smallTruckFuelConsumption;
-        } else if (distance < 800) {
-            fuelConsumption = mediumTruckFuelConsumption;
-        } else {
-            fuelConsumption = largeTruckFuelConsumption;
-        }
-
-        // Calculate distance fee
-        const distanceFee = distance * baseFeePerKm;
-
-        // Calculate fuel cost
-        const fuelCost = Math.ceil((distance / 100) * fuelConsumption * fuelPrice);
-
-        // Calculate total fee
-        const totalFee = distanceFee + fuelCost;
-
-        // Calculate commitment fee for distances over 10 km
-        const commitmentFee = distance > 10 ? Math.ceil(totalFee * 0.3) : 0;
-
-        // Round up total fee including commitment fee
-        return Math.ceil(totalFee + commitmentFee);
-    };
-
-    const roundedCost = calculateRoundedCost(distance);
+    const [roundedCost, setRoundedCost] = useState(null);
     const [isFormValid, setIsFormValid] = useState(false);
     const [showPickupDetail, setShowPickupDetail] = useState(false);
     const [showDeliveryDetail, setShowDeliveryDetail] = useState(false);
     const [pickupCollapsed, setPickupCollapsed] = useState(isPickupConfirmed);
     const [deliveryCollapsed, setDeliveryCollapsed] =
         useState(isDeliveryConfirmed);
+
+    const [distanceFee, setDistanceFee] = useState(0); // Add state for distanceFee
+    const [commitmentFee, setCommitmentFee] = useState(0); // Add state for commitmentFee
 
     useEffect(() => {
         setIsFormValid(
@@ -92,8 +62,49 @@ const OrderForm = ({
         isDeliveryConfirmed,
     ]);
 
+    useEffect(() => {
+        if (isFormValid) {
+            fetchOrderPrice();
+        }
+    }, [isFormValid]); // Ensure it runs when the form becomes valid
+
+    const fetchOrderPrice = async () => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch("http://localhost:8080/api/orders/calculate-order-price", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    originLocation: pickupAddress,
+                    destinationLocation: deliveryAddress,
+                    originDetail: pickupDetail,
+                    destinationDetail: deliveryDetail,
+                    kilometers: distance,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const { distanceFee, commitmentFee } = data.result;
+                setRoundedCost(distanceFee); // Only set distanceFee as roundedCost for display
+                setDistanceFee(distanceFee); // Store distanceFee for future use
+                setCommitmentFee(commitmentFee); // Store commitmentFee for later use in OrderForm2
+            } else {
+                console.error("Failed to fetch order price");
+            }
+        } catch (error) {
+            console.error("Error fetching order price:", error);
+        }
+    };
+
+
+
     const onContinueClick = () => {
-        handleContinue(roundedCost); // Pass the calculated price to OrderPage
+        handleContinue(roundedCost, distanceFee, commitmentFee); // Pass fees to OrderPage
     };
 
     const handlePickupConfirm = () => {
@@ -312,11 +323,15 @@ const OrderForm = ({
                 </div>
             </div>
 
-            {distance > 0 && (
-                <p className="mb-4 text-lg font-semibold text-center text-gray-900">
-                    {`Chi phí: ${new Intl.NumberFormat("vi-VN").format(roundedCost)} VND`}
-                </p>
-            )}
+            {distance > 0 && roundedCost !== null ? (
+    <p className="mb-4 text-lg font-semibold text-center text-gray-900">
+      {`Chi phí vận chuyển: ${new Intl.NumberFormat("vi-VN").format(roundedCost)} VND`}
+    </p>
+) : (
+    <p className="mb-4 text-lg font-semibold text-center text-gray-900">
+      Đang tính chi phí vận chuyển...
+    </p>
+)}
 
             {showPickupDetail && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
