@@ -1,6 +1,7 @@
 package com.koi_express.controller.order;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.order.OrderService;
 import com.koi_express.service.order.price.TransportationFeeCalculator;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -35,7 +37,9 @@ public class OrderController {
 
     private final OrderService orderService;
     private final JwtUtil jwtUtil;
-    private final TransportationFeeCalculator feeCalculator;
+
+    private static final ThreadLocal<BigDecimal> distanceFeeHolder = new ThreadLocal<>();
+    private static final ThreadLocal<BigDecimal> commitFeeHolder = new ThreadLocal<>();
 
     @PostMapping("/create")
     public ApiResponse<Map<String, Object>> createOrder(
@@ -121,7 +125,7 @@ public class OrderController {
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/calculate-order-price")
-    public ApiResponse<Map<String, BigDecimal>> calculateOrderPrice(@Valid @RequestBody OrderRequest orderRequest) {
+    public ApiResponse<Map<String, BigDecimal>> calculateOrderPrice(@Valid @RequestBody OrderRequest orderRequest, HttpSession session) {
         try {
             ApiResponse<Map<String, Object>> feesResponse = orderService.calculateOrderPrice(orderRequest);
 
@@ -130,10 +134,21 @@ public class OrderController {
                             Map.Entry::getKey,
                             entry -> new BigDecimal(entry.getValue().toString())));
 
+            session.setAttribute("distanceFee", fees.get("distanceFee"));
+            session.setAttribute("commitmentFee", fees.get("commitmentFee"));
+
             return ApiResponse.success("Order price calculated successfully", fees);
         } catch (Exception e) {
             logger.error("Error calculating order price for kilometers {}: ", orderRequest, e);
             throw new AppException(ErrorCode.ORDER_PRICE_CALCULATION_FAILED);
         }
+    }
+
+    @GetMapping("/get-fees")
+    public Map<String, BigDecimal> getFees(HttpSession session) {
+        Map<String, BigDecimal> fees = new HashMap<>();
+        fees.put("distanceFee", (BigDecimal) session.getAttribute("distanceFee"));
+        fees.put("commitmentFee", (BigDecimal) session.getAttribute("commitmentFee"));
+        return fees;
     }
 }
