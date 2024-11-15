@@ -19,7 +19,7 @@ public class OrderBuilder {
 
     public Orders buildOrder(OrderRequest orderRequest, Customers customer) {
 
-        BigDecimal distanceFee = transportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
+        BigDecimal distanceFee = transportationFeeCalculator.calculateDistanceFee(orderRequest.getKilometers());
 
         BigDecimal commitmentFee = transportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
 

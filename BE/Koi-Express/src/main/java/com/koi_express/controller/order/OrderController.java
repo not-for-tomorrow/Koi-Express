@@ -1,9 +1,9 @@
 package com.koi_express.controller.order;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.OrderRequest;
@@ -11,6 +11,8 @@ import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.shipment.Shipments;
+import com.koi_express.exception.AppException;
+import com.koi_express.exception.ErrorCode;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.order.OrderService;
 import com.koi_express.service.order.price.TransportationFeeCalculator;
@@ -117,15 +119,21 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/calculate-fees")
-    public ResponseEntity<Map<String, BigDecimal>> calculateFees(@RequestParam BigDecimal kilometers) {
-        BigDecimal totalFee = feeCalculator.calculateTotalFee(kilometers);
-        BigDecimal commitmentFee = feeCalculator.calculateCommitmentFee(kilometers);
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @PostMapping("/calculate-order-price")
+    public ApiResponse<Map<String, BigDecimal>> calculateOrderPrice(@Valid @RequestBody OrderRequest orderRequest) {
+        try {
+            ApiResponse<Map<String, Object>> feesResponse = orderService.calculateOrderPrice(orderRequest);
 
-        Map<String, BigDecimal> fees = new HashMap<>();
-        fees.put("totalFee", totalFee);
-        fees.put("commitmentFee", commitmentFee);
+            Map<String, BigDecimal> fees = feesResponse.getResult().entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> new BigDecimal(entry.getValue().toString())));
 
-        return ResponseEntity.ok(fees);
+            return ApiResponse.success("Order price calculated successfully", fees);
+        } catch (Exception e) {
+            logger.error("Error calculating order price for kilometers {}: ", orderRequest, e);
+            throw new AppException(ErrorCode.ORDER_PRICE_CALCULATION_FAILED);
+        }
     }
 }

@@ -1,7 +1,6 @@
 package com.koi_express.controller.delivering_staff;
 
 import java.util.List;
-import java.util.Optional;
 
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.order.Orders;
@@ -146,7 +145,8 @@ public class DeliveringStaffController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
-        DeliveringStaff deliveringStaff = deliveringStaffService.findById(staffId)
+        DeliveringStaff deliveringStaff = deliveringStaffService
+                .findById(staffId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Staff not found"));
 
         List<Orders> deliveredOrders = deliveringStaffService.findDeliveredOrdersByStaff(deliveringStaff);
