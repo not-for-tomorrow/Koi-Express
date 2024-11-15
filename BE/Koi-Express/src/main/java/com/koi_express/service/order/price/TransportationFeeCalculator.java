@@ -32,7 +32,7 @@ public class TransportationFeeCalculator {
         this.largeTruckFuelConsumption = largeTruckFuelConsumption;
     }
 
-    public BigDecimal calculateTotalFee(BigDecimal kilometers) {
+    public BigDecimal calculateDistanceFee(BigDecimal kilometers) {
         validateDistance(kilometers);
 
         if (kilometers.compareTo(BigDecimal.ZERO) == 0) {
@@ -46,31 +46,31 @@ public class TransportationFeeCalculator {
         BigDecimal distanceFee = kilometers.multiply(baseFeePerKm);
         logger.info("Distance Fee for {} km: {} VND", kilometers, distanceFee);
 
-        BigDecimal fuelCost = calculateFuelCost(kilometers, fuelConsumption);
+        BigDecimal fuelCost = kilometers
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+                .multiply(fuelConsumption)
+                .multiply(fuelPrice);
+
         logger.info("Fuel Cost for {} km: {} VND", kilometers, fuelCost);
 
         BigDecimal totalFee = distanceFee.add(fuelCost);
         logger.info("Total Fee for {} km: {} VND", kilometers, totalFee);
 
-        return totalFee.setScale(0, RoundingMode.HALF_UP);
+        BigDecimal roundedFee =
+                totalFee.divide(BigDecimal.valueOf(1000), 0, RoundingMode.UP).multiply(BigDecimal.valueOf(1000));
+        logger.info("Total Fee for {} km after rounding to nearest thousand: {} VND", kilometers, roundedFee);
+
+        return roundedFee;
     }
 
     private BigDecimal getFuelConsumption(BigDecimal kilometers) {
         if (kilometers.compareTo(BigDecimal.valueOf(300)) < 0) {
-            return smallTruckFuelConsumption; // 2-ton truck with 9 liters per 100 km
+            return smallTruckFuelConsumption;
         } else if (kilometers.compareTo(BigDecimal.valueOf(800)) < 0) {
-            return mediumTruckFuelConsumption; // 5-ton truck with 14 liters per 100 km
+            return mediumTruckFuelConsumption;
         } else {
-            return largeTruckFuelConsumption; // 10-ton truck with 21 liters per 100 km
+            return largeTruckFuelConsumption;
         }
-    }
-
-    private BigDecimal calculateFuelCost(BigDecimal kilometers, BigDecimal fuelConsumption) {
-        BigDecimal fuelCost = kilometers
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
-                .multiply(fuelConsumption)
-                .multiply(fuelPrice);
-        return fuelCost.setScale(0, RoundingMode.HALF_UP);
     }
 
     private void validateDistance(BigDecimal kilometers) {
@@ -85,7 +85,7 @@ public class TransportationFeeCalculator {
             return BigDecimal.ZERO;
         }
 
-        BigDecimal totalFee = calculateTotalFee(kilometers);
+        BigDecimal totalFee = calculateDistanceFee(kilometers);
         BigDecimal commitmentFee = totalFee.multiply(BigDecimal.valueOf(0.30));
         logger.info("Commitment Fee for {} km: {} VND", kilometers, commitmentFee);
         return commitmentFee.setScale(0, RoundingMode.HALF_UP);

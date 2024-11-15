@@ -1,9 +1,9 @@
 package com.koi_express.dto.request;
 
+import java.math.BigDecimal;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
@@ -19,5 +19,4 @@ public class CustomerTopSpenderRequest {
     BigDecimal totalSpent;
 
     Long orderCount;
-
 }

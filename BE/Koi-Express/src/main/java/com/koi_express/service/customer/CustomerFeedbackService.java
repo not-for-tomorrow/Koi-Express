@@ -31,21 +31,24 @@ public class CustomerFeedbackService {
         return order != null && OrderStatus.DELIVERED.equals(order.getStatus());
     }
 
-    public CustomerFeedback submitFeedback(int rating, Set<FeedbackTag> tags, String comments, Long customerId, Long orderId) {
+    public CustomerFeedback submitFeedback(
+            int rating, Set<FeedbackTag> tags, String comments, Long customerId, Long orderId) {
         if (feedbackRepository.existsByOrder_OrderIdAndCustomer_Id(orderId, customerId)) {
             throw new IllegalArgumentException("Feedback already exists for this order and customer.");
         }
 
-        Customers customer = customersRepository.findById(customerId)
+        Customers customer = customersRepository
+                .findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
-        Orders order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        Orders order =
+                orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
         if (!OrderStatus.DELIVERED.equals(order.getStatus())) {
             throw new IllegalArgumentException("Feedback can only be submitted for delivered orders.");
         }
 
-        DeliveringStaff deliveringStaff = deliveringStaffRepository.findByOrderId(orderId)
+        DeliveringStaff deliveringStaff = deliveringStaffRepository
+                .findByOrderId(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("No staff assigned for this order"));
 
         CustomerFeedback feedback = CustomerFeedback.builder()

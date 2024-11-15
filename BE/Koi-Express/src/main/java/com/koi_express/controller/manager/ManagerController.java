@@ -165,6 +165,7 @@ public class ManagerController {
                     .body(ApiResponse.badRequest("Error retrieving monthly totals for year " + year));
         }
     }
+
     @GetMapping("/top-spenders")
     public List<CustomerTopSpenderRequest> getTop10CustomersBySpending() {
         return customerService.getTop10CustomersBySpending();

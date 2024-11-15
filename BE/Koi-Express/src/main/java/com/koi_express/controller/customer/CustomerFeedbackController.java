@@ -60,7 +60,6 @@ public class CustomerFeedbackController {
         }
     }
 
-
     @GetMapping("/order/{orderId}")
     public ResponseEntity<List<CustomerFeedback>> getFeedbackByOrder(@PathVariable Long orderId) {
         List<CustomerFeedback> feedbackList = feedbackService.getFeedbackByOrder(orderId);
