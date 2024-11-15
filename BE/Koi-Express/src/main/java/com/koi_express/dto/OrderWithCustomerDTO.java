@@ -18,9 +18,4 @@ public class OrderWithCustomerDTO {
     Customers customer;
 
     Shipments shipments;
-
-    public OrderWithCustomerDTO(Orders order, Customers customer) {
-        this.order = order;
-        this.customer = customer;
-    }
 }

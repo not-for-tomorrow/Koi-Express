@@ -42,10 +42,9 @@ public class OrderCalculation {
             token = request.getHeader("Authorization").substring(7);
         } catch (Exception e) {
             logger.error("Authorization header is missing or malformed");
-            return new ResponseEntity<>(
-                    new ApiResponse<>(
-                            HttpStatus.UNAUTHORIZED.value(), "Authorization token is missing or malformed", null),
-                    HttpStatus.UNAUTHORIZED);
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authorization token is missing or malformed", HttpStatus.UNAUTHORIZED.value()));
         }
 
         String role;
@@ -55,16 +54,17 @@ public class OrderCalculation {
             staffId = Long.parseLong(jwtUtil.extractUserId(token, role));
         } catch (Exception e) {
             logger.error("Error extracting role or userId from token: ", e);
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid token", null), HttpStatus.UNAUTHORIZED);
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Invalid token", HttpStatus.UNAUTHORIZED.value()));
         }
 
         Optional<Orders> assignedOrder = deliveringStaffService.getPickupOrdersByDeliveringStaff(staffId).stream()
                 .findFirst();
         if (assignedOrder.isEmpty()) {
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "No assigned order data for this staff", null),
-                    HttpStatus.BAD_REQUEST);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.badRequest("No assigned order data for this staff"));
         }
 
         Orders order = assignedOrder.get();
@@ -76,9 +76,9 @@ public class OrderCalculation {
             koiList = (List<Map<String, Object>>) requestBody.get("koiList");
         } catch (ClassCastException e) {
             logger.error("Failed to cast koiList: ", e);
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid koiList format", null),
-                    HttpStatus.BAD_REQUEST);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.badRequest("Invalid koiList format"));
         }
 
         BigDecimal totalKoiFee = BigDecimal.ZERO;
@@ -111,9 +111,9 @@ public class OrderCalculation {
 
             } catch (IllegalArgumentException e) {
                 logger.error("Error calculating fees for koi: ", e);
-                return new ResponseEntity<>(
-                        new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null),
-                        HttpStatus.BAD_REQUEST);
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(ApiResponse.badRequest(e.getMessage()));
             }
         }
 
@@ -129,7 +129,7 @@ public class OrderCalculation {
 
         TemporaryStorage.getInstance().storeData(staffId, responseData);
 
-        return new ResponseEntity<>(
-                new ApiResponse<>(HttpStatus.OK.value(), "Total fee calculated", responseData), HttpStatus.OK);
+        return ResponseEntity
+                .ok(ApiResponse.success("Total fee calculated", responseData));
     }
 }
