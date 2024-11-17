@@ -18,23 +18,31 @@ export const getPaymentMethodIcon = (methodLabel) => {
 };
 
 const DeliverOrderModal = ({
-  orderId,
-  fullName,
-  originLocation,
-  destinationLocation,
-  senderName,
-  senderPhone,
-  recipientName,
-  recipientPhone,
-  distance,
-  status,
-  paymentMethod,
-  koiQuantity,
-}) => {
+                             orderId,
+                             fullName,
+                             originLocation,
+                             destinationLocation,
+                             senderName,
+                             senderPhone,
+                             recipientName,
+                             recipientPhone,
+                             distance,
+                             status,
+                             paymentMethod,
+                             koiQuantity,
+                           }) => {
   const [showDetailPopup, setShowDetailPopup] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(paymentMethod);
   const [remainingTransportationFee, setRemainingTransportationFee] = useState(null);
+
+  // Move koiData and fishStatus state here
+  const [koiData, setKoiData] = useState({
+    KOI_VIET_NAM: [0, 0, 0],
+    KOI_NHAT_BAN: [0, 0, 0],
+    KOI_CHAU_AU: [0, 0, 0],
+  });
+  const [fishStatus, setFishStatus] = useState("HEALTHY");
 
   const handleSelectPaymentMethod = (methodLabel) => {
     setSelectedPaymentMethod(methodLabel);
@@ -50,17 +58,17 @@ const DeliverOrderModal = ({
       try {
         const token = localStorage.getItem("token");
         const response = await axios.post(
-          "http://localhost:8080/api/orders/confirm-payment",
-          { paymentMethod: "VNPAY" },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+            "http://localhost:8080/api/orders/confirm-payment",
+            { paymentMethod: "VNPAY" },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
         );
 
         if (response.data.result) {
-          window.location.href = response.data.result; 
+          window.location.href = response.data.result;
         }
       } catch (error) {
         console.error("Failed to confirm payment:", error);
@@ -135,6 +143,7 @@ const DeliverOrderModal = ({
         </div>
       </div>
 
+      {/* Existing modal content */}
       <button onClick={() => setShowDetailPopup(true)}>
         <div className="p-4 mt-4 border rounded-lg bg-gray-50">
           <div className="flex justify-between">Chi tiết cá</div>
@@ -200,11 +209,15 @@ const DeliverOrderModal = ({
       </div>
 
       {showDetailPopup && (
-        <DeliverOrderUpdate
-          koiQuantity={koiQuantity}
-          onClose={() => setShowDetailPopup(false)}
-          onSubmitSuccess={onSubmitSuccess}
-        />
+          <DeliverOrderUpdate
+              koiQuantity={koiQuantity}
+              koiData={koiData} // Pass koiData to the popup
+              setKoiData={setKoiData} // Pass setKoiData to allow updates
+              fishStatus={fishStatus} // Pass fishStatus to the popup
+              setFishStatus={setFishStatus} // Pass setFishStatus to allow updates
+              onClose={() => setShowDetailPopup(false)}
+              onSubmitSuccess={onSubmitSuccess}
+          />
       )}
 
       {showPaymentModal && (

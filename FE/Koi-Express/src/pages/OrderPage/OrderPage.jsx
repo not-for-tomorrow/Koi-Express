@@ -27,25 +27,8 @@ const OrderPage = () => {
     const [isPickupConfirmed, setIsPickupConfirmed] = useState(false);
     const [isDeliveryConfirmed, setIsDeliveryConfirmed] = useState(false);
     const mapRef = useRef(null);
-
-    const [isChatOpen, setIsChatOpen] = useState(false); // Manage full chat window visibility
-    const [showText, setShowText] = useState(true);
-
-    // Toggle the full chat window
-    const toggleChat = () => {
-        console.log("Chat button clicked");
-        setIsChatOpen((prev) => !prev);
-    };
-
-    // Automatically show chat bubble on page load
-    useEffect(() => {
-        console.log("OrderPage loaded and chat bubble should appear");
-        const timer = setTimeout(() => {
-            setShowText(false);
-        }, 10000); // 5000 ms = 5 seconds
-
-        return () => clearTimeout(timer); // Clear the timer on component unmount
-    }, []);
+    const [distanceFee, setDistanceFee] = useState(0);
+    const [commitmentFee, setCommitmentFee] = useState(0);
 
     // Function to reverse geocode lat/lng to an address
     const reverseGeocode = async (lat, lng) => {
@@ -94,8 +77,10 @@ const OrderPage = () => {
         }
     }, []);
 
-    const handleContinue = (calculatedPrice) => {
+    const handleContinue = (calculatedPrice, distanceFee, commitmentFee) => {
         setTotalPrice(calculatedPrice);
+        setDistanceFee(distanceFee); // Save distanceFee
+        setCommitmentFee(commitmentFee); // Save commitmentFee
         setCurrentStep(2);
     };
 
@@ -197,7 +182,9 @@ const OrderPage = () => {
                     handleAddressChange={handleAddressChange}
                     handleSelect={handleSelect}
                     distance={distance}
-                    handleContinue={handleContinue}
+                    handleContinue={(calculatedPrice, distanceFee, commitmentFee) =>
+                        handleContinue(calculatedPrice, distanceFee, commitmentFee)
+                    }
                     pickupDetail={pickupDetail}
                     setPickupDetail={setPickupDetail}
                     deliveryDetail={deliveryDetail}
@@ -230,6 +217,8 @@ const OrderPage = () => {
                     isPickupConfirmed={isPickupConfirmed}
                     isDeliveryConfirmed={isDeliveryConfirmed}
                     distance={distance}
+                    distanceFee={distanceFee} // Pass distanceFee to OrderForm2
+                    commitmentFee={commitmentFee} // Pass commitmentFee to OrderForm2
                 />
             )}
 
