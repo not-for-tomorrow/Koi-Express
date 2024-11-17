@@ -3,9 +3,7 @@ import HeaderOrderForm from "../../components/Header/HeaderOrderForm";
 
 const OrderForm = ({
                        pickupAddress,
-                       setPickupAddress,
                        deliveryAddress,
-                       setDeliveryAddress,
                        pickupSuggestions,
                        deliverySuggestions,
                        handleAddressChange,
@@ -29,40 +27,42 @@ const OrderForm = ({
                        isDeliveryConfirmed,
                        setIsDeliveryConfirmed,
                    }) => {
-    const calculateRoundedCost = (distance) => {
-        const baseFeePerKm = 5200;
-        const fuelPrice = 19000;
-        const smallTruckFuelConsumption = 9.0;
+    const calculateDistanceFee = (distance) => {
+        if (typeof distance !== 'number' || isNaN(distance)) {
+            console.error("Invalid distance value:", distance);
+            return 0;
+        }
+
+        const baseFeePerKm = 5195;
+        const fuelPrice = 18950;
+        const smallTruckFuelConsumption = 8.9;
         const mediumTruckFuelConsumption = 14.0;
         const largeTruckFuelConsumption = 21.0;
 
-        // Determine fuel consumption based on distance
-        let fuelConsumption;
-        if (distance < 300) {
-            fuelConsumption = smallTruckFuelConsumption;
-        } else if (distance < 800) {
-            fuelConsumption = mediumTruckFuelConsumption;
-        } else {
-            fuelConsumption = largeTruckFuelConsumption;
-        }
+        const getFuelConsumption = (distance) => {
+            if (distance < 300) return smallTruckFuelConsumption;
+            if (distance < 800) return mediumTruckFuelConsumption;
+            return largeTruckFuelConsumption;
+        };
 
-        // Calculate distance fee
+        if (distance <= 0) return 0;
+
+        const fuelConsumption = getFuelConsumption(distance);
+
         const distanceFee = distance * baseFeePerKm;
 
-        // Calculate fuel cost
-        const fuelCost = Math.ceil((distance / 100) * fuelConsumption * fuelPrice);
+        const totalFuelUsed = (distance / 100) * fuelConsumption;
+        const fuelCost = totalFuelUsed * fuelPrice;
 
-        // Calculate total fee
-        const totalFee = distanceFee + fuelCost;
+        const totalFee = Math.round(distanceFee + fuelCost);
 
-        // Calculate commitment fee for distances over 10 km
-        const commitmentFee = distance > 10 ? Math.ceil(totalFee * 0.3) : 0;
+        const roundedFee = Math.round(totalFee / 1000) * 1000;
 
-        // Round up total fee including commitment fee
-        return Math.ceil(totalFee + commitmentFee);
+        return roundedFee;
     };
 
-    const roundedCost = calculateRoundedCost(distance);
+    const distanceFee = calculateDistanceFee(distance);
+
     const [isFormValid, setIsFormValid] = useState(false);
     const [showPickupDetail, setShowPickupDetail] = useState(false);
     const [showDeliveryDetail, setShowDeliveryDetail] = useState(false);
@@ -93,7 +93,7 @@ const OrderForm = ({
     ]);
 
     const onContinueClick = () => {
-        handleContinue(roundedCost); // Pass the calculated price to OrderPage
+        handleContinue(distanceFee);
     };
 
     const handlePickupConfirm = () => {
@@ -108,7 +108,6 @@ const OrderForm = ({
 
     const togglePickupCollapsed = () => {
         if (pickupCollapsed) {
-            // Khi mở rộng (expanded), trạng thái "Xác nhận" sẽ bị đặt lại thành false
             setIsPickupConfirmed(false);
         }
         setPickupCollapsed(!pickupCollapsed);
@@ -116,7 +115,6 @@ const OrderForm = ({
 
     const toggleDeliveryCollapsed = () => {
         if (deliveryCollapsed) {
-            // Khi mở rộng (expanded), trạng thái "Xác nhận" sẽ bị đặt lại thành false
             setIsDeliveryConfirmed(false);
         }
         setDeliveryCollapsed(!deliveryCollapsed);
@@ -314,7 +312,7 @@ const OrderForm = ({
 
             {distance > 0 && (
                 <p className="mb-4 text-lg font-semibold text-center text-gray-900">
-                    {`Chi phí: ${new Intl.NumberFormat("vi-VN").format(roundedCost)} VND`}
+                    {`Chi phí: ${new Intl.NumberFormat("vi-VN").format(distanceFee)} VND`}
                 </p>
             )}
 
