@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import HeaderOrderForm from "../../components/Header/HeaderOrderForm";
 import PaymentModal from "./PaymentModal";
 import PlaceOrderModal from "./PlaceOrderModal";
-import { getPaymentMethodIcon } from "./IconsData";
+import {getPaymentMethodIcon} from "./IconsData";
 import axios from "axios";
 
 const OrderForm2 = ({
@@ -19,8 +19,8 @@ const OrderForm2 = ({
                         isPickupConfirmed,
                         isDeliveryConfirmed,
                         distance,
-                        distanceFee, // Use passed distanceFee
-                        commitmentFee, // Use passed commitmentFee
+                        distanceFee,
+                        commitmentFee,
                     }) => {
     const [koiQuantity, setKoiQuantity] = useState(0);
     const [useInsurance, setUseInsurance] = useState(false);
@@ -107,21 +107,17 @@ const OrderForm2 = ({
     const handleKoiQuantityChange = (e) => {
         const value = e.target.value;
 
-        // If the input is empty, set the quantity to 0 for display
         if (value === "") {
             setKoiQuantity("0");
         } else {
-            // Parse the integer value, ensuring no leading zeros and a minimum of 0
             const parsedValue = Math.max(parseInt(value, 10), 0);
             setKoiQuantity(parsedValue.toString());
         }
     };
 
-
-
     return (
         <div className="relative z-20 flex flex-col w-1/3 h-full p-6 bg-white border-r border-gray-200 shadow-lg">
-            <HeaderOrderForm />
+            <HeaderOrderForm/>
             <div className="flex flex-col justify-between flex-grow space-y-4">
                 <div>
                     <button
@@ -143,7 +139,7 @@ const OrderForm2 = ({
                     <input
                         type="number"
                         value={koiQuantity}
-                        onChange={handleKoiQuantityChange} // Use the new handler
+                        onChange={handleKoiQuantityChange}
                         className="w-full p-2 mt-1 transition duration-200 bg-gray-100 rounded-lg outline-none focus:ring focus:ring-orange-300"
                     />
                 </div>
@@ -163,7 +159,8 @@ const OrderForm2 = ({
 
                 <div className="h-[110px]"></div>
 
-                <div className="flex items-center justify-between p-2 transition duration-300 bg-white rounded-lg shadow-md hover:shadow-lg">
+                <div
+                    className="flex items-center justify-between p-2 transition duration-300 bg-white rounded-lg shadow-md hover:shadow-lg">
                     <div className="flex-grow sm:pr-4">
                         <div
                             className="p-2 bg-gray-100 rounded-lg cursor-pointer"
@@ -194,7 +191,8 @@ const OrderForm2 = ({
                     />
                 )}
 
-                <div className="flex items-center justify-between p-2 transition duration-300 bg-white rounded-lg shadow-md sm:space-x-10 hover:shadow-lg">
+                <div
+                    className="flex items-center justify-between p-2 transition duration-300 bg-white rounded-lg shadow-md sm:space-x-10 hover:shadow-lg">
                     <div className="w-1/2 text-center">
                         <h2 className="text-lg font-semibold text-gray-800">Tiền vận chuyển</h2>
                         <p className="text-2xl font-bold text-orange-500">

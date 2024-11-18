@@ -37,8 +37,8 @@ const OrderForm = ({
     const [deliveryCollapsed, setDeliveryCollapsed] =
         useState(isDeliveryConfirmed);
 
-    const [distanceFee, setDistanceFee] = useState(0); // Add state for distanceFee
-    const [commitmentFee, setCommitmentFee] = useState(0); // Add state for commitmentFee
+    const [distanceFee, setDistanceFee] = useState(0);
+    const [commitmentFee, setCommitmentFee] = useState(0);
 
     useEffect(() => {
         setIsFormValid(
@@ -66,7 +66,7 @@ const OrderForm = ({
         if (isFormValid) {
             fetchOrderPrice();
         }
-    }, [isFormValid]); // Ensure it runs when the form becomes valid
+    }, [isFormValid]);
 
     const fetchOrderPrice = async () => {
         try {
@@ -89,10 +89,10 @@ const OrderForm = ({
 
             if (response.ok) {
                 const data = await response.json();
-                const { distanceFee, commitmentFee } = data.result;
-                setRoundedCost(distanceFee); // Only set distanceFee as roundedCost for display
-                setDistanceFee(distanceFee); // Store distanceFee for future use
-                setCommitmentFee(commitmentFee); // Store commitmentFee for later use in OrderForm2
+                const {distanceFee, commitmentFee} = data.result;
+                setRoundedCost(distanceFee);
+                setDistanceFee(distanceFee);
+                setCommitmentFee(commitmentFee);
             } else {
                 console.error("Failed to fetch order price");
             }
@@ -102,9 +102,8 @@ const OrderForm = ({
     };
 
 
-
     const onContinueClick = () => {
-        handleContinue(roundedCost, distanceFee, commitmentFee); // Pass fees to OrderPage
+        handleContinue(roundedCost, distanceFee, commitmentFee);
     };
 
     const handlePickupConfirm = () => {
@@ -119,7 +118,6 @@ const OrderForm = ({
 
     const togglePickupCollapsed = () => {
         if (pickupCollapsed) {
-            // Khi mở rộng (expanded), trạng thái "Xác nhận" sẽ bị đặt lại thành false
             setIsPickupConfirmed(false);
         }
         setPickupCollapsed(!pickupCollapsed);
@@ -127,7 +125,6 @@ const OrderForm = ({
 
     const toggleDeliveryCollapsed = () => {
         if (deliveryCollapsed) {
-            // Khi mở rộng (expanded), trạng thái "Xác nhận" sẽ bị đặt lại thành false
             setIsDeliveryConfirmed(false);
         }
         setDeliveryCollapsed(!deliveryCollapsed);
@@ -142,7 +139,7 @@ const OrderForm = ({
                         Lộ trình điểm giao: {distance.toFixed(2)} km
                     </p>
                 )}
-                {/* Pickup Address Box */}
+
                 <div
                     className="p-4 mt-4 border rounded-lg shadow-inner cursor-pointer"
                     onClick={
@@ -231,7 +228,6 @@ const OrderForm = ({
                     )}
                 </div>
 
-                {/* Delivery Address Box */}
                 <div
                     className="p-4 mt-8 border rounded-lg shadow-inner cursor-pointer"
                     onClick={
@@ -324,14 +320,14 @@ const OrderForm = ({
             </div>
 
             {distance > 0 && roundedCost !== null ? (
-    <p className="mb-4 text-lg font-semibold text-center text-gray-900">
-      {`Chi phí vận chuyển: ${new Intl.NumberFormat("vi-VN").format(roundedCost)} VND`}
-    </p>
-) : (
-    <p className="mb-4 text-lg font-semibold text-center text-gray-900">
-      Đang tính chi phí vận chuyển...
-    </p>
-)}
+                <p className="mb-4 text-lg font-semibold text-center text-gray-900">
+                    {`Chi phí vận chuyển: ${new Intl.NumberFormat("vi-VN").format(roundedCost)} VND`}
+                </p>
+            ) : (
+                <p className="mb-4 text-lg font-semibold text-center text-gray-900">
+                    Đang tính chi phí vận chuyển...
+                </p>
+            )}
 
             {showPickupDetail && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">

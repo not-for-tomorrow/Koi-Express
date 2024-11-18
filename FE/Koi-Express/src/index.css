@@ -2,18 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 s
-
 html {
-  height: 100%;
-  line-height: 1.2;
+    height: 100%;
+    line-height: 1.2;
 }
+
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: 400;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
 }
-
-
-/* body, html {
-  overflow-x: hidden;
-} */
-

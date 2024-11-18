@@ -32,7 +32,7 @@ const OrderHistory = () => {
                         },
                     }
                 );
-                setOrders(response.data.result || []); // Update orders from API response
+                setOrders(response.data.result || []);
                 setLoading(false);
             } catch (err) {
                 setError(err.message || "Failed to fetch orders");
@@ -127,7 +127,6 @@ const OrderHistory = () => {
             );
         }
 
-        // Filter by selected time filter (today, this week, etc.)
         if (selectedTimeFilter !== "all") {
             filteredOrders = filteredOrders.filter((order) => {
                 const orderDate = new Date(order.createdAt);
@@ -158,7 +157,6 @@ const OrderHistory = () => {
             });
         }
 
-        // Filter by search query
         if (searchQuery) {
             filteredOrders = filteredOrders.filter((order) => {
                 const orderId = order.order.orderId
@@ -211,7 +209,6 @@ const OrderHistory = () => {
     const totalFeeHeaderTitle = ["Chờ xác nhận", "Đã xác nhận", "Chuẩn bị lấy hàng"].includes(selectedTab)
         ? "Phí cam kết"
         : "Tổng tiền";
-
 
     return (
         <div className="min-h-screen p-8 bg-gradient-to-r from-blue-100 to-blue-50">
