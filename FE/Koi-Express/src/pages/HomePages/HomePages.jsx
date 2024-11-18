@@ -75,7 +75,6 @@ export default function HomePages() {
                         <h1 className="mt-4">Điểm giao thành công mỗi ngày</h1>
                     </div>
                 </div>
-                {/*tich hop app  */}
                 <div className="flex justify-between mt-20">
                     <img
                         className="mr-6 w-[670px] h-[677] object-contain"

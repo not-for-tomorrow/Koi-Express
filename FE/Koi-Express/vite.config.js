@@ -5,7 +5,7 @@ import NodePolyfills from "rollup-plugin-polyfill-node";
 export default defineConfig({
     plugins: [
         react(),
-        NodePolyfills()  // Thêm polyfills cho các module của Node
+        NodePolyfills()
     ],
     server: {
         port: 5173,
