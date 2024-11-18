@@ -19,7 +19,6 @@ const Salepage = () => {
                         <Sidebar/>
                     </div>
 
-                    {/* Content area: Keep within full screen, prevent scrolling */}
                     <div className="flex-grow h-full bg-gray-100">
                         <Routes>
                             <Route path="/" element={<AcceptOrder/>}/>

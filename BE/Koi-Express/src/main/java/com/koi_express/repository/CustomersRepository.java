@@ -29,10 +29,11 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
 
     List<Customers> findByActiveTrueAndLastLoginBefore(LocalDateTime date);
 
-    @Query("SELECT new com.koi_express.dto.request.CustomerTopSpenderRequest(c.customerId, c.fullName, SUM(o.totalFee), COUNT(o)) " +
-            "FROM Customers c JOIN Orders o ON o.customer = c " +
-            "WHERE o.status = com.koi_express.enums.OrderStatus.DELIVERED " +
-            "GROUP BY c.customerId, c.fullName, c.email " +
-            "ORDER BY SUM(o.totalFee) DESC")
+    @Query(
+            "SELECT new com.koi_express.dto.request.CustomerTopSpenderRequest(c.customerId, c.fullName, SUM(o.totalFee), COUNT(o)) "
+                    + "FROM Customers c JOIN Orders o ON o.customer = c "
+                    + "WHERE o.status = com.koi_express.enums.OrderStatus.DELIVERED "
+                    + "GROUP BY c.customerId, c.fullName, c.email "
+                    + "ORDER BY SUM(o.totalFee) DESC")
     List<CustomerTopSpenderRequest> findTop10CustomersByTotalSpent();
 }

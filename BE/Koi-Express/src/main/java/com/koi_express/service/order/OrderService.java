@@ -102,13 +102,29 @@ public class OrderService {
         }
     }
 
+    public ApiResponse<Map<String, Object>> calculateOrderPrice(OrderRequest orderRequest) {
+        try {
+            BigDecimal totalFee = transportationFeeCalculator.calculateDistanceFee(orderRequest.getKilometers());
+            BigDecimal commitmentFee = transportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
+
+            Map<String, Object> responseMap = new HashMap<>();
+            responseMap.put("distanceFee", totalFee);
+            responseMap.put("commitmentFee", commitmentFee);
+
+            return new ApiResponse<>(HttpStatus.OK.value(), "Price calculated successfully", responseMap);
+        } catch (Exception e) {
+            logger.error("Error calculating order price: ", e);
+            throw new AppException(ErrorCode.ORDER_PRICE_CALCULATION_FAILED);
+        }
+    }
+
     private Customers extractCustomerFromToken(String token) {
         String customerId = jwtUtil.extractCustomerId(token);
         return managerService.getCustomerById(Long.parseLong(customerId));
     }
 
     private Orders prepareOrder(OrderRequest orderRequest, Customers customer) {
-        BigDecimal totalFee = transportationFeeCalculator.calculateTotalFee(orderRequest.getKilometers());
+        BigDecimal totalFee = transportationFeeCalculator.calculateDistanceFee(orderRequest.getKilometers());
         BigDecimal commitmentFee = transportationFeeCalculator.calculateCommitmentFee(orderRequest.getKilometers());
 
         Orders orders = orderBuilder.buildOrder(orderRequest, customer);
@@ -362,6 +378,7 @@ public class OrderService {
             if (paymentResponse.getCode() == HttpStatus.OK.value()) {
                 order.setStatus(OrderStatus.IN_TRANSIT);
                 order.setPaymentConfirmed(true);
+                order.setTotalFee(totalFee);
                 orderRepository.save(order);
                 return new ApiResponse<>(
                         HttpStatus.OK.value(), "Thanh toán xác nhận thành công", paymentResponse.getResult());
@@ -388,17 +405,20 @@ public class OrderService {
         };
     }
 
-    private ApiResponse<String> processVnPayPayment(Orders order, BigDecimal totalFee, Map<String, BigDecimal> calculationData) {
+    private ApiResponse<String> processVnPayPayment(
+            Orders order, BigDecimal totalFee, Map<String, BigDecimal> calculationData) {
         try {
             ApiResponse<String> paymentLinkResponse = vnPayService.createVnPayPaymentWithTotalFee(order, totalFee);
             if (paymentLinkResponse.getCode() != HttpStatus.OK.value()) {
                 return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Failed to create VNPay payment link", null);
             }
-            return finalizeOrderAndSave(order, calculationData, "Payment link sent to email");
+            return new ApiResponse<>(
+                    HttpStatus.OK.value(), "Payment link generated successfully", paymentLinkResponse.getResult());
 
         } catch (Exception e) {
             logger.error("Error creating VNPay payment link: ", e);
-            return new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage());
+            return new ApiResponse<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create VNPay payment link", e.getMessage());
         }
     }
 
@@ -406,7 +426,8 @@ public class OrderService {
         return finalizeOrderAndSave(order, calculationData, "Order is in-transit but not yet paid");
     }
 
-    private ApiResponse<String> finalizeOrderAndSave(Orders order, Map<String, BigDecimal> calculationData, String resultMessage) {
+    private ApiResponse<String> finalizeOrderAndSave(
+            Orders order, Map<String, BigDecimal> calculationData, String resultMessage) {
         if (OrderStatus.PICKING_UP.equals(order.getStatus())) {
             order.setStatus(OrderStatus.IN_TRANSIT);
         }
@@ -418,5 +439,4 @@ public class OrderService {
 
         return new ApiResponse<>(HttpStatus.OK.value(), resultMessage, null);
     }
-
 }

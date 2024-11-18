@@ -14,27 +14,26 @@ import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import {LOCATIONIQ_KEY} from "../../koi/api/api";
 
 const OrderDetail = () => {
-    const {orderId} = useParams(); // Extract orderId from the URL
-    const [order, setOrder] = useState(null); // Store the order data fetched from API
+    const {orderId} = useParams();
+    const [order, setOrder] = useState(null);
     const [pickupLocation, setPickupLocation] = useState(null);
     const [deliveryLocation, setDeliveryLocation] = useState(null);
     const [distance, setDistance] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
-    const [retryCount, setRetryCount] = useState(0); // Track retry attempts
+    const [retryCount, setRetryCount] = useState(0);
 
-    const MAX_RETRIES = 5; // Set a maximum number of retries to avoid infinite loops
-    const RETRY_DELAY = 3000; // Retry every 3 seconds
+    const MAX_RETRIES = 5;
+    const RETRY_DELAY = 3000;
 
-    // Fetch order details from API
     useEffect(() => {
         const fetchOrderDetails = async () => {
-            const token = localStorage.getItem("token"); // Retrieve the token from localStorage
+            const token = localStorage.getItem("token");
             try {
                 const response = await axios.get(
                     `http://localhost:8080/api/orders/${orderId}`,
                     {
                         headers: {
-                            Authorization: `Bearer ${token}`, // Include the token in the request headers
+                            Authorization: `Bearer ${token}`,
                         },
                     }
                 );
@@ -46,7 +45,6 @@ const OrderDetail = () => {
         fetchOrderDetails();
     }, [orderId]);
 
-    // Function to get latitude and longitude for an address using LocationIQ API
     const geocodeAddress = async (address) => {
         try {
             const response = await axios.get(
@@ -119,10 +117,8 @@ const OrderDetail = () => {
 
     return (
         <div className="flex h-screen">
-            {/* Sidebar Order Details Section */}
             <OrderDetailModal orderId={orderId} order={order} distance={distance}/>
 
-            {/* Full-Screen Map Section */}
             <div className="relative w-2/3 h-screen" style={{zIndex: 1}}>
                 {!isLoading && pickupLocation && deliveryLocation ? (
                     <LeafletMap

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.OrderRequest;
@@ -11,10 +12,12 @@ import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.entity.shipment.Shipments;
+import com.koi_express.exception.AppException;
+import com.koi_express.exception.ErrorCode;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.order.OrderService;
-import com.koi_express.service.order.price.TransportationFeeCalculator;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -33,16 +36,16 @@ public class OrderController {
 
     private final OrderService orderService;
     private final JwtUtil jwtUtil;
-    private final TransportationFeeCalculator feeCalculator;
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/create")
-    public ApiResponse<Map<String, Object>> createOrder(
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createOrder(
             @Valid @RequestBody OrderRequest orderRequest, HttpServletRequest request) {
         String token = extractToken(request);
         logger.info("Processing order creation for token: {}", token);
         ApiResponse<Map<String, Object>> response = orderService.createOrder(orderRequest, token);
         logger.info("Response sent to client: {}", response);
-        return response;
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -55,22 +58,24 @@ public class OrderController {
 
     @PostMapping("/deliver/{orderId}")
     public ResponseEntity<ApiResponse<String>> deliverOrder(@PathVariable Long orderId) {
-        logger.info("Marking order as delivered with ID: {}", orderId);
-        ApiResponse<String> response = orderService.deliveredOrder(orderId);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        try {
+            logger.info("Marking order as delivered with ID: {}", orderId);
+            ApiResponse<String> response = orderService.deliveredOrder(orderId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error marking order as delivered with ID {}: ", orderId, e);
+            throw new AppException(ErrorCode.ORDER_DELIVERY_FAILED);
+        }
     }
 
     @PreAuthorize("hasRole('MANAGER') or hasRole('SALES_STAFF')")
     @GetMapping(value = "/all-orders", produces = "application/json")
     public ResponseEntity<ApiResponse<List<OrderWithCustomerDTO>>> getAllOrders() {
-
         ApiResponse<List<OrderWithCustomerDTO>> response = orderService.getAllOrders();
         if (response.getResult() == null || response.getResult().isEmpty()) {
-            return new ResponseEntity<>(
-                    new ApiResponse<>(HttpStatus.NO_CONTENT.value(), "No orders found", null), HttpStatus.OK);
+            return ResponseEntity.noContent().build();
         }
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/history")
@@ -79,8 +84,11 @@ public class OrderController {
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "fromDate", required = false) String fromDate,
             @RequestParam(value = "toDate", required = false) String toDate) {
+
         logger.info("Fetching order history with status: {}, fromDate: {}, toDate: {}", status, fromDate, toDate);
+
         String token = authorizationHeader.substring(7);
+
         ApiResponse<List<OrderWithCustomerDTO>> response =
                 orderService.getOrderHistoryByFilters(token, status, fromDate, toDate);
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -117,15 +125,32 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/calculate-fees")
-    public ResponseEntity<Map<String, BigDecimal>> calculateFees(@RequestParam BigDecimal kilometers) {
-        BigDecimal totalFee = feeCalculator.calculateTotalFee(kilometers);
-        BigDecimal commitmentFee = feeCalculator.calculateCommitmentFee(kilometers);
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @PostMapping("/calculate-order-price")
+    public ApiResponse<Map<String, BigDecimal>> calculateOrderPrice(@Valid @RequestBody OrderRequest orderRequest, HttpSession session) {
+        try {
+            ApiResponse<Map<String, Object>> feesResponse = orderService.calculateOrderPrice(orderRequest);
 
+            Map<String, BigDecimal> fees = feesResponse.getResult().entrySet().stream()
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> new BigDecimal(entry.getValue().toString())));
+
+            session.setAttribute("distanceFee", fees.get("distanceFee"));
+            session.setAttribute("commitmentFee", fees.get("commitmentFee"));
+
+            return ApiResponse.success("Order price calculated successfully", fees);
+        } catch (Exception e) {
+            logger.error("Error calculating order price for kilometers {}: ", orderRequest, e);
+            throw new AppException(ErrorCode.ORDER_PRICE_CALCULATION_FAILED);
+        }
+    }
+
+    @GetMapping("/get-fees")
+    public ApiResponse<Map<String, BigDecimal>> getFees(HttpSession session) {
         Map<String, BigDecimal> fees = new HashMap<>();
-        fees.put("totalFee", totalFee);
-        fees.put("commitmentFee", commitmentFee);
-
-        return ResponseEntity.ok(fees);
+        fees.put("distanceFee", (BigDecimal) session.getAttribute("distanceFee"));
+        fees.put("commitmentFee", (BigDecimal) session.getAttribute("commitmentFee"));
+        return ApiResponse.success("Order price get successfully", fees);
     }
 }

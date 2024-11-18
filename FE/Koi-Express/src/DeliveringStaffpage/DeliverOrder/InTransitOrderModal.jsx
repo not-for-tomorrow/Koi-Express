@@ -10,11 +10,10 @@ const InTransitOrderModal = ({
                                  recipientName,
                                  recipientPhone,
                                  distance,
-                                 onClose, // Prop để đóng modal
+                                 onClose,
                              }) => {
-    const navigate = useNavigate(); // Khởi tạo điều hướng
+    const navigate = useNavigate();
 
-    // Hàm gọi API cập nhật trạng thái
     const handleUpdateStatus = async () => {
         const token = localStorage.getItem("token");
         try {
@@ -30,8 +29,8 @@ const InTransitOrderModal = ({
             );
             if (response.ok) {
                 console.log("Trạng thái đơn hàng đã được cập nhật.");
-                onClose(); // Đóng modal sau khi cập nhật thành công
-                navigate("/deliveringstaffpage"); // Điều hướng về trang chính
+                onClose();
+                navigate("/deliveringstaffpage");
             } else {
                 console.error("Cập nhật trạng thái thất bại.");
             }
@@ -41,7 +40,8 @@ const InTransitOrderModal = ({
     };
 
     return (
-        <div className="relative z-20 flex flex-col w-full h-full max-w-lg p-6 bg-white border border-gray-200 shadow-lg">
+        <div
+            className="relative z-20 flex flex-col w-full h-full max-w-lg p-6 bg-white border border-gray-200 shadow-lg">
             <div className="flex-grow">
                 <div className="mb-4 text-2xl font-bold text-gray-800">
                     Đơn hàng #{orderId}
@@ -73,7 +73,6 @@ const InTransitOrderModal = ({
                 </div>
             </div>
 
-            {/* Nút đóng */}
             <div className="flex-shrink-0 mt-6">
                 <button
                     onClick={handleUpdateStatus}
@@ -83,7 +82,6 @@ const InTransitOrderModal = ({
                 </button>
             </div>
 
-            {/* Nút cập nhật trạng thái */}
             <div className="flex-shrink-0 mt-4">
                 <button
                     onClick={handleUpdateStatus}

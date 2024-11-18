@@ -29,46 +29,16 @@ const OrderForm = ({
                        isDeliveryConfirmed,
                        setIsDeliveryConfirmed,
                    }) => {
-    const calculateRoundedCost = (distance) => {
-        const baseFeePerKm = 5200;
-        const fuelPrice = 19000;
-        const smallTruckFuelConsumption = 9.0;
-        const mediumTruckFuelConsumption = 14.0;
-        const largeTruckFuelConsumption = 21.0;
-
-        // Determine fuel consumption based on distance
-        let fuelConsumption;
-        if (distance < 300) {
-            fuelConsumption = smallTruckFuelConsumption;
-        } else if (distance < 800) {
-            fuelConsumption = mediumTruckFuelConsumption;
-        } else {
-            fuelConsumption = largeTruckFuelConsumption;
-        }
-
-        // Calculate distance fee
-        const distanceFee = distance * baseFeePerKm;
-
-        // Calculate fuel cost
-        const fuelCost = Math.ceil((distance / 100) * fuelConsumption * fuelPrice);
-
-        // Calculate total fee
-        const totalFee = distanceFee + fuelCost;
-
-        // Calculate commitment fee for distances over 10 km
-        const commitmentFee = distance > 10 ? Math.ceil(totalFee * 0.3) : 0;
-
-        // Round up total fee including commitment fee
-        return Math.ceil(totalFee + commitmentFee);
-    };
-
-    const roundedCost = calculateRoundedCost(distance);
+    const [roundedCost, setRoundedCost] = useState(null);
     const [isFormValid, setIsFormValid] = useState(false);
     const [showPickupDetail, setShowPickupDetail] = useState(false);
     const [showDeliveryDetail, setShowDeliveryDetail] = useState(false);
     const [pickupCollapsed, setPickupCollapsed] = useState(isPickupConfirmed);
     const [deliveryCollapsed, setDeliveryCollapsed] =
         useState(isDeliveryConfirmed);
+
+    const [distanceFee, setDistanceFee] = useState(0);
+    const [commitmentFee, setCommitmentFee] = useState(0);
 
     useEffect(() => {
         setIsFormValid(
@@ -92,8 +62,48 @@ const OrderForm = ({
         isDeliveryConfirmed,
     ]);
 
+    useEffect(() => {
+        if (isFormValid) {
+            fetchOrderPrice();
+        }
+    }, [isFormValid]);
+
+    const fetchOrderPrice = async () => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const response = await fetch("http://localhost:8080/api/orders/calculate-order-price", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    originLocation: pickupAddress,
+                    destinationLocation: deliveryAddress,
+                    originDetail: pickupDetail,
+                    destinationDetail: deliveryDetail,
+                    kilometers: distance,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const {distanceFee, commitmentFee} = data.result;
+                setRoundedCost(distanceFee);
+                setDistanceFee(distanceFee);
+                setCommitmentFee(commitmentFee);
+            } else {
+                console.error("Failed to fetch order price");
+            }
+        } catch (error) {
+            console.error("Error fetching order price:", error);
+        }
+    };
+
+
     const onContinueClick = () => {
-        handleContinue(roundedCost); // Pass the calculated price to OrderPage
+        handleContinue(roundedCost, distanceFee, commitmentFee);
     };
 
     const handlePickupConfirm = () => {
@@ -108,7 +118,6 @@ const OrderForm = ({
 
     const togglePickupCollapsed = () => {
         if (pickupCollapsed) {
-            // Khi mở rộng (expanded), trạng thái "Xác nhận" sẽ bị đặt lại thành false
             setIsPickupConfirmed(false);
         }
         setPickupCollapsed(!pickupCollapsed);
@@ -116,7 +125,6 @@ const OrderForm = ({
 
     const toggleDeliveryCollapsed = () => {
         if (deliveryCollapsed) {
-            // Khi mở rộng (expanded), trạng thái "Xác nhận" sẽ bị đặt lại thành false
             setIsDeliveryConfirmed(false);
         }
         setDeliveryCollapsed(!deliveryCollapsed);
@@ -131,7 +139,7 @@ const OrderForm = ({
                         Lộ trình điểm giao: {distance.toFixed(2)} km
                     </p>
                 )}
-                {/* Pickup Address Box */}
+
                 <div
                     className="p-4 mt-4 border rounded-lg shadow-inner cursor-pointer"
                     onClick={
@@ -220,7 +228,6 @@ const OrderForm = ({
                     )}
                 </div>
 
-                {/* Delivery Address Box */}
                 <div
                     className="p-4 mt-8 border rounded-lg shadow-inner cursor-pointer"
                     onClick={
@@ -312,9 +319,13 @@ const OrderForm = ({
                 </div>
             </div>
 
-            {distance > 0 && (
+            {distance > 0 && roundedCost !== null ? (
                 <p className="mb-4 text-lg font-semibold text-center text-gray-900">
-                    {`Chi phí: ${new Intl.NumberFormat("vi-VN").format(roundedCost)} VND`}
+                    {`Chi phí vận chuyển: ${new Intl.NumberFormat("vi-VN").format(roundedCost)} VND`}
+                </p>
+            ) : (
+                <p className="mb-4 text-lg font-semibold text-center text-gray-900">
+                    Đang tính chi phí vận chuyển...
                 </p>
             )}
 
