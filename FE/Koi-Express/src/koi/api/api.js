@@ -192,7 +192,7 @@ export const createBlogAPI = async (title, content, imageFile) => {
     }
 };
 
-// src/apiService.js
+//fetch dữ liệu blog dựa trên status
 export const fetchBlogDataByStatus = async (status) => {
     const token = localStorage.getItem("token");
     try {
@@ -207,5 +207,27 @@ export const fetchBlogDataByStatus = async (status) => {
     } catch (error) {
         console.error("Error fetching blog data:", error);
         return [];
+    }
+};
+
+//load blog có sẵn về trang chính cho guest
+export const loadBlogData = async () => {
+    try {
+        const response = await fetch("http://localhost:8080/api/blogs/all", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Không thể tải dữ liệu blog.");
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Lỗi khi fetch blog data:", error);
+        throw error;
     }
 };

@@ -275,13 +275,15 @@ const OrderDetailModal = ({orderId, distance}) => {
             </div>
 
             <div className="flex-shrink-0 mt-6 flex justify-between space-x-2">
-                <button
-                    className="w-full p-3 text-base font-semibold text-white transition-all transform bg-red-500 rounded-lg hover:bg-red-600"
-                    onClick={handleCancelOrder}
-                    disabled={isCanceling || status === "CANCELED"}
-                >
-                    {isCanceling ? "Đang hủy..." : "Huỷ đơn"}
-                </button>
+                {status === "PENDING" && (
+                    <button
+                        className="w-full p-3 text-base font-semibold text-white transition-all transform bg-red-500 rounded-lg hover:bg-red-600"
+                        onClick={handleCancelOrder}
+                        disabled={isCanceling}
+                    >
+                        {isCanceling ? "Đang hủy..." : "Huỷ đơn"}
+                    </button>
+                )}
                 <button
                     className="w-full p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600">
                     <Link to="/appkoiexpress/history">Đóng</Link>
