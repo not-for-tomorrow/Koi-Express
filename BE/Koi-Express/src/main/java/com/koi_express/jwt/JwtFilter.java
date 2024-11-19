@@ -41,7 +41,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (path.equals("/api/auth/forgot-password")
                 || path.equals("/api/auth/reset-password")
-                || path.equals("/api/blogs/all")) {
+                || path.equals("/api/blogs/all")
+                || path.equals("/api/auth/customers-info")) {
             filterChain.doFilter(request, response);
             return;
         }

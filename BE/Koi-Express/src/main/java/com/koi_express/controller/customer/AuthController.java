@@ -1,5 +1,6 @@
 package com.koi_express.controller.customer;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.koi_express.dto.request.LoginRequest;
@@ -12,6 +13,7 @@ import com.koi_express.jwt.JwtUtil;
 import com.koi_express.repository.CustomersRepository;
 import com.koi_express.service.customer.AuthService;
 import com.koi_express.service.customer.CustomerService;
+import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.verification.OtpService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final AuthService authService;
     private final CustomersRepository customersRepository;
+    private final ManageCustomerService manageCustomerService;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<String>> registerCustomer(
@@ -223,5 +226,11 @@ public class AuthController {
 
     private String maskPhoneNumber(String phoneNumber) {
         return phoneNumber.replaceAll(".(?=.{4})", "*");
+    }
+
+    @GetMapping("/customers-info")
+    public ResponseEntity<ApiResponse<List<Customers>>> getAllCustomers() {
+        ApiResponse<List<Customers>> customersResponse = manageCustomerService.getAllCustomers();
+        return ResponseEntity.ok(customersResponse);
     }
 }

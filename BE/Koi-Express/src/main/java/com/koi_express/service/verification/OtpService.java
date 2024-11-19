@@ -3,6 +3,9 @@ package com.koi_express.service.verification;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
 import com.koi_express.dto.request.RegisterRequest;
 import com.twilio.Twilio;
 import org.slf4j.Logger;
@@ -104,14 +107,21 @@ public class OtpService {
     }
 
     public String formatPhoneNumber(String phoneNumber) {
-        phoneNumber = phoneNumber.replaceAll("\\s+", "");
-        if (phoneNumber.startsWith("+84")) {
-            phoneNumber = "0" + phoneNumber.substring(3);
-        } else if (!phoneNumber.startsWith("0")) {
-            phoneNumber = "0" + phoneNumber;
+        PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
+        try {
+            Phonenumber.PhoneNumber parsedNumber = phoneUtil.parse(phoneNumber, "VN");
+
+            if (phoneUtil.isValidNumber(parsedNumber)) {
+
+                return phoneUtil.format(parsedNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
+                        .replaceFirst("(\\+84)(\\d+)", "$1 $2");
+            } else {
+                throw new IllegalArgumentException("Số điện thoại không hợp lệ: " + phoneNumber);
+            }
+        } catch (NumberParseException e) {
+            logger.error("Lỗi định dạng số điện thoại: {}", phoneNumber, e);
+            throw new IllegalArgumentException("Số điện thoại không đúng định dạng.");
         }
-        logger.debug("Final formatted phone number for database: {}", phoneNumber);
-        return phoneNumber;
     }
 
     public void saveTempRegisterRequest(RegisterRequest registerRequest) {
