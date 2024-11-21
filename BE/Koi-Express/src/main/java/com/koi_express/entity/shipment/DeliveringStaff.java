@@ -110,15 +110,4 @@ public class DeliveringStaff implements User {
         return role;
     }
 
-    public void updateLevel() {
-        int completedOrders = (ordersReceived != null) ? ordersReceived.size() : 0;
-
-        if (averageRating >= 4.0 && completedOrders > 50) {
-            this.level = DeliveringStaffLevel.ADVANCED;
-        } else if (averageRating >= 3.0 && completedOrders > 20) {
-            this.level = DeliveringStaffLevel.INTERMEDIATE;
-        } else {
-            this.level = DeliveringStaffLevel.BASIC;
-        }
-    }
 }

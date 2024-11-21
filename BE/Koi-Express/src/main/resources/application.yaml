@@ -67,9 +67,6 @@ spring:
   profiles:
     active: dev
 
-  jta:
-    enabled: true
-
   delivery:
     speed: 60
     buffer-time: 1

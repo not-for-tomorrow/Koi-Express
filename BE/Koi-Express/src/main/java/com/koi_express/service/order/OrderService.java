@@ -355,6 +355,7 @@ public class OrderService {
     @Transactional
     public ApiResponse<String> confirmPaymentFromStorage(Long userId) {
         Map<String, Object> sessionData = TemporaryStorage.getInstance().retrieveData(userId);
+        logger.info("Data retrieved from TemporaryStorage for userId {}: {}", userId, sessionData);
 
         if (sessionData == null || !sessionData.containsKey("totalFee") || !sessionData.containsKey("orderId")) {
             return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Thông tin thanh toán không tìm thấy.", null);
@@ -434,7 +435,11 @@ public class OrderService {
         order.setPaymentConfirmed(true);
 
         orderDetailBuilder.updateOrderDetails(order, calculationData, null, null);
+        logger.info("Order details updated for order ID {}: {}", order.getOrderId(), order.getOrderDetail());
+
         invoiceBuilder.updateInvoice(order, calculationData);
+        logger.info("Invoice updated for order ID {}", order.getOrderId());
+
         orderRepository.save(order);
 
         return new ApiResponse<>(HttpStatus.OK.value(), resultMessage, null);
