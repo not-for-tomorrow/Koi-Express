@@ -1,5 +1,6 @@
 package com.koi_express.service.support;
 
+import com.koi_express.dto.OrderWithCustomerDTO;
 import com.koi_express.dto.request.SupportCreateRequest;
 import com.koi_express.dto.request.SupportRequest;
 import com.koi_express.dto.response.ApiResponse;
@@ -13,6 +14,7 @@ import com.koi_express.enums.StaffStatus;
 import com.koi_express.enums.SupportRequestsStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
+import com.koi_express.jwt.JwtUtil;
 import com.koi_express.repository.CustomersRepository;
 import com.koi_express.repository.DeliveringStaffRepository;
 import com.koi_express.repository.OrderRepository;
@@ -22,7 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +42,7 @@ public class SupportService {
     private final CustomersRepository customersRepository;
     private final DeliveringStaffRepository deliveringStaffRepository;
     private final OrderRepository orderRepository;
+    private final JwtUtil jwtUtil;
 
     public SupportRequest createSupportRequest(SupportCreateRequest request, Long customerId, Long orderId) {
 
@@ -131,5 +136,9 @@ public class SupportService {
         supportRepository.save(support);
 
         return new ApiResponse<>(HttpStatus.OK.value(), "Delivering staff banned for one week", null);
+    }
+
+    public List<Support> getSupportHistory(Long customerId) {
+        return supportRepository.findAllByCustomer_CustomerId(customerId);
     }
 }
