@@ -31,6 +31,9 @@ public enum ErrorCode {
     ORDER_DELIVERY_FAILED(1025, "Order delivery failed"),
     SUPPORT_REQUEST_NOT_FOUND(1026, "Support request not found"),
     VALIDATION_ERROR(1027, "Validation error"),
+    SUPPORT_REQUEST_ALREADY_RESOLVED(1028, "Support request already resolved"),
+    DELIVERING_STAFF_NOT_FOUND(1029, "Delivering staff not found"),
+    SYSTEM_ACCOUNT_NOT_FOUND(1030, "System account not found"),
     ;
 
     ErrorCode(int code, String message) {

@@ -23,20 +23,6 @@ public class ManageCustomerService {
         return new ApiResponse<>(HttpStatus.OK.value(), "Customers fetched successfully.", managerRepository.findAll());
     }
 
-    public Customers findByPhoneNumber(String phoneNumber) {
-        Optional<Customers> customerOptional = managerRepository.findByPhoneNumber(phoneNumber);
-        return customerOptional.orElseThrow(() -> new RuntimeException("Couldn't find'"));
-    }
-
-    public void deleteCustomer(Long id) {
-
-        if (!managerRepository.existsById(id)) {
-            throw new AppException(ErrorCode.CUSTOMER_NOT_FOUND);
-        }
-
-        managerRepository.deleteById(id);
-    }
-
     public Customers getCustomerById(Long customerId) {
 
         return managerRepository.findById(customerId).orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));

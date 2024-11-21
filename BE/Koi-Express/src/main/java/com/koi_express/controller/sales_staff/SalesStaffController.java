@@ -120,4 +120,18 @@ public class SalesStaffController {
         ApiResponse<String> response = supportService.acceptSupport(requestId);
         return ResponseEntity.status(response.getCode()).body(response);
     }
+
+    @PutMapping("/support/cancel-staff/{requestId}")
+    public ResponseEntity<ApiResponse<String>> cancelDeliveryStaffForOrder(
+            @PathVariable Long requestId,
+            @RequestHeader("Authorization") String token) {
+
+        String cleanedToken = token.replace("Bearer ", "").trim();
+
+        String role = jwtUtil.extractRole(cleanedToken);
+        String userId = jwtUtil.extractUserId(cleanedToken, role);
+
+        ApiResponse<String> response = supportService.cancelDeliveryStaff(requestId);
+        return ResponseEntity.status(response.getCode()).body(response);
+    }
 }

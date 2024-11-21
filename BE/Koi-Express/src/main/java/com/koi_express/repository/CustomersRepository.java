@@ -27,8 +27,6 @@ public interface CustomersRepository extends JpaRepository<Customers, Long> {
     @NonNull
     List<Customers> findAll(@NonNull Sort sort);
 
-    List<Customers> findByActiveTrueAndLastLoginBefore(LocalDateTime date);
-
     @Query(
             "SELECT new com.koi_express.dto.request.CustomerTopSpenderRequest(c.customerId, c.fullName, SUM(o.totalFee), COUNT(o)) "
                     + "FROM Customers c JOIN Orders o ON o.customer = c "

@@ -58,6 +58,9 @@ public class Orders implements Serializable { // Quản lý đơn hàng
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     OrderDetail orderDetail;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    Invoice invoice;
+
     @ManyToOne
     @JoinColumn(name = "customer_id", referencedColumnName = "customerId", nullable = false)
     @JsonIgnore

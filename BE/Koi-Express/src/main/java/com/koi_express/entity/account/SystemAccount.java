@@ -66,11 +66,6 @@ public class SystemAccount implements User {
     }
 
     @Override
-    public String getFullName() {
-        return fullName;
-    }
-
-    @Override
     public Role getRole() {
         return role;
     }

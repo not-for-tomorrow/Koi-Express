@@ -84,37 +84,6 @@ public class CustomerService {
         return customersRepository.save(customer);
     }
 
-    @Scheduled(cron = "0 0 0 * * ?") // Runs daily at midnight
-    public void lockInactiveCustomers() {
-        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
-        List<Customers> inactiveCustomers = customersRepository.findByActiveTrueAndLastLoginBefore(sevenDaysAgo);
-
-        for (Customers customer : inactiveCustomers) {
-            customer.setActive(false);
-            customersRepository.save(customer);
-        }
-    }
-
-    public ApiResponse<String> reactivateCustomer(Long customerId) {
-        Customers customer = customersRepository
-                .findById(customerId)
-                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
-
-        if (!customer.isActive()) {
-            customer.setActive(true);
-            customer.setLastLogin(LocalDateTime.now());
-            customersRepository.save(customer);
-            return new ApiResponse<>(HttpStatus.OK.value(), "Account reactivated successfully");
-        }
-        return new ApiResponse<>(HttpStatus.OK.value(), "Account is already active");
-    }
-
-    public Customers getCustomerById(Long customerId) {
-        return customersRepository
-                .findById(customerId)
-                .orElseThrow(() -> new AppException(ErrorCode.CUSTOMER_NOT_FOUND));
-    }
-
     public ApiResponse<String> updatePassword(String phoneNumber, String newPassword) {
         String formattedPhoneNumber = otpService.formatPhoneNumber(phoneNumber);
         logger.info("Updating password for formatted phone number: {}", formattedPhoneNumber);

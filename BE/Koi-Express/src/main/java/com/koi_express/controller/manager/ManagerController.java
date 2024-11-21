@@ -57,27 +57,6 @@ public class ManagerController {
         return ResponseEntity.ok(customersResponse);
     }
 
-    @GetMapping("/id/{customerId}")
-    public ResponseEntity<ApiResponse<Customers>> getCustomerById(@PathVariable Long customerId) {
-
-        Customers customer = managerService.getCustomerById(customerId);
-        return ResponseEntity.ok(ApiResponse.success("Customer found", customer));
-    }
-
-    @GetMapping("/phone/{phoneNumber}")
-    public ResponseEntity<ApiResponse<Customers>> getCustomerByPhoneNumber(@PathVariable String phoneNumber) {
-
-        Customers customer = managerService.findByPhoneNumber(phoneNumber);
-        return ResponseEntity.ok(ApiResponse.success("Customer found by phone number", customer));
-    }
-
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteCustomer(@PathVariable Long id) {
-
-        managerService.deleteCustomer(id);
-        return ResponseEntity.ok(ApiResponse.success("Customer deleted successfully.", null));
-    }
-
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse<String>> updateCustomer(
             @PathVariable Long id, @RequestParam String fullName, @RequestParam String address) {

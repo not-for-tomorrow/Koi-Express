@@ -38,14 +38,6 @@ public class ManagerService {
     private final SystemAccountRepository systemAccountRepository;
     private final CustomersRepository customerRepository;
 
-    public Customers findByPhoneNumber(String phoneNumber) {
-        return manageCustomerService.findByPhoneNumber(phoneNumber);
-    }
-
-    public void deleteCustomer(Long id) {
-        manageCustomerService.deleteCustomer(id);
-    }
-
     public Customers getCustomerById(Long customerId) {
         return manageCustomerService.getCustomerById(customerId);
     }
