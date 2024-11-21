@@ -43,7 +43,7 @@ public class SupportController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('SALES_STAFF')")
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<List<Support>>> getAllSupport() {
 
