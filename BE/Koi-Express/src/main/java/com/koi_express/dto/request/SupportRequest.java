@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class SupportRequest {
 
     Long requestId;
+    Long orderId;
     Long customerId;
     String subject;
     String description;

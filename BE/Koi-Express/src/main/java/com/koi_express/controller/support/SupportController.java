@@ -23,8 +23,11 @@ public class SupportController {
     private final SupportService supportService;
     private final JwtUtil jwtUtil;
 
-    @PostMapping("/create")
-    public ResponseEntity<SupportRequest> createSupportRequest(@RequestBody @Valid SupportCreateRequest request, @RequestHeader("Authorization") String token) {
+    @PostMapping("/create/{orderId}")
+    public ResponseEntity<SupportRequest> createSupportRequest(
+            @PathVariable Long orderId,
+            @RequestBody @Valid SupportCreateRequest request,
+            @RequestHeader("Authorization") String token) {
 
         if (token == null || !token.startsWith("Bearer ")) {
             throw new IllegalArgumentException("Invalid Authorization header format. Expected 'Bearer <token>'");
@@ -34,10 +37,11 @@ public class SupportController {
         String customerId = jwtUtil.extractCustomerId(jwt);
         Long parsedCustomerId = Long.parseLong(customerId);
 
-        SupportRequest response = supportService.createSupportRequest(request, parsedCustomerId);
+        SupportRequest response = supportService.createSupportRequest(request, parsedCustomerId, orderId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/all")

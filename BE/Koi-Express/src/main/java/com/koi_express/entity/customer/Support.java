@@ -2,6 +2,8 @@ package com.koi_express.entity.customer;
 
 import java.time.LocalDateTime;
 
+import com.koi_express.entity.account.SystemAccount;
+import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.SupportRequestsStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -29,6 +31,13 @@ public class Support { // Yêu cầu hỗ trợ khách hàng
     @JoinColumn(name = "customer_id", nullable = false)
     Customers customer;
 
+    @ManyToOne
+    SystemAccount staff;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id", nullable = false)
+    Orders order;
+
     @NotEmpty(message = "Subject cannot be empty")
     @Size(max = 255, message = "Subject cannot be longer than 255 characters")
     String subject;
@@ -48,4 +57,7 @@ public class Support { // Yêu cầu hỗ trợ khách hàng
     LocalDateTime updatedAt = LocalDateTime.now();
 
     LocalDateTime resolvedAt;
+
+    @Column(name = "staff_name", nullable = true)
+    String staffName;
 }
