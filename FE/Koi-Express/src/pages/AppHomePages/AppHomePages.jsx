@@ -7,6 +7,7 @@ import OrderDetail from "../OrderPage/OrderDetail";
 import Profile from "../Profile/Profile";
 import PaymentSuccessful from "../OrderPage/PaymentSuccessful";
 import PaymentFailed from "../OrderPage/PaymentFailed.jsx";
+import SupportHistory from "../Support/SupportHistory.jsx";
 
 const AppHomePages = () => {
     console.log("AppHomePages loaded");
@@ -31,6 +32,8 @@ const AppHomePages = () => {
                     <Route path="/payment-successful" element={<PaymentSuccessful/>}/>
 
                     <Route path="/payment-failed" element={<PaymentFailed/>}/>
+
+                    <Route path="/support-history" element={<SupportHistory/>}/>
                 </Routes>
             </div>
         </div>

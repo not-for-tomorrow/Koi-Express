@@ -9,6 +9,8 @@ import {UserProvider} from "../componentsDashboard/UserContext"; // Import UserP
 import OrderDetail from "./OrderDetail/OrderDetail";
 import OrderDetailForAccept from "./OrderDetailForAccept/OrderDetail";
 import CreateBlog from "./CreateBlog.jsx";
+import AcceptSupport from "./AcceptSupport.jsx";
+import OrderDetailForSupport from "./OrderDetailForSupport/OrderDetail";
 
 const Salepage = () => {
     return (
@@ -34,6 +36,13 @@ const Salepage = () => {
                                 element={<OrderDetailForAccept/>}
                             />
                             <Route path="/createblog" element={<CreateBlog/>}/>
+
+                            <Route path="/acceptsupport" element={<AcceptSupport/>}/>
+
+                            <Route
+                                path="/acceptsupport/detail/:orderId"
+                                element={<OrderDetailForSupport/>}
+                            />
                         </Routes>
 
                     </div>

@@ -39,6 +39,10 @@ const OrderDetailModal = ({
     }
   };
 
+  const handleCloseModal = () => {
+    navigate("/salepage"); // Sử dụng navigate để chuyển trang
+  };
+
   return (
     <div className="relative z-20 flex flex-col w-full h-full max-w-lg p-6 bg-white border border-gray-200 shadow-lg">
       <div className="flex-grow">
@@ -111,8 +115,11 @@ const OrderDetailModal = ({
           Duyệt Đơn
         </button>
 
-        <button className="w-1/2 p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600">
-          <Link to="/salepage">Đóng</Link>
+        <button
+          onClick={handleCloseModal}
+          className="w-1/2 p-3 text-base font-semibold text-white transition-all transform bg-blue-500 rounded-lg hover:bg-blue-600"
+        >
+          Đóng
         </button>
       </div>
     </div>
