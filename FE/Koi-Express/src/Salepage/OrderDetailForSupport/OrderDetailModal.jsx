@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation} from "react-router-dom";
 import {
   getTranslatedStatus,
   getStatusColor,
@@ -8,9 +8,13 @@ import {
 
 const OrderDetailModal = () => {
   const navigate = useNavigate();
-  const [supportRequests, setSupportRequests] = useState([]);
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const location = useLocation();
+  const { supportRequestData } = location.state || {}; // Get the passed data
   const [isLoading, setIsLoading] = useState(false);
+
+  const [selectedRequest, setSelectedRequest] = useState(
+    supportRequestData || null
+  );
 
   // Fetch danh sách yêu cầu hỗ trợ
   const fetchSupportRequests = async () => {
@@ -25,9 +29,7 @@ const OrderDetailModal = () => {
 
       // Kiểm tra và set danh sách yêu cầu
       if (response.data.content && response.data.content.length > 0) {
-        setSupportRequests(response.data.content);
-        // Tự động chọn request đầu tiên
-        setSelectedRequest(response.data.content[0]);
+        setSelectedRequest(response.data.content[0]); // Set the first request if not provided
       }
     } catch (error) {
       console.error("Lỗi tải danh sách yêu cầu hỗ trợ:", error);
@@ -71,10 +73,48 @@ const OrderDetailModal = () => {
     }
   };
 
+  // Gọi API hủy người giao hàng
+  const handleCancelStaff = async () => {
+    if (!selectedRequest) return;
+
+    const confirmCancel = window.confirm(
+      `Bạn chắc chắn muốn hủy người giao hàng cho yêu cầu hỗ trợ #${selectedRequest.requestId}?`
+    );
+    if (!confirmCancel) return;
+
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem("token");
+
+      const response = await axios.put(
+        `http://localhost:8080/api/sales/support/cancel-staff/${selectedRequest.requestId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert("Hủy người giao hàng thành công!");
+      navigate("/salepage/acceptsupport");
+    } catch (error) {
+      console.error("Lỗi hủy người giao hàng:", error);
+      alert(
+        error.response?.data?.message ||
+          "Không thể hủy người giao hàng. Vui lòng thử lại."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Fetch danh sách yêu cầu khi component mount
   useEffect(() => {
-    fetchSupportRequests();
-  }, []);
+    if (!selectedRequest) {
+      fetchSupportRequests();
+    }
+  }, [selectedRequest]);
 
   // Nếu không có yêu cầu hỗ trợ
   if (!selectedRequest) {
@@ -92,7 +132,7 @@ const OrderDetailModal = () => {
     order,
     subject,
     description,
-    supportRequestsStatus,
+    supportRequestsStatus = selectedRequest.supportRequestsStatus, // Use the passed status if available
     createdAt,
   } = selectedRequest;
 
@@ -103,7 +143,7 @@ const OrderDetailModal = () => {
   return (
     <div className="relative z-20 flex flex-col w-full h-full max-w-lg p-6 bg-white border border-gray-200 shadow-lg">
       <div className="flex-grow">
-        <div className="mb-4 text-2xl font-bold text-gray-800">
+        <div className="mb-4 text-2xl font bold text-gray-800">
           Yêu cầu hỗ trợ #{requestId} của {customer?.fullName || "Khách hàng"}
         </div>
 
@@ -158,20 +198,34 @@ const OrderDetailModal = () => {
         <p className="text-sm">{description}</p>
       </div>
 
-      {/* Các phần khác của component giữ nguyên */}
       <div className="flex flex-shrink-0 mt-6 space-x-2">
-        <button
-          onClick={handleAcceptSupport}
-          disabled={isLoading}
-          className={`w-1/2 p-3 text-base font-semibold text-white transition-all transform rounded-lg 
-            ${
-              isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-500 hover:bg-green-600"
-            }`}
-        >
-          {isLoading ? "Đang xử lý..." : "Chấp nhận hỗ trợ"}
-        </button>
+        {supportRequestsStatus === "PENDING" ? (
+          <button
+            onClick={handleAcceptSupport}
+            disabled={isLoading}
+            className={`w-1/2 p-3 text-base font-semibold text-white transition-all transform rounded-lg 
+        ${
+          isLoading
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-green-500 hover:bg-green-600"
+        }`}
+          >
+            {isLoading ? "Đang xử lý..." : "Chấp nhận hỗ trợ"}
+          </button>
+        ) : supportRequestsStatus === "IN_PROGRESS" ? ( // Fixed here
+          <button
+            onClick={handleCancelStaff}
+            disabled={isLoading}
+            className={`w-1/2 p-3 text-base font-semibold text-white transition-all transform rounded-lg 
+        ${
+          isLoading
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-red-500 hover:bg-red-600"
+        }`}
+          >
+            {isLoading ? "Đang xử lý..." : "Hủy người giao hàng"}
+          </button>
+        ) : null}
 
         <button
           onClick={() => navigate("/salepage/acceptsupport")}
