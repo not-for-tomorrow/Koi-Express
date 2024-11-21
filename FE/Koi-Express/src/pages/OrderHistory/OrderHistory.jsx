@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect} from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 const OrderHistory = () => {
     const [state, setState] = useState({
         isTimeFilterExpanded: false,
         selectedTimeFilter: "all",
         tempSelectedTimeFilter: "all",
-        customDateRange: { from: "", to: "" },
+        customDateRange: {from: "", to: ""},
         displayDateRange: "",
         selectedTab: "Chờ xác nhận",
         searchQuery: "",
@@ -21,18 +21,18 @@ const OrderHistory = () => {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                setState((prev) => ({ ...prev, loading: true }));
+                setState((prev) => ({...prev, loading: true}));
                 const token = localStorage.getItem("token");
                 if (!token) {
                     throw new Error("Token not found. Please log in.");
                 }
 
                 const response = await axios.get("http://localhost:8080/api/orders/history", {
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: {Authorization: `Bearer ${token}`},
                 });
-                setState((prev) => ({ ...prev, orders: response.data.result || [], loading: false }));
+                setState((prev) => ({...prev, orders: response.data.result || [], loading: false}));
             } catch (err) {
-                setState((prev) => ({ ...prev, error: err.message || "Failed to fetch orders", loading: false }));
+                setState((prev) => ({...prev, error: err.message || "Failed to fetch orders", loading: false}));
             }
         };
 
@@ -42,7 +42,7 @@ const OrderHistory = () => {
     const goToOrderDetail = (order) => {
         if (order?.orderId) {
             navigate(`/appkoiexpress/history/detail/${order.orderId}`, {
-                state: { orderId: order.orderId },
+                state: {orderId: order.orderId},
             });
         } else {
             console.error("Order or Order ID is missing");
@@ -50,26 +50,30 @@ const OrderHistory = () => {
     };
 
     const handleTimeFilterClick = () => {
-        setState((prev) => ({ ...prev, tempSelectedTimeFilter: prev.selectedTimeFilter, isTimeFilterExpanded: !prev.isTimeFilterExpanded }));
+        setState((prev) => ({
+            ...prev,
+            tempSelectedTimeFilter: prev.selectedTimeFilter,
+            isTimeFilterExpanded: !prev.isTimeFilterExpanded
+        }));
     };
 
     const handleTimeFilterSelect = (filter) => {
         setState((prev) => ({
             ...prev,
             tempSelectedTimeFilter: filter,
-            ...(filter !== "custom" && { customDateRange: { from: "", to: "" } }),
+            ...(filter !== "custom" && {customDateRange: {from: "", to: ""}}),
         }));
     };
 
     const handleApplyFilter = () => {
         const now = new Date();
         let fromDate, toDate;
-        const { tempSelectedTimeFilter, customDateRange } = state;
+        const {tempSelectedTimeFilter, customDateRange} = state;
 
         switch (tempSelectedTimeFilter) {
             case "today":
                 fromDate = toDate = now.toLocaleDateString("vi-VN");
-                setState((prev) => ({ ...prev, displayDateRange: `Ngày: ${fromDate}` }));
+                setState((prev) => ({...prev, displayDateRange: `Ngày: ${fromDate}`}));
                 break;
             case "this-week":
                 const startOfWeek = new Date(now);
@@ -78,42 +82,41 @@ const OrderHistory = () => {
                 endOfWeek.setDate(now.getDate() + (6 - now.getDay()));
                 fromDate = startOfWeek.toLocaleDateString("vi-VN");
                 toDate = endOfWeek.toLocaleDateString("vi-VN");
-                setState((prev) => ({ ...prev, displayDateRange: `Tuần này: ${fromDate} - ${toDate}` }));
+                setState((prev) => ({...prev, displayDateRange: `Tuần này: ${fromDate} - ${toDate}`}));
                 break;
             case "this-month":
                 const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
                 const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
                 fromDate = startOfMonth.toLocaleDateString("vi-VN");
                 toDate = endOfMonth.toLocaleDateString("vi-VN");
-                setState((prev) => ({ ...prev, displayDateRange: `Tháng này: ${fromDate} - ${toDate}` }));
+                setState((prev) => ({...prev, displayDateRange: `Tháng này: ${fromDate} - ${toDate}`}));
                 break;
             case "custom":
                 if (customDateRange.from && customDateRange.to) {
                     fromDate = new Date(customDateRange.from).toLocaleDateString("vi-VN");
                     toDate = new Date(customDateRange.to).toLocaleDateString("vi-VN");
-                    setState ((prev) => ({ ...prev, displayDateRange: `Tùy chỉnh: ${fromDate} - ${toDate}` }));
+                    setState((prev) => ({...prev, displayDateRange: `Tùy chỉnh: ${fromDate} - ${toDate}`}));
                 }
                 break;
             default:
-                setState((prev) => ({ ...prev, displayDateRange: "Chờ xác nhận" }));
+                setState((prev) => ({...prev, displayDateRange: "Chờ xác nhận"}));
                 break;
         }
 
-        setState((prev) => ({ ...prev, selectedTimeFilter: tempSelectedTimeFilter, isTimeFilterExpanded: false }));
+        setState((prev) => ({...prev, selectedTimeFilter: tempSelectedTimeFilter, isTimeFilterExpanded: false}));
     };
 
     const handleCloseFilter = () => {
-        setState((prev) => ({ ...prev, isTimeFilterExpanded: false }));
+        setState((prev) => ({...prev, isTimeFilterExpanded: false}));
     };
 
     const handleCustomDateChange = (field, value) => {
-        setState((prev) => ({ ...prev, customDateRange: { ...prev.customDateRange, [field]: value } }));
+        setState((prev) => ({...prev, customDateRange: {...prev.customDateRange, [field]: value}}));
     };
 
 
-
     const filterOrders = () => {
-        const { orders, selectedTab, selectedTimeFilter, searchQuery } = state;
+        const {orders, selectedTab, selectedTimeFilter, searchQuery} = state;
         let filteredOrders = Array.isArray(orders) ? orders : [];
 
         if (selectedTab !== "Tất cả") {
@@ -185,12 +188,12 @@ const OrderHistory = () => {
     const getVietnameseStatus = (status) => vietnameseStatusMapping[status] || status;
 
     const statusColors = {
-        "Chờ xác nhận": { background: "rgba(254, 240, 138, 0.2)", text: "#854D0E" },
-        "Đã xác nhận": { background: "rgba(233, 213, 255, 0.2)", text: "#2c2c54" },
-        "Chuẩn bị lấy hàng": { background: "rgba(153, 246, 228, 0.2)", text: "#0D9488" },
-        "Đang giao": { background: "rgba(191, 219, 254, 0.2)", text: "#1E3A8A" },
-        "Hoàn thành": { background: "rgba(187, 247, 208, 0.2)", text : "#065F46" },
-        "Đã hủy": { background: "rgba(254, 202, 202, 0.2)", text: "#c0392b" },
+        "Chờ xác nhận": {background: "rgba(254, 240, 138, 0.2)", text: "#854D0E"},
+        "Đã xác nhận": {background: "rgba(233, 213, 255, 0.2)", text: "#2c2c54"},
+        "Chuẩn bị lấy hàng": {background: "rgba(153, 246, 228, 0.2)", text: "#0D9488"},
+        "Đang giao": {background: "rgba(191, 219, 254, 0.2)", text: "#1E3A8A"},
+        "Hoàn thành": {background: "rgba(187, 247, 208, 0.2)", text: "#065F46"},
+        "Đã hủy": {background: "rgba(254, 202, 202, 0.2)", text: "#c0392b"},
     };
 
     const totalFeeHeaderTitle = ["Chờ xác nhận", "Đã xác nhận", "Chuẩn bị lấy hàng"].includes(state.selectedTab)
@@ -216,7 +219,7 @@ const OrderHistory = () => {
                             {Object.keys(statusColors).map((tab, index) => (
                                 <button
                                     key={index}
-                                    onClick={() => setState((prev) => ({ ...prev, selectedTab: tab }))}
+                                    onClick={() => setState((prev) => ({...prev, selectedTab: tab}))}
                                     className={`px-4 py-2 rounded-full transition duration-300 text-sm ${
                                         state.selectedTab === tab
                                             ? "font-bold shadow-md bg-blue-100 text-blue-900"
@@ -236,7 +239,7 @@ const OrderHistory = () => {
                             <input
                                 type="text"
                                 value={state.searchQuery}
-                                onChange={(e) => setState((prev) => ({ ...prev, searchQuery: e.target.value }))}
+                                onChange={(e) => setState((prev) => ({...prev, searchQuery: e.target.value}))}
                                 placeholder="Tìm kiếm đơn hàng..."
                                 className="w-full max-w-md p-2 text-sm transition duration-300 border border-blue-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
@@ -253,7 +256,8 @@ const OrderHistory = () => {
                                     <span>{state.displayDateRange || "Tất cả"}</span>
                                 </button>
                                 {state.isTimeFilterExpanded && (
-                                    <div className="absolute left-0 w-64 p-4 mt-2 bg-white border border-blue-300 rounded-lg shadow-lg">
+                                    <div
+                                        className="absolute left-0 w-64 p-4 mt-2 bg-white border border-blue-300 rounded-lg shadow-lg">
                                         {["all", "today", "this-week", "this-month", "custom"].map((filter) => (
                                             <div key={filter} className="mb-2">
                                                 <label className="flex items-center text-sm">
@@ -280,7 +284,8 @@ const OrderHistory = () => {
                                         {state.tempSelectedTimeFilter === "custom" && (
                                             <div className="flex flex-col mt-4 space-y-4">
                                                 <div className="relative">
-                                                    <label className="block mb-1 text-sm font-medium text-gray-600">Từ ngày:</label>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-600">Từ
+                                                        ngày:</label>
                                                     <input
                                                         type="date"
                                                         value={state.customDateRange.from}
@@ -291,7 +296,8 @@ const OrderHistory = () => {
                                                     />
                                                 </div>
                                                 <div className="relative">
-                                                    <label className="block mb-1 text-sm font-medium text-gray-600">Đến ngày:</label>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-600">Đến
+                                                        ngày:</label>
                                                     <input
                                                         type="date"
                                                         value={state.customDateRange.to}
@@ -347,7 +353,10 @@ const OrderHistory = () => {
                                 {filteredOrders.map((orderData, index) => {
                                     const order = orderData.order;
                                     const deliveringStaff = order.deliveringStaff;
-                                    const statusColor = statusColors[getVietnameseStatus(order.status)] || { background: "#f0f0f0", text: "#000" };
+                                    const statusColor = statusColors[getVietnameseStatus(order.status)] || {
+                                        background: "#f0f0f0",
+                                        text: "#000"
+                                    };
 
                                     return (
                                         <tr
