@@ -84,6 +84,9 @@ const Sidebar = () => {
       case "Lịch sử đơn hàng":
         navigate("/appkoiexpress/history");
         break;
+      case "Hỗ trợ":
+        navigate("/appkoiexpress/history");
+        break;
       default:
         break;
     }
