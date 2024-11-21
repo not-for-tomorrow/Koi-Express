@@ -32,9 +32,6 @@ public class Support { // Yêu cầu hỗ trợ khách hàng
     Customers customer;
 
     @ManyToOne
-    SystemAccount staff;
-
-    @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
     Orders order;
 
@@ -58,6 +55,4 @@ public class Support { // Yêu cầu hỗ trợ khách hàng
 
     LocalDateTime resolvedAt;
 
-    @Column(name = "staff_name", nullable = true)
-    String staffName;
 }

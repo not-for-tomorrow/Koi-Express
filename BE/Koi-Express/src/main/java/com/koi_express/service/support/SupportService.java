@@ -116,12 +116,6 @@ public class SupportService {
             throw new AppException(ErrorCode.DELIVERING_STAFF_NOT_FOUND, "Delivering staff not found");
         }
 
-        SystemAccount systemAccount = support.getStaff();
-        if (systemAccount == null) {
-            throw new AppException(ErrorCode.SYSTEM_ACCOUNT_NOT_FOUND, "System account not found");
-        }
-
-
         deliveringStaff.setActive(false);
         deliveringStaff.setStatus(StaffStatus.BANNED_FOR_ONE_WEEK);
         deliveringStaffRepository.save(deliveringStaff);
@@ -132,7 +126,6 @@ public class SupportService {
 
         support.setSupportRequestsStatus(SupportRequestsStatus.RESOLVED);
         support.setResolvedAt(LocalDateTime.now());
-        support.setStaffName(support.getStaff().getFullName());
         supportRepository.save(support);
 
         return new ApiResponse<>(HttpStatus.OK.value(), "Delivering staff banned for one week", null);
