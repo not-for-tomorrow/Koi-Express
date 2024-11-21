@@ -16,10 +16,10 @@ public class PackagingFeeCalculator {
     @Value("${packaging.fee.small:15000}")
     private BigDecimal smallFishFee;
 
-    @Value("${packaging.fee.medium:150000}")
+    @Value("${packaging.fee.medium:300000}")
     private BigDecimal mediumFishFee;
 
-    @Value("${packaging.fee.large:250000}")
+    @Value("${packaging.fee.large:500000}")
     private BigDecimal largeFishFee;
 
     @Value("${packaging.threshold.small:30}")

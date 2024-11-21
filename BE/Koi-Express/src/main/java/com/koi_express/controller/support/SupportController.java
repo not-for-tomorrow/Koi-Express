@@ -2,13 +2,18 @@ package com.koi_express.controller.support;
 
 import com.koi_express.dto.request.SupportCreateRequest;
 import com.koi_express.dto.request.SupportRequest;
+import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.entity.customer.Support;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.support.SupportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/support-request")
@@ -32,5 +37,13 @@ public class SupportController {
         SupportRequest response = supportService.createSupportRequest(request, parsedCustomerId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<Support>>> getAllSupport() {
+
+        ApiResponse<List<Support>> support = supportService.getAllSupport();
+        return ResponseEntity.ok(support);
     }
 }

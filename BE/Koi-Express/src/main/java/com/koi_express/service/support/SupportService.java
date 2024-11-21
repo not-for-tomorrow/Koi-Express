@@ -2,15 +2,18 @@ package com.koi_express.service.support;
 
 import com.koi_express.dto.request.SupportCreateRequest;
 import com.koi_express.dto.request.SupportRequest;
+import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
 import com.koi_express.entity.customer.Support;
 import com.koi_express.enums.SupportRequestsStatus;
 import com.koi_express.repository.CustomersRepository;
 import com.koi_express.repository.SupportRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -42,5 +45,10 @@ public class SupportService {
                 savedRequest.getSupportRequestsStatus().name(),
                 savedRequest.getCreatedAt()
         );
+    }
+
+    public ApiResponse<List<Support>> getAllSupport() {
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "Customers fetched successfully.", supportRepository.findAll());
     }
 }
