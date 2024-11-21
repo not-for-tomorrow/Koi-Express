@@ -6,6 +6,7 @@ import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Support;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.support.SupportService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,12 +43,22 @@ public class SupportController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<List<Support>>> getAllSupport() {
 
         ApiResponse<List<Support>> support = supportService.getAllSupport();
         return ResponseEntity.ok(support);
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<List<Support>> getSupportHistory(HttpServletRequest request, @RequestHeader("Authorization") String token) {
+
+        String jwt = token.substring(7);
+        String customerId = jwtUtil.extractCustomerId(jwt);
+        Long parsedCustomerId = Long.parseLong(customerId);
+
+        List<Support> supportHistory = supportService.getSupportHistory(parsedCustomerId);
+        return ResponseEntity.ok(supportHistory);
     }
 }
