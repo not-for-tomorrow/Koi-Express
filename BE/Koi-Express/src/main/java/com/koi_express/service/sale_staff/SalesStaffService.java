@@ -1,12 +1,14 @@
 package com.koi_express.service.sale_staff;
 
 import com.koi_express.dto.response.ApiResponse;
+import com.koi_express.entity.customer.Support;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.enums.OrderStatus;
+import com.koi_express.enums.SupportRequestsStatus;
 import com.koi_express.exception.AppException;
 import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.OrderRepository;
-import com.koi_express.repository.SalesStaffRepository;
+import com.koi_express.repository.SupportRepository;
 import com.koi_express.service.order.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -21,13 +23,13 @@ public class SalesStaffService {
 
     private static final Logger logger = LoggerFactory.getLogger(SalesStaffService.class);
 
-    private final SalesStaffRepository salesStaffRepository;
     private final OrderService orderService;
     private final OrderRepository orderRepository;
+    private final SupportRepository supportRepository;
 
     public Page<Orders> getPendingOrders(Pageable pageable) {
         logger.info("Fetching pending orders for sales staff.");
-        return salesStaffRepository.findAllByStatus(OrderStatus.PENDING, pageable);
+        return orderRepository.findAllByStatus(OrderStatus.PENDING, pageable);
     }
 
     public ApiResponse<String> acceptOrder(Long orderId) {
@@ -49,5 +51,10 @@ public class SalesStaffService {
             logger.error("Error accepting order with ID: {}", orderId, e);
             return new ApiResponse<>(500, "Error accepting order: " + e.getMessage(), null);
         }
+    }
+
+    public Page<Support> getPendingSupport(Pageable pageable) {
+        logger.info("Fetching pending support requests for sales staff.");
+        return supportRepository.findAllBySupportRequestsStatus(SupportRequestsStatus.PENDING, pageable);
     }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.koi_express.dto.response.ApiResponse;
 import com.koi_express.entity.customer.Customers;
+import com.koi_express.entity.customer.Support;
 import com.koi_express.entity.order.Orders;
 import com.koi_express.exception.AppException;
 import com.koi_express.jwt.JwtUtil;
@@ -97,5 +98,17 @@ public class SalesStaffController {
                             HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error retrieving customer details", null),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/support/pending")
+    public ResponseEntity<Page<Support>> getPendingSupport(
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+
+        Pageable paging = PageRequest.of(page, size);
+        Page<Support> pendingOrders = salesStaffService.getPendingSupport(paging);
+
+        logger.info("Fetched pending orders for sales staff with pagination: page {}, size {}", page, size);
+
+        return new ResponseEntity<>(pendingOrders, HttpStatus.OK);
     }
 }

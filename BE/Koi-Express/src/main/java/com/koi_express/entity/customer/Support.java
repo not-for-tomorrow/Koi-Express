@@ -18,8 +18,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"customer_id", "subject"})})
-public class SupportRequests { // Yêu cầu hỗ trợ khách hàng
+@Table(name = "support")
+public class Support { // Yêu cầu hỗ trợ khách hàng
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
