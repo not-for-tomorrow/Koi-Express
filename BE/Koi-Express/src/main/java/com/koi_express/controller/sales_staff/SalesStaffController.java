@@ -10,6 +10,7 @@ import com.koi_express.exception.AppException;
 import com.koi_express.jwt.JwtUtil;
 import com.koi_express.service.manager.ManageCustomerService;
 import com.koi_express.service.sale_staff.SalesStaffService;
+import com.koi_express.service.support.SupportService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public class SalesStaffController {
     private final SalesStaffService salesStaffService;
     private final ManageCustomerService manageCustomerService;
     private final JwtUtil jwtUtil;
+    private final SupportService supportService;
 
     @GetMapping("/orders/pending")
     public ResponseEntity<Page<Orders>> getPendingOrders(
@@ -110,5 +112,12 @@ public class SalesStaffController {
         logger.info("Fetched pending orders for sales staff with pagination: page {}, size {}", page, size);
 
         return new ResponseEntity<>(pendingOrders, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('SALES_STAFF')")
+    @PutMapping("/support/accept/{requestId}")
+    public ResponseEntity<ApiResponse<String>> acceptSupport(@PathVariable Long requestId) {
+        ApiResponse<String> response = supportService.acceptSupport(requestId);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 }

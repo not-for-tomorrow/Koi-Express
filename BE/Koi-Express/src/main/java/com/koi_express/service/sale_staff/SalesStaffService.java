@@ -10,6 +10,7 @@ import com.koi_express.exception.ErrorCode;
 import com.koi_express.repository.OrderRepository;
 import com.koi_express.repository.SupportRepository;
 import com.koi_express.service.order.OrderService;
+import com.koi_express.service.support.SupportService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ public class SalesStaffService {
     private final OrderService orderService;
     private final OrderRepository orderRepository;
     private final SupportRepository supportRepository;
+    private final SupportService supportService;
 
     public Page<Orders> getPendingOrders(Pageable pageable) {
         logger.info("Fetching pending orders for sales staff.");
