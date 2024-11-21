@@ -29,6 +29,8 @@ public enum ErrorCode {
     INVALID_ORDER_STATUS(1023, "Invalid order status"),
     ORDER_PRICE_CALCULATION_FAILED(1024, "Order price calculation failed"),
     ORDER_DELIVERY_FAILED(1025, "Order delivery failed"),
+    SUPPORT_REQUEST_NOT_FOUND(1026, "Support request not found"),
+    VALIDATION_ERROR(1027, "Validation error"),
     ;
 
     ErrorCode(int code, String message) {
