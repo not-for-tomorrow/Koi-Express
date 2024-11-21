@@ -22,7 +22,7 @@ const OrderDetailModal = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
+
       // Kiểm tra và set danh sách yêu cầu
       if (response.data.content && response.data.content.length > 0) {
         setSupportRequests(response.data.content);
@@ -47,14 +47,13 @@ const OrderDetailModal = () => {
     try {
       setIsLoading(true);
       const token = localStorage.getItem("token");
-      
+
       const response = await axios.put(
         `http://localhost:8080/api/sales/support/accept/${selectedRequest.requestId}`,
         {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
         }
       );
@@ -65,7 +64,7 @@ const OrderDetailModal = () => {
       console.error("Lỗi chấp nhận yêu cầu hỗ trợ:", error);
       alert(
         error.response?.data?.message ||
-        "Không thể chấp nhận yêu cầu hỗ trợ. Vui lòng thử lại."
+          "Không thể chấp nhận yêu cầu hỗ trợ. Vui lòng thử lại."
       );
     } finally {
       setIsLoading(false);
@@ -87,14 +86,14 @@ const OrderDetailModal = () => {
   }
 
   // Destructure dữ liệu
-  const { 
-    requestId, 
-    customer, 
-    order, 
-    subject, 
-    description, 
+  const {
+    requestId,
+    customer,
+    order,
+    subject,
+    description,
     supportRequestsStatus,
-    createdAt 
+    createdAt,
   } = selectedRequest;
 
   const orderDetail = order?.orderDetail || {};
@@ -109,18 +108,17 @@ const OrderDetailModal = () => {
         </div>
 
         <div className="p-4 mb-4 border rounded-lg bg-gray-50">
-              <h3 className="mb-2 text-lg font-semibold">Thông tin tài xế</h3>
-              <p>
-                <strong>Họ tên:</strong> {order.deliveringStaff.fullName}
-              </p>
-              <p>
-                <strong>Số điện thoại:</strong>{" "}
-                {order.deliveringStaff.phoneNumber}
-              </p>
-              <p>
-                <strong>Email:</strong> {order.deliveringStaff.email}
-              </p>
-            </div>
+          <h3 className="mb-2 text-lg font-semibold">Thông tin tài xế</h3>
+          <p>
+            <strong>Họ tên:</strong> {order.deliveringStaff.fullName}
+          </p>
+          <p>
+            <strong>Số điện thoại:</strong> {order.deliveringStaff.phoneNumber}
+          </p>
+          <p>
+            <strong>Email:</strong> {order.deliveringStaff.email}
+          </p>
+        </div>
 
         {/* Phần hiển thị thông tin chi tiết đơn hàng */}
         <div className="mt-6">
@@ -128,7 +126,8 @@ const OrderDetailModal = () => {
             <div className="w-4 h-4 mt-1 bg-blue-500 rounded-full"></div>
             <div>
               <p className="text-lg font-bold">
-                {orderDetail.senderName} • <span>{orderDetail.senderPhone}</span>
+                {orderDetail.senderName} •{" "}
+                <span>{orderDetail.senderPhone}</span>
               </p>
               <p className="text-sm text-gray-500">{order.originLocation}</p>
             </div>
@@ -138,23 +137,26 @@ const OrderDetailModal = () => {
             <div className="w-4 h-4 mt-1 bg-green-500 rounded-full"></div>
             <div>
               <p className="text-lg font-bold">
-                {orderDetail.recipientName} • <span>{orderDetail.recipientPhone}</span>
+                {orderDetail.recipientName} •{" "}
+                <span>{orderDetail.recipientPhone}</span>
               </p>
-              <p className="text-sm text-gray-500">{order.destinationLocation}</p>
+              <p className="text-sm text-gray-500">
+                {order.destinationLocation}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="mb-6">
-          <strong className="text-gray-600 block mb-2">Tiêu đề:</strong>
-          <p className="text-sm">{subject}</p>
-        </div>
+        <strong className="text-gray-600 block mb-2">Tiêu đề:</strong>
+        <p className="text-sm">{subject}</p>
+      </div>
 
-        <div className="mb-6">
-          <strong className="text-gray-600 block mb-2">Mô tả:</strong>
-          <p className="text-sm">{description}</p>
-        </div>
+      <div className="mb-6">
+        <strong className="text-gray-600 block mb-2">Mô tả:</strong>
+        <p className="text-sm">{description}</p>
+      </div>
 
       {/* Các phần khác của component giữ nguyên */}
       <div className="flex flex-shrink-0 mt-6 space-x-2">
@@ -162,9 +164,13 @@ const OrderDetailModal = () => {
           onClick={handleAcceptSupport}
           disabled={isLoading}
           className={`w-1/2 p-3 text-base font-semibold text-white transition-all transform rounded-lg 
-            ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
+            ${
+              isLoading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-500 hover:bg-green-600"
+            }`}
         >
-          {isLoading ? 'Đang xử lý...' : 'Chấp nhận hỗ trợ'}
+          {isLoading ? "Đang xử lý..." : "Chấp nhận hỗ trợ"}
         </button>
 
         <button
