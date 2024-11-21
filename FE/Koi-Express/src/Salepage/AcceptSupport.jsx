@@ -76,6 +76,7 @@ const AcceptSupport = () => {
           requestId: request.requestId,
           orderData: request.order,
           supportRequestData: request,
+          supportRequestsStatus: request.supportRequestsStatus, // Pass the status here
         },
       });
     } else {
