@@ -38,6 +38,41 @@ const DeliverOrderUpdate = ({
         });
     };
 
+    const handleQuantityChange = (category, index, value) => {
+        // Nếu người dùng xóa hết (chuỗi rỗng), đặt lại giá trị thành 0
+        if (value === "") {
+            value = "0";
+        }
+
+        // Chuyển giá trị nhập vào thành số nguyên
+        const parsedValue = parseInt(value, 10);
+
+        // Kiểm tra xem giá trị nhập có phải là số hợp lệ không và không vượt quá số lượng tối đa
+        if (!isNaN(parsedValue) && parsedValue >= 0) {
+            // Tính tổng số lượng đã chọn
+            const totalKoiSelected = Object.values(koiData)
+                .flat()
+                .reduce((acc, qty) => acc + qty, 0);
+
+            // Nếu tổng số lượng đã chọn cộng với giá trị nhập vào vượt quá số lượng tối đa, hiển thị thông báo lỗi
+            if (totalKoiSelected - koiData[category][index] + parsedValue > koiQuantity) {
+                return;
+            }
+
+            // Nếu số lượng hợp lệ, cập nhật giá trị
+            setKoiData((prevData) => {
+                const updatedCategory = [...prevData[category]];
+                updatedCategory[index] = parsedValue;
+                return { ...prevData, [category]: updatedCategory };
+            });
+            setErrorMessage("");  // Clear the error message when user makes a valid input
+        } else {
+            setErrorMessage("Số lượng phải là một số hợp lệ.");
+        }
+    };
+
+
+
     const handleSubmit = async () => {
         const totalKoiSelected = Object.values(koiData)
             .flat()

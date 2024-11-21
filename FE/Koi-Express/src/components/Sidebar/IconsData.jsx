@@ -22,4 +22,14 @@ export const navItems = [
     ),
     title: "Lịch sử đơn hàng",
   },
+  {
+    id: 2,
+    icons: (
+        <HistoryIcon
+            style={{ fontSize: 25, color: "#f57c00" }}
+            className="min-w-[35px] min-h-[35px]"
+        />
+    ),
+    title: "Hỗ trợ",
+  },
 ];
