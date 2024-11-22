@@ -83,12 +83,20 @@ public class KoiInvoiceCalculator {
     }
 
     private BigDecimal calculateRemainingTransportationFee(BigDecimal distanceFee, BigDecimal commitmentFee) {
-        return distanceFee.subtract(commitmentFee);
+        BigDecimal remainingFee = distanceFee.subtract(commitmentFee);
+        if (remainingFee.compareTo(BigDecimal.ZERO) < 0) {
+            logger.warning("Remaining transportation fee is negative, setting it to zero.");
+            return BigDecimal.ZERO;
+        }
+        return remainingFee;
     }
 
     private BigDecimal calculateInsuranceFee(
             BigDecimal koiFee, BigDecimal careFee, BigDecimal packagingFee, BigDecimal transportationFee) {
-        return koiFee.add(careFee).add(packagingFee).add(transportationFee).multiply(BigDecimal.valueOf(insuranceRate));
+        BigDecimal total = koiFee.add(careFee).add(packagingFee).add(transportationFee);
+        BigDecimal insuranceFee = total.multiply(BigDecimal.valueOf(insuranceRate));
+        logger.info("Calculated insurance fee: " + insuranceFee);
+        return insuranceFee;
     }
 
     private BigDecimal calculateSubtotal(
@@ -97,16 +105,20 @@ public class KoiInvoiceCalculator {
             BigDecimal packagingFee,
             BigDecimal transportationFee,
             BigDecimal insuranceFee) {
-        return fishPrice
+        BigDecimal subtotal = fishPrice
                 .add(careFee)
                 .add(packagingFee)
                 .add(transportationFee)
                 .add(insuranceFee)
                 .add(BigDecimal.valueOf(specializedVehicleFee));
+        logger.info("Calculated subtotal: " + subtotal);
+        return subtotal;
     }
 
     private BigDecimal calculateVAT(BigDecimal subtotal) {
-        return subtotal.multiply(BigDecimal.valueOf(vatRate));
+        BigDecimal vat = subtotal.multiply(BigDecimal.valueOf(vatRate));
+        logger.info("Calculated VAT: " + vat);
+        return vat;
     }
 
     private void validateInputs(int quantity, BigDecimal koiSize, BigDecimal distanceFee, BigDecimal commitmentFee) {

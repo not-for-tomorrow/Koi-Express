@@ -373,6 +373,13 @@ public class OrderService {
             PaymentMethod paymentMethod = order.getPaymentMethod();
             Map<String, BigDecimal> calculationData = new HashMap<>();
             calculationData.put("totalFee", totalFee);
+            calculationData.put("distanceFee", order.getOrderDetail().getDistanceFee());
+            calculationData.put("commitmentFee", order.getOrderDetail().getCommitmentFee());
+            calculationData.put("careFee", order.getOrderDetail().getCareFee());
+            calculationData.put("insuranceFee", order.getOrderDetail().getInsuranceFee());
+            calculationData.put("vatFee", order.getOrderDetail().getVat());
+            calculationData.put("koiFee", order.getOrderDetail().getKoiFee());
+            calculationData.put("packagingFee", order.getOrderDetail().getPackagingFee());
 
             ApiResponse<String> paymentResponse = handlePaymentMethod(order, paymentMethod, totalFee, calculationData);
 
@@ -380,6 +387,19 @@ public class OrderService {
                 order.setStatus(OrderStatus.IN_TRANSIT);
                 order.setPaymentConfirmed(true);
                 order.setTotalFee(totalFee);
+                order.getOrderDetail().setCareFee(order.getOrderDetail().getCareFee());
+                order.getOrderDetail().setInsuranceFee(order.getOrderDetail().getInsuranceFee());
+                order.getOrderDetail().setVat(order.getOrderDetail().getVat());
+                order.getOrderDetail().setKoiFee(order.getOrderDetail().getKoiFee());
+                order.getOrderDetail().setPackagingFee(order.getOrderDetail().getPackagingFee());
+
+                order.getInvoice().setTotalFee(totalFee);
+                order.getInvoice().setCareFee(order.getOrderDetail().getCareFee());
+                order.getInvoice().setInsuranceFee(order.getOrderDetail().getInsuranceFee());
+                order.getInvoice().setVat(order.getOrderDetail().getVat());
+                order.getInvoice().setKoiFee(order.getOrderDetail().getKoiFee());
+                order.getInvoice().setPackagingFee(order.getOrderDetail().getPackagingFee());
+
                 orderRepository.save(order);
                 return new ApiResponse<>(
                         HttpStatus.OK.value(), "Thanh toán xác nhận thành công", paymentResponse.getResult());
