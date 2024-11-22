@@ -55,7 +55,7 @@ public class Invoice {
     @Column(nullable = false, precision = 15, scale = 2)
     BigDecimal insuranceFee; // Phí bảo hiểm
 
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(nullable = true, precision = 15, scale = 2)
     BigDecimal totalFee; // Tổng tiền hoá đơn
 
     @Column(nullable = false)
