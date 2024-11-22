@@ -181,6 +181,7 @@ const OrderHistory = () => {
         PICKING_UP: "Chuẩn bị lấy hàng",
         IN_TRANSIT: "Đang giao",
         DELIVERED: "Hoàn thành",
+        COMPLETED: "Hoàn tất đơn hàng",
         CANCELED: "Đã hủy",
         COMMIT_FEE_PENDING: "Chờ thanh toán cam kết",
     };
@@ -193,6 +194,7 @@ const OrderHistory = () => {
         "Chuẩn bị lấy hàng": {background: "rgba(153, 246, 228, 0.2)", text: "#0D9488"},
         "Đang giao": {background: "rgba(191, 219, 254, 0.2)", text: "#1E3A8A"},
         "Hoàn thành": {background: "rgba(187, 247, 208, 0.2)", text: "#065F46"},
+        "Hoàn tất đơn hàng": {background: "rgba(187, 247, 208, 0.2)", text: "#065F46"},
         "Đã hủy": {background: "rgba(254, 202, 202, 0.2)", text: "#c0392b"},
     };
 
