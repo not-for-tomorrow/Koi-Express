@@ -30,6 +30,7 @@ public class DeliveringStaffService {
     private final ShipmentsRepository shipmentsRepository;
     private final PickupTimeCalculator pickupTimeCalculator;
     private final DeliveringStaffRepository deliveringStaffRepository;
+    private final ShipmentsRepository shipmentRepository;
 
     @Transactional(readOnly = true)
     public List<Orders> getAssignedOrdersByDeliveringStaff(Long deliveringStaffId) {
@@ -55,11 +56,16 @@ public class DeliveringStaffService {
 
         Orders order = validate(orderId, deliveringStaffId);
 
+        List<Shipments> existingShipment = shipmentsRepository.findByOrder(order);
+        if (!existingShipment.isEmpty()) {
+            log.error("A shipment already exists for order ID: {}", orderId);
+            return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "A shipment already exists for this order", null);
+        }
+
         order.setStatus(OrderStatus.PICKING_UP);
         orderRepository.save(order);
 
-        LocalDateTime pickupTime =
-                pickupTimeCalculator.calculatePickupTime(order.getOrderDetail().getKilometers());
+        LocalDateTime pickupTime = pickupTimeCalculator.calculatePickupTime(order.getOrderDetail().getKilometers());
 
         Shipments shipment = Shipments.builder()
                 .customer(order.getCustomer())
@@ -72,7 +78,18 @@ public class DeliveringStaffService {
 
         log.info("Order ID: {} status updated to Picking Up by staff ID: {}", orderId, deliveringStaffId);
         log.info("Shipment created for order ID: {}", orderId);
+
         return new ApiResponse<>(HttpStatus.OK.value(), "Order status updated to Picking Up", null);
+    }
+
+    @Transactional
+    public void cancelDeliveryStaffAssignment(Long orderId) {
+        Optional<Shipments> shipment = shipmentRepository.findByOrder_orderId(orderId);
+        if (shipment.isPresent()) {
+            shipmentRepository.delete(shipment.get());
+        } else {
+            log.error("Shipment not found for order ID: {}", orderId);
+        }
     }
 
     @Transactional

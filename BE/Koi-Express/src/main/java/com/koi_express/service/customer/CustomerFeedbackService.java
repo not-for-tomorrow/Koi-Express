@@ -61,6 +61,9 @@ public class CustomerFeedbackService {
                 .submittedAt(LocalDateTime.now())
                 .build();
 
+        order.setStatus(OrderStatus.COMPLETED);
+        orderRepository.save(order);
+
         return feedbackRepository.save(feedback);
     }
 
