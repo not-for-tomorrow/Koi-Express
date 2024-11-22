@@ -87,6 +87,7 @@ public class OrderCalculation {
         BigDecimal totalRemainingTransportationFee = BigDecimal.ZERO;
         BigDecimal totalInsuranceFee = BigDecimal.ZERO;
         BigDecimal totalVat = BigDecimal.ZERO;
+        BigDecimal totalSpecializedVehicleFee = BigDecimal.ZERO;
         BigDecimal grandTotalFee = BigDecimal.ZERO;
 
         for (Map<String, Object> koi : koiList) {
@@ -107,6 +108,7 @@ public class OrderCalculation {
                         totalRemainingTransportationFee.add(individualFee.get("remainingTransportationFee"));
                 totalInsuranceFee = totalInsuranceFee.add(individualFee.get("insuranceFee"));
                 totalVat = totalVat.add(individualFee.get("vat"));
+                totalSpecializedVehicleFee = totalSpecializedVehicleFee.add(individualFee.get("specializedVehicleFee"));
                 grandTotalFee = grandTotalFee.add(individualFee.get("totalFee"));
 
             } catch (IllegalArgumentException e) {
@@ -124,6 +126,7 @@ public class OrderCalculation {
         responseData.put("remainingTransportationFee", totalRemainingTransportationFee);
         responseData.put("insuranceFee", totalInsuranceFee);
         responseData.put("vat", totalVat);
+        responseData.put("specializedVehicleFee", totalSpecializedVehicleFee);
         responseData.put("totalFee", grandTotalFee);
         responseData.put("orderId", order.getOrderId());
 
